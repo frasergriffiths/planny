@@ -56,7 +56,16 @@ for (const [pattern, label] of stripped) {
 }
 
 const url = `${base}/plans?${new URLSearchParams({ name, duration })}`;
-const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'text/html' }, body: bytes });
+async function send(): Promise<Response> {
+  return fetch(url, { method: 'POST', headers: { 'content-type': 'text/html' }, body: bytes });
+}
+let response = await send();
+// One retry for a 429 or store_unavailable 503, using Retry-After up to 120 seconds. Never a 5xx.
+if (response.status === 429 || (response.status === 503 && response.headers.get('retry-after'))) {
+  const wait = Math.min(120, Number(response.headers.get('retry-after') ?? '5')) * 1000;
+  await new Promise((resolve) => setTimeout(resolve, Math.max(1000, wait)));
+  response = await send();
+}
 const text = await response.text();
 let body: Record<string, unknown>;
 try {

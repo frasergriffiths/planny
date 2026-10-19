@@ -175,7 +175,18 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
     async uploadsEnabled(): Promise<boolean> {
       try {
         const result = await get(store('config/kill.json'), { access, token, useCache: false });
-        if (!result || result.statusCode !== 200) return true;
+        if (!result || result.statusCode !== 200) {
+          // A fresh store has no kill blob. Create it enabled, once.
+          await put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: true }), {
+            access,
+            token,
+            addRandomSuffix: false,
+            allowOverwrite: false,
+            contentType: 'application/json',
+            cacheControlMaxAge: 60,
+          }).catch(() => {});
+          return true;
+        }
         const value = JSON.parse(await new Response(result.stream).text()) as { uploadsEnabled?: unknown };
         return value.uploadsEnabled === true;
       } catch (error) {

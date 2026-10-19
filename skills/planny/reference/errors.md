@@ -50,6 +50,7 @@ Generated from `src/error-codes.ts` by `scripts/generate-skill-errors.ts`. Do no
 | 410 | `plan_deleted` | view | The author deleted the plan. | None | Page | Never shows the plan name. |
 | 410 | `plan_removed` | view | planny took the plan down. | None | Page | Never shows the plan name. |
 | 503 | `store_unavailable` | view | The plan store read or write failed. | Retry-After header | Page or JSON | Retry-After: 5, no-store. A transient store failure, not plan_not_found and not planny_not_configured. |
+| 500 | `upload_interrupted` | upload | The plan was stored but could not be published. | None | JSON | Do not retry. Stop and report; this is a server-side store failure. |
 
 ## Configuration
 

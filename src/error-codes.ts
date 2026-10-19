@@ -427,4 +427,13 @@ export const ERROR_CODES: readonly ErrorCode[] = [
     response: 'both',
     notes: 'Retry-After: 5, no-store. A transient store failure, not plan_not_found and not planny_not_configured.',
   },
+  {
+    code: 'upload_interrupted',
+    status: 500,
+    scope: 'upload',
+    when: 'The plan was stored but could not be published.',
+    retry: 'none',
+    response: 'json',
+    notes: 'Do not retry. Stop and report; this is a server-side store failure.',
+  },
 ];

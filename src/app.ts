@@ -352,7 +352,8 @@ export function createApp(deps: AppDeps): App {
     return page(404, pages.notFound({ build }));
   }
 
-  async function view(id: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
+  async function view(rawId: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
+    const id = rawId.toLowerCase();
     const at = now();
     const limit = await records.rate('views', ownerKey(secret, address), at, config.rateLimits.views);
     if (!limit.allowed) {

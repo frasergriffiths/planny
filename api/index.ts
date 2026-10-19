@@ -11,6 +11,11 @@ let failure: string | null = null;
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    if (process.env.VERCEL_ENV === 'preview' && (url.pathname === '/plans' || url.pathname.startsWith('/admin/'))) {
+      return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'Uploads are disabled on preview deployments.' } })}\n`, {
+        status: 503, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+      });
+    }
     if (url.pathname === '/' && !app) {
       const body = home({ build: 'vercel', origin: 'https://planny-pink.vercel.app', config: loadConfig() });
       return new Response(body, {
