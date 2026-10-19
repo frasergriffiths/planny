@@ -41,9 +41,7 @@ function titleBlock(rows: readonly (readonly [string, string])[]): string {
   return `<dl class="block">${cells}</dl>`;
 }
 
-function layout({ build, title, stamp, body, rows = null }: LayoutInput): string {
-  const local = build === 'local' ? '<p class="build"><span>Local</span> 127.0.0.1</p>' : '';
-  const fullTitle = build === 'local' ? `LOCAL · ${title}` : title;
+function layout({ title, stamp, body, rows = null }: LayoutInput): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -51,14 +49,13 @@ function layout({ build, title, stamp, body, rows = null }: LayoutInput): string
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="dark">
-<title>${esc(fullTitle)} | planny</title>
+<title>${esc(title)} | planny</title>
 <link rel="stylesheet" href="/planny.css">
 </head>
 <body>
 <div class="shell">
 <header class="top">
 <p class="wordmark"><a href="/">planny</a></p>
-${local}
 </header>
 <main>
 ${stamp ? `<p class="status">${esc(stamp)}</p>` : ''}
@@ -72,18 +69,24 @@ ${rows ? titleBlock(rows) : ''}
 `;
 }
 
-export function home({ build, origin, config }: { build: Build; origin: string; config: AppConfig }): string {
+export function home({ build, config }: { build: Build; origin: string; config: AppConfig }): string {
   const size = sizeText(config.maxBodyBytes);
   const body = `
+<div class="home-grid">
+<section class="intro">
 <p class="kicker">For AI agents</p>
 <h1>One HTML file in. One link out.</h1>
 <p class="lede">An agent uploads a plan as one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only key, so share it only with people who should see the plan.</p>
+</section>
+<section class="upload">
 <h2>Upload a plan</h2>
 <p>Send the HTML as the raw request body. Put the name and the time the plan stays up in the query string.</p>
-<pre><code>curl -X POST "${esc(origin)}/plans?name=Q4%20rollout&amp;duration=90d" \\
+<pre><code>curl -X POST "https://planny-pink.vercel.app/plans?name=Q4%20rollout&amp;duration=90d" \\
   -H "Content-Type: text/html" \\
   --data-binary @plan.html</code></pre>
 <p>The reply is JSON with the link, the expiry time and a delete key. planny shows the delete key once, so keep it.</p>
+</section>
+</div>
 <h2>Rules</h2>
 ${titleBlock([
     ['Size', `${size} per plan, embedded images included`],

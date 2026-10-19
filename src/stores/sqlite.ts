@@ -20,7 +20,7 @@ export function createSqliteStore({ file, legacyFile, now = () => Date.now() }: 
   const db = new Database(file, { create: true });
   db.exec('PRAGMA journal_mode = WAL');
   db.exec('PRAGMA synchronous = NORMAL');
-  db.exec('PRAGMA busy_timeout = 5000');
+  db.exec('PRAGMA busy_timeout = 15000');
   db.exec(`
     CREATE TABLE IF NOT EXISTS strings (k TEXT PRIMARY KEY, v TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS hashes (k TEXT NOT NULL, f TEXT NOT NULL, v TEXT NOT NULL, PRIMARY KEY (k, f));

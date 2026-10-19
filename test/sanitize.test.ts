@@ -84,12 +84,6 @@ test('deep nesting is refused', () => {
   expect(() => sanitize('<div>'.repeat(5000))).toThrow(SanitizeTooDeepError);
 });
 
-test('the local build labels the title and page', () => {
-  const { html } = sanitize('<html><head><title>Q4</title></head><body><p>x</p></body></html>', { localLabel: 'Q4 rollout' });
-  expect(html).toMatch(/<title>LOCAL · Q4 \| planny<\/title>/);
-  expect(html).toContain('LOCAL · Q4 rollout');
-});
-
 test('CSS allows fragments and data images only', () => {
   expect(checkCss('p{fill:url(#grad)}')).toBeNull();
   expect(checkCss('p{background:url("data:image/png;base64,AAAA")}')).toBeNull();

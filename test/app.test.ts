@@ -159,7 +159,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     expect(page.status).toBe(200);
     const body = await page.text();
     for (const bad of ['<script', 'href=', 'onclick']) expect(body).not.toContain(bad);
-    expect(body).toContain('LOCAL · X | planny');
+    expect(body).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/^sandbox; default-src 'none'/);
     expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
     expect(page.headers.get('referrer-policy')).toBe('no-referrer');
@@ -287,8 +287,8 @@ test('the read guard pauses views, deletes still work, and the admin reset frees
 
 test('the per-plan and monthly alerts are logged once', async () => {
   const t = setup({}, {
-    monthly: { uploads: 5000, reads: 1_500_000, readBytes: 1_000_000 },
-    planReadAlert: { perPlanHourly: 0, monthlyWarningFraction: 0.001, counterTtlSeconds: 7200 },
+    monthly: { uploads: 5000, reads: 1_500_000, readBytes: 1_000_000_000 },
+    planReadAlert: { perPlanHourly: 0, monthlyWarningFraction: 0.0000001, counterTtlSeconds: 7200 },
   }, Date.UTC(2027, 0, 3, 9, 30));
   try {
     const json = await uploaded(t);

@@ -90,7 +90,6 @@ export interface SanitizeResult {
 }
 
 export interface SanitizeOptions {
-  readonly localLabel?: string;
   readonly mode?: 'local' | 'vercel';
 }
 
@@ -105,7 +104,6 @@ export function sanitize(input: string, options: SanitizeOptions = {}): Sanitize
   document.childNodes = cleanList(walk, document.childNodes);
   adopt(document as unknown as Node);
   ensureBody(document);
-  if (options.localLabel) labelLocal(document, options.localLabel);
   if (options.mode) addPlanFooter(document, options.mode);
   return {
     html: `<!DOCTYPE html>\n${serialize(document as unknown as import('parse5').DefaultTreeAdapterMap['document'])}`,
@@ -291,31 +289,6 @@ function ensureBody(document: Document): void {
     childNodes: [],
     parentNode: html,
   });
-}
-
-function labelLocal(document: Document, label: string): void {
-  const html = document.childNodes.find((node) => node.tagName === 'html');
-  const head = html?.childNodes.find((node) => node.tagName === 'head');
-  const body = html?.childNodes.find((node) => node.tagName === 'body');
-  if (!html || !head || !body) return;
-  const title = head.childNodes.find((node) => node.tagName === 'title');
-  const original = title ? title.childNodes.map((node) => node.value ?? '').join('').trim() : '';
-  const text = `LOCAL · ${original || label} | planny`;
-  if (title) {
-    title.childNodes = [textNode(text, title)];
-  } else {
-    head.childNodes.unshift(...(parseFragment(`<title>${escapeHtml(text)}</title>`).childNodes as unknown as Node[]));
-  }
-  const banner = parseFragment(
-    '<div class="planny-local" style="position:fixed;top:0;right:0;z-index:2147483647;max-width:70vw;overflow:hidden;'
-    + 'text-overflow:ellipsis;white-space:nowrap;margin:0;padding:.35rem .7rem;background:#000;color:#f5f5f5;'
-    + 'border:1px solid #4d9fff;border-top:0;border-right:0;border-bottom-left-radius:8px;'
-    + 'font:500 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em">'
-    + `LOCAL · ${escapeHtml(label)}</div>`,
-  ).childNodes as unknown as Node[];
-  body.childNodes.unshift(...banner);
-  adopt(head);
-  adopt(body);
 }
 
 // A plan page ends with one line saying where it is hosted. Plain text on the local build,

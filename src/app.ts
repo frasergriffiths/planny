@@ -262,7 +262,7 @@ export function createApp(deps: AppDeps): App {
     }
     let cleaned: { html: string; removed: Record<string, number> };
     try {
-      cleaned = sanitize(text, { mode: build, ...(build === 'local' ? { localLabel: name } : {}) });
+      cleaned = sanitize(text, { mode: build });
     } catch (error) {
       if (error instanceof SanitizeTooDeepError) {
         throw new ApiError(400, 'too_deep', 'The plan nests elements too deeply. Keep nesting under 200 levels.');

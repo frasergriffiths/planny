@@ -318,3 +318,22 @@ td:first-child {
     animation: none;
   }
 }
+
+/* Home: intro and upload side by side once there is room. */
+.home-grid {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+
+  .home-grid .upload h2 {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
