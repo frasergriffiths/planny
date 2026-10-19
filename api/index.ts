@@ -24,7 +24,16 @@ export default {
     }
     if (url.pathname === '/health') {
       const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : `node ${process.version}`;
-      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime })}\n`, {
+      // Presence only: enough to tell which setting is missing, never a value.
+      const env = {
+        blobToken: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+        access: process.env.BLOB_ACCESS ?? null,
+        addressKey: Boolean(process.env.PLANNY_ADDRESS_KEY),
+        adminToken: Boolean(process.env.PLANNY_ADMIN_TOKEN),
+        origin: process.env.PLANNY_PUBLIC_ORIGIN ?? null,
+        blobKey: Boolean(process.env.PLANNY_BLOB_KEY_1),
+      };
+      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, env })}\n`, {
         status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });
