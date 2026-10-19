@@ -104,7 +104,6 @@ export function sanitize(input: string, options: SanitizeOptions = {}): Sanitize
   document.childNodes = cleanList(walk, document.childNodes);
   adopt(document as unknown as Node);
   ensureBody(document);
-  if (options.mode) addPlanFooter(document, options.mode);
   return {
     html: `<!DOCTYPE html>\n${serialize(document as unknown as import('parse5').DefaultTreeAdapterMap['document'])}`,
     removed: Object.fromEntries(walk.removed),
@@ -291,20 +290,3 @@ function ensureBody(document: Document): void {
   });
 }
 
-// A plan page ends with one line saying where it is hosted. Plain text on the local build,
-// a link to the home page on Vercel. The plan CSP allows 'self' for links.
-function addPlanFooter(document: Document, mode: 'local' | 'vercel'): void {
-  const html = document.childNodes.find((node) => node.tagName === 'html');
-  const body = html?.childNodes.find((node) => node.tagName === 'body');
-  if (!body) return;
-  const text = mode === 'vercel'
-    ? '<span>Hosted by <a href="/">planny</a>. The link is the only key.</span>'
-    : '<span>Hosted by planny, local build.</span>';
-  const footer = parseFragment(
-    '<div class="planny-plan-footer" style="margin:2.5rem 0 0;padding-top:1rem;border-top:1px solid rgba(255,255,255,.14);'
-    + 'color:#a1a1a1;font:400 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace">'
-    + `${text}</div>`,
-  ).childNodes as unknown as Node[];
-  body.childNodes.push(...footer);
-  adopt(body);
-}
