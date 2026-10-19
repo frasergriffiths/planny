@@ -1,7 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { createVercelApp } from '../src/vercel.js';
 import { loadConfig } from '../src/config.js';
-import { home, notFound, unknownPath } from '../src/pages.js';
+import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
 
 // Vercel's Bun runtime runs this file as the function behind the rewrite in vercel.json.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
@@ -63,7 +63,8 @@ export default {
         if (!uuid.test(id.toLowerCase())) {
           return new Response(notFound({ build: 'vercel' }), { status: 404, headers: pageHeaders });
         }
-        return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });
+        // A plan link renders a page, even when the store is missing; only the API returns JSON.
+        return new Response(notConfigured({ build: 'vercel' }), { status: 503, headers: pageHeaders });
       }
       return new Response(unknownPath({ build: 'vercel' }), { status: 404, headers: pageHeaders });
 

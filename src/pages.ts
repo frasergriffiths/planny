@@ -189,6 +189,17 @@ export function paused({ build, guard, resumesAt }: { build: Build; guard: Pause
   });
 }
 
+
+export function notConfigured({ build }: { build: Build }): string {
+  return layout({
+    build,
+    title: 'Not configured',
+    stamp: 'Not configured',
+    body: '<h1>planny is not configured yet.</h1><p>The deployment is missing its storage settings. Reads and uploads start once they are set.</p>',
+    rows: [['Status', 'Not configured'], ['Code', '503']],
+  });
+}
+
 export function serverError({ build }: { build: Build }): string {
   return layout({
     build,
