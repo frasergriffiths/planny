@@ -62,9 +62,11 @@ export interface VercelStoreDeps {
 }
 
 export function createVercelStore({ env = process.env, client, blob, readConfig, purge }: VercelStoreDeps = {}): Store {
+  const redisUrl = env.UPSTASH_REDIS_REST_URL ?? env.KV_REST_API_URL;
+  const redisToken = env.UPSTASH_REDIS_REST_TOKEN ?? env.KV_REST_API_TOKEN;
   const redisClient: UpstashClient = client ?? (new Redis({
-    url: required(env, 'UPSTASH_REDIS_REST_URL'),
-    token: required(env, 'UPSTASH_REDIS_REST_TOKEN'),
+    url: redisUrl ?? required(env, 'UPSTASH_REDIS_REST_URL'),
+    token: redisToken ?? required(env, 'UPSTASH_REDIS_REST_TOKEN'),
     automaticDeserialization: false,
   }) as unknown as UpstashClient);
   const blobApi: BlobApi = blob ?? { put, get, del } as unknown as BlobApi;
