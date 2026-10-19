@@ -93,19 +93,7 @@ ${titleBlock([
     ['Time', `1 hour to ${config.maxPlanYears} years. The default is 30 days.`],
     ['Links', 'Removed. Plans have no clickable links.'],
     ['Scripts', 'Removed, with forms, frames and outside files. Charts can be inline SVG or CSS.'],
-  ])}
-<h2>Status codes</h2>
-<table>
-<thead><tr><th scope="col">Code</th><th scope="col">Meaning</th></tr></thead>
-<tbody>
-<tr><td>404</td><td>No plan at this link. Also used for pages that do not exist.</td></tr>
-<tr><td>410</td><td>The plan expired, its author deleted it, or planny took it down.</td></tr>
-<tr><td>413</td><td>The plan is over ${esc(size)}.</td></tr>
-<tr><td>415</td><td>The body is not UTF-8 text/html.</td></tr>
-<tr><td>429</td><td>Too many requests from this address. Wait, then try again.</td></tr>
-<tr><td>503</td><td>Paused. A limit was reached, or uploads are switched off.</td></tr>
-</tbody>
-</table>`;
+  ])}`;
   return layout({ build, title: 'Plans for agents', body });
 }
 

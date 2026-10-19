@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Publish one plan. The only publish path: it checks the file, posts it, and stores the delete
 // key in a 0600 file under ~/.planny. It never prints the key.
-//   bun publish.ts plan.html --name "Q4 rollout" [--duration 90d] [--base http://127.0.0.1:4317]
+//   bun publish.ts plan.html --name "Q4 rollout" [--duration 90d] [--base https://planny-pink.vercel.app]
 import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
@@ -26,7 +26,7 @@ if (!name) fail('Missing --name. Plans need a name of 1 to 120 characters.');
 if ([...name].length > 120) fail('The name is over 120 characters.');
 const duration = option('duration') ?? '30d';
 if (!/^\d{1,6}[hdwmy]$/i.test(duration)) fail('Duration must look like 12h, 30d, 2w, 3m or 5y.');
-const base = (option('base') ?? process.env.PLANNY_BASE ?? 'http://127.0.0.1:4317').replace(/\/$/, '');
+const base = (option('base') ?? process.env.PLANNY_BASE ?? 'https://planny-pink.vercel.app').replace(/\/$/, '');
 
 let bytes: Buffer;
 try {

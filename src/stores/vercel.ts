@@ -64,7 +64,7 @@ export interface VercelStoreDeps {
 export function createVercelStore({ env = process.env, client, blob, readConfig, purge }: VercelStoreDeps = {}): Store {
   // A connected public store only provides BLOB_STORE_ID and the webhook key. Without a
   // read-write token, plan HTML would be readable by URL, bypassing expiry and takedowns.
-  if (!env.BLOB_READ_WRITE_TOKEN) {
+  if (!blob && !env.BLOB_READ_WRITE_TOKEN) {
     throw new Error('Refusing to start: BLOB_READ_WRITE_TOKEN is missing. A public Blob store connection is not enough; create the store private.');
   }
   const redisUrl = env.UPSTASH_REDIS_REST_URL ?? env.KV_REST_API_URL;
