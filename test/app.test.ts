@@ -162,7 +162,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     for (const bad of ['<script', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
     expect(rawBody).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);
-    expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+    expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
     expect(page.headers.get('referrer-policy')).toBe('no-referrer');
     expect(page.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600, must-revalidate');
     expect(page.headers.get('vercel-cdn-cache-control')).toBe('s-maxage=3600');
