@@ -557,6 +557,8 @@ export function createApp(deps: AppDeps): App {
     throw new ApiError(405, 'method_not_allowed', 'Upload a plan with POST /plans.', { allow: 'POST' });
   });
 
+  app.get('/p/:id/raw', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== '', true));
+  app.on(['HEAD'], '/p/:id/raw', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== '', true));
   app.get('/p/:id', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== ''));
   app.on(['HEAD'], '/p/:id', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== ''));
   app.delete('/p/:id', (c) => remove(c.req.param('id'), c.req.raw, c.get('address')));
