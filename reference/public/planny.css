@@ -1,0 +1,287 @@
+/* planny pages: a filed plan sheet on graph paper. Palette: paper, ink, pencil, stamp, highlight. */
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-latin-wdth-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  --paper: #E9EEF1;
+  --ink: #1B2430;
+  --pencil: #5E6B78;
+  --stamp: #B3261E;
+  --highlight: #FFE27A;
+  --hairline: rgba(27, 36, 48, 0.16);
+  --grid-minor: rgba(27, 36, 48, 0.07);
+  --grid-major: rgba(27, 36, 48, 0.14);
+  --sans: "Archivo", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+  background-size: 12px 12px, 12px 12px, 96px 96px, 96px 96px;
+  font: 400 1rem/1.55 var(--sans);
+}
+
+.sheet {
+  position: relative;
+  max-width: 46rem;
+  margin: clamp(1rem, 4vw, 3.5rem) auto;
+  padding: clamp(1.25rem, 4vw, 2.75rem);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: inset 0 0 0 6px var(--paper), inset 0 0 0 7px var(--pencil);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.wordmark {
+  margin: 0;
+  font: 800 1rem/1 var(--sans);
+  font-stretch: 125%;
+  letter-spacing: 0.02em;
+}
+
+.wordmark a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.build {
+  margin: 0;
+  font: 500 0.72rem/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.build span {
+  margin-right: 0.45em;
+  padding: 0.15em 0.45em;
+  background: var(--highlight);
+}
+
+main {
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+h1 {
+  margin: 0.5rem 0 1rem;
+  font: 800 clamp(2rem, 1.4rem + 2.6vw, 3.25rem)/1.02 var(--sans);
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h2 {
+  margin: 2.25rem 0 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hairline);
+  font: 700 1.1rem/1.25 var(--sans);
+  font-stretch: 112%;
+}
+
+p {
+  max-width: 38rem;
+  margin: 0 0 1rem;
+}
+
+mark {
+  padding: 0 0.08em;
+  color: inherit;
+  background: linear-gradient(transparent 56%, var(--highlight) 56%, var(--highlight) 92%, transparent 92%);
+}
+
+.kicker {
+  margin: 0 0 0.25rem;
+  font: 500 0.72rem/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+.lede {
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+pre {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  border: 1px solid var(--pencil);
+  background: rgba(27, 36, 48, 0.04);
+}
+
+code,
+pre {
+  font: 400 0.88rem/1.6 var(--mono);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.55rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid var(--hairline);
+}
+
+th {
+  font: 500 0.68rem/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+td:first-child {
+  width: 4.5rem;
+  font: 500 0.95rem/1.4 var(--mono);
+}
+
+a {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--stamp);
+  outline-offset: 3px;
+}
+
+.stamp {
+  display: block;
+  width: max-content;
+  margin: 0 0 1.25rem auto;
+  padding: 0.45rem 0.8rem 0.4rem;
+  border: 3px solid var(--stamp);
+  border-radius: 6px;
+  color: var(--stamp);
+  font: 800 0.95rem/1 var(--sans);
+  font-stretch: 125%;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  mix-blend-mode: multiply;
+  animation: stamp-in 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: rotate(-6deg) scale(1.6);
+  }
+  60% {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0.92;
+    transform: rotate(-6deg) scale(1);
+  }
+}
+
+.block {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  margin: 1.25rem 0 0;
+  border: 2px solid var(--ink);
+}
+
+.block > div {
+  padding: 0.7rem 0.8rem 0.8rem;
+  border-left: 1px solid var(--pencil);
+}
+
+.block > div:first-child {
+  border-left: 0;
+}
+
+.block dt {
+  font: 500 0.68rem/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+.block dd {
+  margin: 0.3rem 0 0;
+  font: 500 0.92rem/1.4 var(--mono);
+}
+
+::selection {
+  background: var(--highlight);
+  color: var(--ink);
+}
+
+@media (max-width: 30rem) {
+  .sheet {
+    box-shadow: none;
+  }
+
+  .block {
+    grid-template-columns: 1fr;
+  }
+
+  .block > div {
+    border-left: 0;
+    border-top: 1px solid var(--pencil);
+  }
+
+  .block > div:first-child {
+    border-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp {
+    animation: none;
+  }
+}

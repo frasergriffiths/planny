@@ -1,0 +1,3 @@
+#!/bin/sh
+# Git runs this before a push. The allowlist lives in the repo so it can be reviewed.
+exec bun run "$(git rev-parse --show-toplevel)/scripts/check-identity.ts" "$1"

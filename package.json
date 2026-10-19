@@ -1,0 +1,38 @@
+{
+  "name": "planny",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Plans for agents. Upload one HTML file, get a link that shows it.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && bun test",
+    "dev": "bun run local/server.ts",
+    "start": "bun run local/server.ts",
+    "parity": "bun run scripts/parity.ts",
+    "admin": "bun run scripts/admin.ts",
+    "local:install": "bun run local/service.ts install",
+    "local:uninstall": "bun run local/service.ts uninstall",
+    "local:status": "bun run local/service.ts status"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "@upstash/redis": "^1.39.0",
+    "@vercel/blob": "^2.8.2",
+    "@vercel/functions": "^3.10.1",
+    "@vercel/global-config": "^1.5.1",
+    "fengari": "^0.1.5",
+    "hono": "^4.13.13",
+    "parse5": "^8.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "bun-types": "^1.4.3",
+    "geist": "1.8.1",
+    "typescript": "^7.0.2"
+  }
+}

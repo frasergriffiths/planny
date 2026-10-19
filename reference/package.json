@@ -1,0 +1,30 @@
+{
+  "name": "planny",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plans for AI agents: upload one HTML file, get a link that shows it.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node local/server.js",
+    "test": "node --test test/*.test.js",
+    "local:install": "node local/service.mjs install",
+    "local:uninstall": "node local/service.mjs uninstall",
+    "local:status": "node local/service.mjs status",
+    "admin": "node scripts/admin.mjs"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.39.0",
+    "@vercel/blob": "^2.8.2",
+    "@vercel/functions": "^3.10.1",
+    "@vercel/global-config": "^1.5.1",
+    "fengari": "^0.1.5",
+    "parse5": "^8.0.1"
+  },
+  "devDependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0"
+  }
+}
