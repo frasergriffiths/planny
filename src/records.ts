@@ -333,9 +333,9 @@ export function createRecords(redis: RedisLike) {
       uploads: await readNumber(keysFor('uploads')[0] ?? ''),
       ownerBytes: owner ? await readNumber(ownerMonthlyKey(month, owner)) : 0,
     };
-    // "all" clears the site read counters and the address keys, but not the site uploads
-    // counter or stored bytes: those are site-wide and must be reset explicitly.
-    const reset = counter === 'all' ? ['reads', 'bytes', 'owner'] : [counter];
+    // With an owner, "all" clears only that address's keys and markers. Without one it clears
+    // the site read counters too; stored bytes and the site uploads key always stay explicit.
+    const reset = counter === 'all' ? (owner ? ['owner'] : ['reads', 'bytes', 'owner']) : [counter];
     for (const what of reset) {
       for (const key of keysFor(what)) {
         if (key) await redis.eval("redis.call('SET', KEYS[1], '0')\nreturn 'ok'", [key], []);
