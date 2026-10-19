@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>Q4 launch plan</title>
 <!--
   planny plan template.
@@ -16,6 +17,8 @@
 -->
 <style>
   :root {
+    color-scheme: dark;
+    --line-strong: #3f3f3f;
     --paper: #000000;
     --panel: #0a0a0a;
     --ink: #f5f5f5;
@@ -205,7 +208,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-  .bar.alt { background: var(--ink); }
+  .bar.alt { background: var(--line-strong); }
   .bar.soft { background: var(--accent-soft); color: var(--accent); border: 1px solid #2b4a7a; }
   .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
   .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; background: var(--accent); vertical-align: middle; }
@@ -402,7 +405,6 @@
 
   <footer class="footer">
     <span>This plan is public to anyone with the link. Do not put secrets in it.</span>
-    <span>Made with planny</span>
   </footer>
 </div>
 </body>

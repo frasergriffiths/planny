@@ -11,6 +11,8 @@ Put this once in the plan's `<style>` block. Adjust the accent, keep the contras
 ```html
 <style>
   :root {
+    color-scheme: dark;
+    --line-strong: #3f3f3f;
     --paper: #000000;
     --panel: #0a0a0a;
     --ink: #f5f5f5;
@@ -179,7 +181,7 @@ No JavaScript. Replace the values and labels.
   <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
     <div style="font-weight:650;">View + cache</div>
     <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:28px;">
-      <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:6px;background:var(--ink);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
+      <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:6px;background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
     </div>
   </div>
 </div>
