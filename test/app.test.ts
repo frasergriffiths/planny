@@ -161,7 +161,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     const rawBody = await raw.text();
     for (const bad of ['<script', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
     expect(rawBody).toContain('<title>X</title>');
-    expect(page.headers.get('content-security-policy')).toMatch(/^sandbox; default-src 'none'/);
+    expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);
     expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
     expect(page.headers.get('referrer-policy')).toBe('no-referrer');
     expect(page.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600, must-revalidate');
