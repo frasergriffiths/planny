@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && bun test --concurrency 1",
+    "test": "tsc --noEmit && bun test --concurrency 1 && bun run scripts/generate-skill-errors.ts --check",
     "dev": "bun run local/server.ts",
     "start": "bun run local/server.ts",
     "parity": "bun run scripts/parity.ts",

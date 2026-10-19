@@ -90,3 +90,24 @@ if plan_reads > tonumber(ARGV[8]) and redis.call('SET', KEYS[6], plan_reads, 'NX
 end
 return '{' .. table.concat(parts, ',') .. '}'
 `;
+
+
+// Upload gate: spacing, per-address daily and monthly caps. Read-only: no key moves here.
+export const UPLOAD_GATE = `
+local spacing = tonumber(redis.call('GET', KEYS[1]) or '0')
+if spacing > 0 and spacing + tonumber(ARGV[1]) > tonumber(ARGV[2]) then return 'address_upload_rate_limited' end
+if tonumber(redis.call('GET', KEYS[2]) or '0') >= tonumber(ARGV[3]) then return 'address_upload_daily_limit' end
+if tonumber(redis.call('GET', KEYS[3]) or '0') >= tonumber(ARGV[4]) then return 'address_upload_monthly_limit' end
+return 'ok'
+`;
+
+// Upload record: runs only after a successful publish. TTLs are set when a key is created.
+export const UPLOAD_RECORD = `
+redis.call('SET', KEYS[1], ARGV[1])
+redis.call('EXPIRE', KEYS[1], ARGV[2])
+local day = redis.call('INCR', KEYS[2])
+if day == 1 then redis.call('EXPIRE', KEYS[2], ARGV[3]) end
+local month = redis.call('INCR', KEYS[3])
+if month == 1 then redis.call('EXPIRE', KEYS[3], ARGV[4]) end
+return 'ok'
+`;

@@ -35,6 +35,9 @@ export interface AppConfig {
   siteBytes: number;
   ownerBytes: number;
   ownerMonthlyReadBytes: number;
+  uploadSpacingSeconds: number;
+  uploadsPerDay: number;
+  uploadsPerMonth: number;
   monthly: MonthlyLimits;
   rateLimits: {
     uploads: RateLimit;
@@ -68,6 +71,9 @@ export function loadConfig(env: Env = process.env): AppConfig {
     siteBytes: setting(env.PLANNY_SITE_BYTES, 100 * 1024 * MiB),
     ownerBytes: setting(env.PLANNY_OWNER_BYTES, 1024 * MiB),
     ownerMonthlyReadBytes: setting(env.PLANNY_OWNER_MONTHLY_READ_BYTES, 10 * 1024 * MiB),
+    uploadSpacingSeconds: setting(env.PLANNY_UPLOAD_SPACING_SECONDS, 120),
+    uploadsPerDay: setting(env.PLANNY_UPLOADS_PER_DAY, 50),
+    uploadsPerMonth: setting(env.PLANNY_UPLOADS_PER_MONTH, 500),
     monthly: {
       uploads: setting(env.PLANNY_MONTHLY_UPLOADS, 5000),
       reads: setting(env.PLANNY_MONTHLY_READS, 1_500_000),

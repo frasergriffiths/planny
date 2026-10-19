@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CLAIM, FINISH, PUBLISH, RATE, RESERVE, VIEW } from './lua.js';
+import { CLAIM, FINISH, PUBLISH, RATE, RESERVE, UPLOAD_GATE, UPLOAD_RECORD, VIEW } from './lua.js';
 
 export interface RedisLike {
   eval(script: string, keys: string[], argv: string[]): Promise<unknown>;
@@ -63,6 +63,27 @@ const viewResultSchema = z.object({
 });
 
 const outcomeSchema = z.enum(['ok', 'exists', 'site_bytes', 'owner_bytes', 'monthly_uploads']);
+
+
+function dayOf(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function nextDayStart(ms: number): number {
+  const date = new Date(ms);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+}
+
+function nextMonthStart(ms: number): number {
+  const date = new Date(ms);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1);
+}
+
+export interface UploadGateResult {
+  readonly ok: boolean;
+  readonly code?: string;
+  readonly retryAfter?: number;
+}
 
 const EXPIRING = 'planny:expiring';
 const CLAIMS = 'planny:claims';
@@ -181,6 +202,46 @@ export function createRecords(redis: RedisLike) {
     return String(await redis.eval(FINISH, [planKey(id), SITE_BYTES, ownerBytesKey(input.owner), CLAIMS], [id, input.claimId, String(input.now)]));
   }
 
+  async function uploadGate(owner: string, now: number, limits: { spacingSeconds: number; perDay: number; perMonth: number }): Promise<UploadGateResult> {
+    const keys = [
+      `planny:upload:spacing:${owner}`,
+      `planny:upload:day:${owner}:${dayOf(now)}`,
+      `planny:upload:month:${owner}:${monthOf(now)}`,
+    ];
+    const raw = String(await redis.eval(UPLOAD_GATE, keys, [
+      String(limits.spacingSeconds * 1000),
+      String(now),
+      String(limits.perDay),
+      String(limits.perMonth),
+    ]));
+    if (raw === 'ok') return { ok: true };
+    if (raw === 'address_upload_rate_limited') {
+      const spacing = Number(await redis.eval("return redis.call('GET', KEYS[1]) or '0'", [keys[0] ?? ''], []));
+      return { ok: false, code: raw, retryAfter: Math.max(1, Math.ceil((spacing + limits.spacingSeconds * 1000 - now) / 1000)) };
+    }
+    if (raw === 'address_upload_daily_limit') {
+      return { ok: false, code: raw, retryAfter: Math.max(1, Math.ceil((nextDayStart(now) - now) / 1000)) };
+    }
+    return { ok: false, code: raw, retryAfter: Math.max(1, Math.ceil((nextMonthStart(now) - now) / 1000)) };
+  }
+
+  async function uploadRecord(owner: string, now: number, limits: { spacingSeconds: number; perDay: number; perMonth: number }): Promise<void> {
+    await redis.eval(
+      UPLOAD_RECORD,
+      [
+        `planny:upload:spacing:${owner}`,
+        `planny:upload:day:${owner}:${dayOf(now)}`,
+        `planny:upload:month:${owner}:${monthOf(now)}`,
+      ],
+      [
+        String(now),
+        String(limits.spacingSeconds),
+        String(Math.max(1, Math.ceil((nextDayStart(now) - now) / 1000))),
+        String(Math.max(1, Math.ceil((nextMonthStart(now) - now) / 1000))),
+      ],
+    );
+  }
+
   async function rate(scope: string, owner: string, now: number, limit: { max: number; windowSeconds: number }) {
     const windowMs = limit.windowSeconds * 1000;
     const bucket = Math.floor(now / windowMs);
@@ -249,11 +310,19 @@ export function createRecords(redis: RedisLike) {
     owner?: string,
   ): Promise<MonthReset> {
     const month = monthOf(now);
+    const ownerKeys = owner
+      ? [
+        `planny:upload:spacing:${owner}`,
+        `planny:upload:day:${owner}:${dayOf(now)}`,
+        `planny:upload:month:${owner}:${monthOf(now)}`,
+        ownerMonthlyKey(month, owner),
+      ]
+      : [];
     const keysFor = (what: string): string[] => {
       if (what === 'reads') return [monthKey(month, 'reads')];
       if (what === 'bytes') return [monthKey(month, 'bytes'), `planny:alert:warn:${month}`];
       if (what === 'uploads') return [monthKey(month, 'uploads')];
-      if (what === 'owner' && owner) return [ownerMonthlyKey(month, owner)];
+      if (what === 'owner') return ownerKeys;
       return [];
     };
     const readNumber = async (key: string): Promise<number> => Number(await redis.eval("return redis.call('GET', KEYS[1]) or '0'", [key], []));
@@ -264,7 +333,9 @@ export function createRecords(redis: RedisLike) {
       uploads: await readNumber(keysFor('uploads')[0] ?? ''),
       ownerBytes: owner ? await readNumber(ownerMonthlyKey(month, owner)) : 0,
     };
-    const reset = counter === 'all' ? [...counterKeys, 'owner'] : [counter];
+    // "all" clears the site read counters and the address keys, but not the site uploads
+    // counter or stored bytes: those are site-wide and must be reset explicitly.
+    const reset = counter === 'all' ? ['reads', 'bytes', 'owner'] : [counter];
     for (const what of reset) {
       for (const key of keysFor(what)) {
         if (key) await redis.eval("redis.call('SET', KEYS[1], '0')\nreturn 'ok'", [key], []);
@@ -280,6 +351,8 @@ export function createRecords(redis: RedisLike) {
     claim,
     finish,
     rate,
+    uploadGate,
+    uploadRecord,
     view,
     resetMonth,
     expiredIds: (now: number, limit: number) => redis.zrangebyscore(EXPIRING, now, limit),

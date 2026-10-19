@@ -1,8 +1,10 @@
 // Generate the skill's error reference from the server's code registry.
 // Run: bun run scripts/generate-skill-errors.ts
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { ERROR_CODES, type ErrorRetry } from '../src/error-codes.js';
+
+const checkOnly = process.argv.includes('--check');
 
 const out = join(import.meta.dir, '..', 'skills', 'planny', 'reference', 'errors.md');
 
@@ -52,6 +54,20 @@ ${rows.map((row) => `| ${row} |`).join('\n')}
 - A plan link with a query string is a 404 and does not count as a read.
 `;
 
-mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, body, 'utf8');
-console.log(`wrote ${out} (${ERROR_CODES.length} codes)`);
+let existing = '';
+try {
+  existing = readFileSync(out, 'utf8');
+} catch {
+  existing = '';
+}
+if (checkOnly) {
+  if (existing !== body) {
+    console.error('skills/planny/reference/errors.md is out of date. Run: bun run scripts/generate-skill-errors.ts');
+    process.exit(1);
+  }
+  console.log('errors.md matches the registry.');
+} else {
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, body, 'utf8');
+  console.log(`wrote ${out} (${ERROR_CODES.length} codes)`);
+}

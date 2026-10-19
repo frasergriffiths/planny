@@ -29,7 +29,7 @@ function setup(env: Record<string, string> = {}, overrides: Partial<AppConfig> =
   const logs: unknown[][] = [];
   const alerts: Array<{ message: string; fields: Record<string, string | number> }> = [];
   const store = createLocalStore({ dataDir, now: () => clock.t });
-  const config: AppConfig = { ...loadConfig(env), ...overrides };
+  const config: AppConfig = { ...loadConfig(env), uploadSpacingSeconds: 0, ...overrides };
   const log: Logger = {
     error: (...args) => logs.push(args),
     alert: (message, fields) => alerts.push({ message, fields }),
@@ -235,12 +235,13 @@ test('expiry returns the bytes, and a failed blob delete waits for the sweep', a
 test('the upload rate limit, the switch and the view rate limit hold', async () => {
   const t = setup();
   try {
-    t.config.rateLimits.uploads.max = 1;
+    t.config.uploadSpacingSeconds = 120;
     await uploaded(t);
     const limited = await upload(t);
     expect(limited.status).toBe(429);
-    expect(((await limited.json()) as { error: { code: string } }).error.code).toBe('rate_limited');
-    t.config.rateLimits.uploads.max = 20;
+    expect(((await limited.json()) as { error: { code: string } }).error.code).toBe('address_upload_rate_limited');
+    expect(limited.headers.get('retry-after')).toBeTruthy();
+    t.config.uploadSpacingSeconds = 0;
 
     await t.store.control.setUploadsEnabled(false);
     const paused = await upload(t);

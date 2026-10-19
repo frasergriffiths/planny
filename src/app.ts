@@ -180,8 +180,8 @@ export function createApp(deps: AppDeps): App {
     if (outcome === 'monthly_uploads') {
       return new ApiError(
         503,
-        'uploads_monthly_limit',
-        `planny has used its uploads for this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
+        'site_upload_monthly_limit',
+        `planny has used its 5,000 uploads for this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
       );
     }
     log.error('planny: unexpected reservation result', outcome);
@@ -235,10 +235,21 @@ export function createApp(deps: AppDeps): App {
     }
     const at = now();
     const owner = ownerKey(secret, address);
-    const limit = await records.rate('uploads', owner, at, config.rateLimits.uploads);
-    if (!limit.allowed) {
-      throw new ApiError(429, 'rate_limited', `Too many uploads from this address. Wait ${limit.retryAfter} seconds.`, {
-        'retry-after': String(limit.retryAfter),
+    const gate = await records.uploadGate(owner, at, {
+      spacingSeconds: config.uploadSpacingSeconds,
+      perDay: config.uploadsPerDay,
+      perMonth: config.uploadsPerMonth,
+    });
+    if (!gate.ok) {
+      const code = gate.code ?? 'address_upload_rate_limited';
+      const seconds = gate.retryAfter ?? 60;
+      const messages: Record<string, string> = {
+        address_upload_rate_limited: `One upload at a time from this address. Wait ${seconds} seconds before the next.`,
+        address_upload_daily_limit: `This address has uploaded its 50 plans for today. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
+        address_upload_monthly_limit: `This address has uploaded its 500 plans this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
+      };
+      throw new ApiError(429, code, messages[code] ?? `Try again in ${seconds} seconds.`, {
+        'retry-after': String(seconds),
       });
     }
     if (!isHtmlType(request.headers.get('content-type'))) throw badType();
@@ -310,6 +321,11 @@ export function createApp(deps: AppDeps): App {
     if ((await records.publish(id, claimId, expiresAt)) !== 'ok') {
       throw new ApiError(500, 'upload_interrupted', 'The upload was cancelled before it went live. Upload it again.');
     }
+    await records.uploadRecord(owner, at, {
+      spacingSeconds: config.uploadSpacingSeconds,
+      perDay: config.uploadsPerDay,
+      perMonth: config.uploadsPerMonth,
+    });
     background(sweep());
     return json(201, {
       id,

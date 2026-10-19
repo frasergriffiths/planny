@@ -1,5 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { createVercelApp } from '../src/vercel.js';
+import { loadConfig } from '../src/config.js';
+import { home } from '../src/pages.js';
 
 // Vercel's Bun runtime runs this file as the function behind the rewrite in vercel.json.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
@@ -9,6 +11,17 @@ let failure: string | null = null;
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === '/' && !app) {
+      const body = home({ build: 'vercel', origin: 'https://planny-pink.vercel.app', config: loadConfig() });
+      return new Response(body, {
+        status: 200,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'public, max-age=0, s-maxage=3600, must-revalidate',
+          'x-planny-build': 'vercel',
+        },
+      });
+    }
     if (url.pathname === '/health') {
       const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : 'unknown';
       return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime })}\n`, {

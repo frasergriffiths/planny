@@ -59,7 +59,7 @@ function setup(env: Record<string, string | undefined> = {}) {
   const control = { uploadsEnabled: true, fail: false };
   const blob = fakeBlob();
   const app = createVercelApp({
-    env: { PLANNY_ADDRESS_KEY: 'test-key', ...env },
+    env: { PLANNY_ADDRESS_KEY: 'test-key', PLANNY_UPLOAD_SPACING_SECONDS: '0', ...env },
     client: fakeUpstash(dir),
     blob,
     now: () => clock.t,

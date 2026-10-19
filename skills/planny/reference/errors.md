@@ -40,6 +40,10 @@ Generated from `src/error-codes.ts` by `scripts/generate-skill-errors.ts`. Do no
 | 503 | `paused_reads` | view | The site monthly read count is used up. | Retry-After header and reset date | Page | The page names reads and the reset date. Cached views may still serve until their TTL. |
 | 503 | `paused_bytes` | view | The site monthly read-byte count is used up. | Retry-After header and reset date | Page | The page names plan data read and the reset date. |
 | 503 | `paused_owner_bytes` | view | This address has used its monthly read share. | Retry-After header and reset date | Page | The page names the address share and the reset date. |
+| 429 | `address_upload_rate_limited` | upload | This address uploaded a plan less than 2 minutes ago. | Retry-After header | JSON | One upload at a time from each address; the header gives the exact seconds to the next slot. |
+| 429 | `address_upload_daily_limit` | upload | This address has uploaded 50 plans today. | Retry-After header and reset date | JSON | Resets at midnight UTC. |
+| 429 | `address_upload_monthly_limit` | upload | This address has uploaded 500 plans this month. | Retry-After header and reset date | JSON |  |
+| 503 | `site_upload_monthly_limit` | upload | planny has used its 5,000 uploads for the month. | Retry-After header and reset date | JSON | Site-wide guard; reads keep working. |
 
 ## Reading the table
 
