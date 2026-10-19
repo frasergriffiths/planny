@@ -35,7 +35,7 @@ export default {
       };
       const commit = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
       const deploymentEnv = process.env.VERCEL_ENV ?? null;
-      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, commit, env: deploymentEnv, flags: env })}\n`, {
+      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, commit, env: deploymentEnv, flags: env, error: failure })}\n`, {
         status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });
