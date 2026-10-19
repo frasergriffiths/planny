@@ -106,6 +106,7 @@ export function createApp(deps: AppDeps): App {
         'referrer-policy': 'no-referrer',
         'x-content-type-options': 'nosniff',
         'cache-control': 'no-store',
+        ...(status === 410 ? { 'x-robots-tag': 'noindex' } : {}),
         'x-planny-build': build,
         ...headers,
       },
