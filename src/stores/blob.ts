@@ -50,6 +50,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
           addRandomSuffix: false,
           allowOverwrite: false,
           contentType: 'text/plain',
+          cacheControlMaxAge: 60,
         });
         return;
       } catch {
@@ -73,7 +74,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
     try {
       let existing: Awaited<ReturnType<typeof get>> = null;
       try {
-        existing = await get(store(STATE), { access, token });
+        existing = await get(store(STATE), { access, token, useCache: false });
       } catch (error) {
         if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
       }
@@ -91,8 +92,12 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
         addRandomSuffix: false,
         allowOverwrite: true,
         contentType: 'application/json',
+        cacheControlMaxAge: 60,
       });
       return result;
+    } catch (error) {
+      if (error instanceof StoreUnavailableError) throw error;
+      throw new StoreUnavailableError(error instanceof Error ? error.message : undefined);
     } finally {
       await del(store(LOCK), { token }).catch(() => {});
     }
@@ -121,6 +126,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
         addRandomSuffix: false,
         allowOverwrite: false,
         contentType: 'text/html; charset=utf-8',
+        cacheControlMaxAge: 60,
       });
     },
     async get(id: string): Promise<Uint8Array | null> {
@@ -140,7 +146,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   const control = {
     async uploadsEnabled(): Promise<boolean> {
       try {
-        const result = await get(store('config/kill.json'), { access, token });
+        const result = await get(store('config/kill.json'), { access, token, useCache: false });
         if (!result || result.statusCode !== 200) return true;
         const value = JSON.parse(await new Response(result.stream).text()) as { uploadsEnabled?: unknown };
         return value.uploadsEnabled === true;
@@ -156,6 +162,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
         addRandomSuffix: false,
         allowOverwrite: true,
         contentType: 'application/json',
+        cacheControlMaxAge: 60,
       });
     },
   };
