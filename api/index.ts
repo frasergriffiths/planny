@@ -1,7 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { createVercelApp } from '../src/vercel.js';
 import { loadConfig } from '../src/config.js';
-import { home, unknownPath } from '../src/pages.js';
+import { home, notFound, unknownPath } from '../src/pages.js';
 
 // Vercel's Bun runtime runs this file as the function behind the rewrite in vercel.json.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
@@ -23,7 +23,7 @@ export default {
       });
     }
     if (url.pathname === '/health') {
-      const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : 'unknown';
+      const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : `node ${process.version}`;
       return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime })}\n`, {
         status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
@@ -38,30 +38,35 @@ export default {
       }
     }
     if (!app) {
-      const planPath = /^\/p\/[^/]+$/.test(url.pathname);
-      const api = url.pathname === '/plans' || url.pathname.startsWith('/admin/')
-        || (planPath && request.method !== 'GET' && request.method !== 'HEAD');
-      // A plan view needs the store; any other path is just a 404 and must not claim misconfiguration.
-      if (!api && !planPath) {
-        return new Response(unknownPath({ build: 'vercel' }), {
-          status: 404,
-          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' },
-        });
+      const method = request.method.toUpperCase();
+      const pageHeaders = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
+      const jsonHeaders = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
+      const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      if (url.pathname === '/plans') {
+        if (method !== 'POST') {
+          return new Response(`${JSON.stringify({ error: { code: 'method_not_allowed', message: 'Upload a plan with POST /plans.' } })}\n`, {
+            status: 405, headers: { ...jsonHeaders, allow: 'POST' },
+          });
+        }
+        return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });
       }
-      return api
-        ? new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, {
-          status: 503,
-          headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
-        })
-        : new Response('<!doctype html><html><head><meta charset="utf-8"><title>Not configured | planny</title></head>'
-          + '<body style="margin:0;background:#000;color:#f5f5f5;font:16px/1.6 ui-sans-serif,system-ui;padding:10vh 8vw">'
-          + '<p style="font:600 12px/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#4d9fff">Not configured</p>'
-          + '<h1 style="font-size:2rem;letter-spacing:-.03em">planny is not configured yet.</h1>'
-          + '<p style="color:#a1a1a1;max-width:38rem">The deployment is missing its storage settings. Reads and uploads start once they are set.</p>'
-          + '</body></html>', {
-          status: 503,
-          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
-        });
+      if (url.pathname.startsWith('/p/')) {
+        const id = url.pathname.slice(3).replace(/\/$/, '');
+        if (method !== 'GET' && method !== 'HEAD') {
+          if (method === 'DELETE') {
+            return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });
+          }
+          return new Response(`${JSON.stringify({ error: { code: 'method_not_allowed', message: 'Read a plan with GET, or delete it with DELETE.' } })}\n`, {
+            status: 405, headers: { ...jsonHeaders, allow: 'GET, HEAD' },
+          });
+        }
+        if (!uuid.test(id.toLowerCase())) {
+          return new Response(notFound({ build: 'vercel' }), { status: 404, headers: pageHeaders });
+        }
+        return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });
+      }
+      return new Response(unknownPath({ build: 'vercel' }), { status: 404, headers: pageHeaders });
+
     }
     const forwarded = request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim();
     return app.fetch(request, { address: forwarded || 'unknown' });

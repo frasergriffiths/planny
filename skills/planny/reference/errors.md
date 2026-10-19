@@ -44,6 +44,11 @@ Generated from `src/error-codes.ts` by `scripts/generate-skill-errors.ts`. Do no
 | 429 | `address_upload_daily_limit` | upload | This address has uploaded 50 plans today. | Retry-After header and reset date | JSON | Resets at midnight UTC. |
 | 429 | `address_upload_monthly_limit` | upload | This address has uploaded 500 plans this month. | Retry-After header and reset date | JSON |  |
 | 503 | `site_upload_monthly_limit` | upload | planny has used its 5,000 uploads for the month. | Retry-After header and reset date | JSON | Site-wide guard; reads keep working. |
+| 404 | `route_not_found` | view | The path is not a plan, an upload or an admin route. | None | Page |  |
+| 404 | `plan_not_found` | view | The plan id is missing, malformed, unknown, or the path has extra segments. | None | Page |  |
+| 410 | `plan_expired` | view | The plan reached its expiry time. | Reset date in the message | Page | Shows the plan name and the expiry date. |
+| 410 | `plan_deleted` | view | The author deleted the plan. | None | Page | Never shows the plan name. |
+| 410 | `plan_removed` | view | planny took the plan down. | None | Page | Never shows the plan name. |
 
 ## Reading the table
 

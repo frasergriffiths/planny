@@ -245,7 +245,7 @@ export function createApp(deps: AppDeps): App {
       const seconds = gate.retryAfter ?? 60;
       const messages: Record<string, string> = {
         address_upload_rate_limited: `One upload at a time from this address. Wait ${seconds} seconds before the next.`,
-        address_upload_daily_limit: `This address has uploaded its 50 plans for today. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
+        address_upload_daily_limit: `This address has uploaded its 50 plans for today. Uploads resume at midnight UTC.`,
         address_upload_monthly_limit: `This address has uploaded its 500 plans this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
       };
       throw new ApiError(429, code, messages[code] ?? `Try again in ${seconds} seconds.`, {

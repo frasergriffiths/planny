@@ -107,13 +107,13 @@ export function notFound({ build }: { build: Build }): string {
   });
 }
 
-export function expired({ build, expiresAt }: { build: Build; expiresAt: number }): string {
+export function expired({ build, expiresAt, name }: { build: Build; expiresAt: number; name?: string }): string {
   return layout({
     build,
     title: 'This plan has expired',
     stamp: 'Expired',
     body: '<h1>This plan has expired.</h1><p>Ask the author to upload it again. A plan stays up for the time its author set.</p>',
-    rows: [['Status', 'Expired'], ['Ended', formatUtc(expiresAt)], ['Code', '410']],
+    rows: [...(name ? [['Plan', name] as const] : []), ['Status', 'Expired'], ['Ended', formatUtc(expiresAt)], ['Code', '410']],
   });
 }
 
