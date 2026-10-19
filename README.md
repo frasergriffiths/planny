@@ -90,7 +90,7 @@ Last run: 29 passed, 0 failed. Known divergence: the admin routes exist only in 
 
 `bun run test` runs `tsc --noEmit` and 45 tests: the sanitiser against hostile markup, deep nesting, the plan states, every budget and limit, the view step with the per-plan counter and the monthly warning, the admin audit, rate limit and resets, the error pages, headers, the upload switch, the SQLite store and its migration from the old JSON file, 20 processes sharing one budget, the raw-body boundary, a 180-case adversarial matrix, the local entry (pages, CSS, Host check), the Vercel entry with a fake env, the deploy guard's fail-closed plan check, the uncached health route, and the Vercel store against fakes.
 
-Not tested here: the real Blob, Upstash, Global Config and purge calls, and the preview cache behaviour. Those need the Vercel deployment.
+Not tested here: the real Blob calls and purge behaviour, and the preview cache behaviour. Those need the Vercel deployment.
 
 ## Deploying on Vercel
 
@@ -98,10 +98,8 @@ The repo is the Vercel project root. `vercel.json` sets `"bunVersion": "1.x"` an
 
 Needed in the project:
 
-1. A **private** Blob store in LHR1.
-2. Upstash Redis in `eu-west-2`, standard single region.
-3. A Global Config store with `uploadsEnabled` set to `true`.
-4. Environment variables: `PLANNY_ADDRESS_KEY`, `PLANNY_ADMIN_TOKEN`, `BLOB_READ_WRITE_TOKEN`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `GLOBAL_CONFIG`, `PLANNY_PUBLIC_ORIGIN`.
+1. A Blob store in LHR1. Public with the HMAC path, or private.
+2. Environment variables, in Production only: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS=public`, `PLANNY_BLOB_KEY_1`, `PLANNY_ADDRESS_KEY`, `PLANNY_ADMIN_TOKEN`, `PLANNY_PUBLIC_ORIGIN=https://planny-pink.vercel.app`. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. There is no Upstash or Global Config.
 
 Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro, and refuses when it can't read the plan at all. `GET /health` is uncached and returns the build and runtime, so a deploy check can read the raw `x-vercel-id` from its response headers.
 

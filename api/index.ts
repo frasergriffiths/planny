@@ -33,7 +33,9 @@ export default {
         origin: process.env.PLANNY_PUBLIC_ORIGIN ?? null,
         blobKey: Boolean(process.env.PLANNY_BLOB_KEY_1),
       };
-      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, env })}\n`, {
+      const commit = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
+      const deploymentEnv = process.env.VERCEL_ENV ?? null;
+      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, commit, env: deploymentEnv, flags: env })}\n`, {
         status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });

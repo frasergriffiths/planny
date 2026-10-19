@@ -418,4 +418,13 @@ export const ERROR_CODES: readonly ErrorCode[] = [
     response: 'page',
     notes: 'Never shows the plan name.',
   },
+  {
+    code: 'store_unavailable',
+    status: 503,
+    scope: 'view',
+    when: 'The plan store read or write failed.',
+    retry: 'retry-after',
+    response: 'both',
+    notes: 'Retry-After: 5, no-store. A transient store failure, not plan_not_found and not planny_not_configured.',
+  },
 ];

@@ -43,11 +43,16 @@ Generated from \`src/error-codes.ts\` by \`scripts/generate-skill-errors.ts\`. D
 |---|---|---|---|---|---|---|
 ${rows.map((row) => `| ${row} |`).join('\n')}
 
+## Configuration
+
+The Blob-only build reads six values in Production: \`BLOB_READ_WRITE_TOKEN\`, \`BLOB_ACCESS=public\`, \`PLANNY_BLOB_KEY_1\`, \`PLANNY_ADDRESS_KEY\`, \`PLANNY_ADMIN_TOKEN\` and \`PLANNY_PUBLIC_ORIGIN\`. \`BLOB_STORE_ID\` and \`BLOB_WEBHOOK_PUBLIC_KEY\` are connection metadata, not app config. There is no Upstash or Global Config. A missing value returns \`planny_not_configured\` on store routes; the server log names the variable and the page does not.
+
 ## Reading the table
 
 - Upload and delete calls return JSON. The body is \`{"error":{"code":"...","message":"..."}}\`.
 - Plan views return a page for the reader, not JSON. The page says what happened and what to do next.
 - \`planny_not_configured\` is a configuration failure, not a pause. It has no \`Retry-After\`, and the page does not name the missing variable. The server log does.
+- \`store_unavailable\` is a transient store read or write failure, not a missing plan. It is 503 with \`Retry-After: 5\` and \`no-store\`; retry.
 - The monthly read and upload guards use a reset date. The page or message names it. \`Retry-After\`, where present, carries seconds, not a date.
 - The stored guards, \`storage_full\` and \`storage_limit\`, have no reset date. Deleting or expiring plans frees the space.
 - The 4 MiB cap is 4,194,304 bytes on the raw body, inclusive. The sanitiser can add a wrapper, so a fragment right at the cap can still be rejected.
