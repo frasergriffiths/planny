@@ -46,9 +46,9 @@ body {
 }
 
 .shell {
-  max-width: 46rem;
+  max-width: none;
   margin: 0 auto;
-  padding: clamp(1rem, 3vw, 2rem);
+  padding: clamp(1.25rem, 4vw, 3.5rem) clamp(1.25rem, 5vw, 5rem);
 }
 
 .top {
@@ -150,7 +150,7 @@ h2 {
 }
 
 p {
-  max-width: 38rem;
+  max-width: 52rem;
   margin: 0 0 1rem;
   color: var(--ink);
 }
