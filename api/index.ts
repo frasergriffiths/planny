@@ -10,8 +10,9 @@ export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(`${JSON.stringify({ ok: app !== null, configured: app !== null, runtime: `bun ${Bun.version}` })}\n`, {
-        status: app ? 200 : 503,
+      const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : 'unknown';
+      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime })}\n`, {
+        status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });
     }

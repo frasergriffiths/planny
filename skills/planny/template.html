@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Q4 launch plan</title>
+<!--
+  planny plan template.
+
+  Replace the copy, keep the structure. This file is safe for planny:
+  no scripts, links, forms, frames or external files. Charts are inline
+  SVG or CSS. Fonts are the system stack. Images, if you add any, must be
+  data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
+
+  The plan is public to anyone with the link. Do not put secrets in it.
+-->
+<style>
+  :root {
+    --paper: #ffffff;
+    --panel: #f6f7f8;
+    --ink: #0a0a0a;
+    --muted: #5f6368;
+    --line: #e4e6e8;
+    --accent: #1d4ed8;
+    --accent-soft: #eef3ff;
+    --ok: #047857;
+    --warn: #b45309;
+    --danger: #b91c1c;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--paper);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    width: 100%;
+    max-width: none;
+    padding: clamp(20px, 4vw, 64px);
+  }
+  .rule { height: 6px; background: var(--ink); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: end;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px);
+    border-bottom: 1px solid var(--line);
+  }
+  h1 {
+    margin: 12px 0 18px;
+    max-width: 15ch;
+    font-size: clamp(40px, 7vw, 92px);
+    line-height: .95;
+    letter-spacing: -.045em;
+    font-weight: 750;
+  }
+  .lede {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(17px, 1.9vw, 23px);
+    line-height: 1.35;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 26px;
+    margin-top: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ok);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: start;
+    padding: clamp(24px, 4vw, 48px) 0;
+  }
+  .measure { max-width: 72ch; }
+  .box {
+    margin: 24px 0;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    background: var(--accent-soft);
+  }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 24px 0 0;
+  }
+  .kpi {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .kpi strong {
+    display: block;
+    margin: 6px 0 2px;
+    font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+  }
+  .kpi span:last-child { font-size: 12px; color: var(--muted); }
+  h2 {
+    margin: 40px 0 12px;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+  }
+  h3 { margin: 24px 0 8px; font-size: 18px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 20px; }
+  li { margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
+  th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th {
+    background: var(--panel);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  .gantt { margin: 16px 0 24px; font-size: 12px; }
+  .gantt-head, .gantt-row {
+    display: grid;
+    grid-template-columns: 180px repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .gantt-head div {
+    padding-bottom: 4px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .track {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 28px;
+  }
+  .bar {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 0 9px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .bar.alt { background: var(--ink); }
+  .bar.soft { background: var(--accent-soft); color: var(--accent); border: 1px solid #c7d7ff; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+  .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; background: var(--accent); vertical-align: middle; }
+  .swatch.alt { background: var(--ink); }
+  .swatch.soft { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .risk-high { color: var(--danger); font-weight: 700; }
+  .risk-med { color: var(--warn); font-weight: 700; }
+  .risk-low { color: var(--ok); font-weight: 700; }
+  .check { list-style: none; padding-left: 0; }
+  .check li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .check li::before { content: "□"; color: var(--muted); font-size: 17px; line-height: 1.1; }
+  .donut { display: flex; align-items: center; gap: 16px; }
+  .donut svg { flex: 0 0 auto; }
+  .donut p { margin: 0; font-size: 13px; color: var(--muted); }
+  .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  @media (max-width: 900px) {
+    .hero, .layout { grid-template-columns: 1fr; }
+    .status { justify-self: start; }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gantt-head, .gantt-row { grid-template-columns: 112px repeat(8, minmax(18px, 1fr)); }
+    .bar { padding: 0 5px; font-size: 10px; }
+    th, td { padding: 10px 8px; }
+  }
+  @media print {
+    .page { padding: 0; }
+    .box, tr, .kpi { break-inside: avoid; }
+    .gantt { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="rule"></div>
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Plan / Q4 2026 / Product</div>
+      <h1>Ship the agent plan workspace.</h1>
+      <p class="lede">An eight-week plan to turn one HTML file into a durable, shareable plan link, without adding an account system or a dashboard nobody asked for.</p>
+      <div class="meta">
+        <span>Owner: Fraser</span>
+        <span>Updated: 19 Oct 2026</span>
+        <span>Horizon: 8 weeks</span>
+        <span>Status: Active</span>
+      </div>
+    </div>
+    <div class="status">On track</div>
+  </header>
+
+  <section class="box">
+    <div class="eyebrow">TL;DR</div>
+    <ul>
+      <li>Ship the private Blob store and the view route first. An upload path without a reliable read is a demo, not a product.</li>
+      <li>Keep the viewer script-free and link-free. The sanitiser is the product boundary, not a cleanup step.</li>
+      <li>Measure time to first plan and repeat views. There are no accounts, so signups are not a metric.</li>
+    </ul>
+  </section>
+
+  <div class="layout">
+    <main>
+      <section>
+        <h2>What we are building</h2>
+        <p class="measure">An agent writes one HTML plan, publishes it with a name and a duration, and gets a link. The link is the only key. The plan renders in a sandbox with no scripts, no links and no external requests, so it can be visual without becoming a page that can phish.</p>
+        <div class="kpis">
+          <div class="kpi"><span class="eyebrow">Week 1</span><strong>1</strong><span>private store live</span></div>
+          <div class="kpi"><span class="eyebrow">Target</span><strong>&lt; 2s</strong><span>p95 first view</span></div>
+          <div class="kpi"><span class="eyebrow">Cap</span><strong>4 MiB</strong><span>per plan, images included</span></div>
+          <div class="kpi"><span class="eyebrow">Guard</span><strong>200 GB</strong><span>origin reads a month</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Timeline</h2>
+        <div class="legend">
+          <span><span class="swatch"></span>Build</span>
+          <span><span class="swatch alt"></span>Verify</span>
+          <span><span class="swatch soft"></span>Buffer</span>
+        </div>
+        <div class="gantt" role="img" aria-label="Eight week plan with five workstreams">
+          <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
+          <div class="gantt-row"><div class="label">Store + upload</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
+          <div class="gantt-row"><div class="label">View + cache</div><div class="track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
+          <div class="gantt-row"><div class="label">Safety + limits</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
+          <div class="gantt-row"><div class="label">Preview + deploy</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
+          <div class="gantt-row"><div class="label">Skill + docs</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Milestones</h2>
+        <table>
+          <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+          <tbody>
+            <tr><td>24 Oct</td><td>Private Blob store and upload path live</td><td>Steven</td><td>In progress</td></tr>
+            <tr><td>31 Oct</td><td>View route with cache, purge and 410 path</td><td>Steven</td><td>Next</td></tr>
+            <tr><td>07 Nov</td><td>Pause matrix and address reset proven on preview</td><td>Lens</td><td>Planned</td></tr>
+            <tr><td>14 Nov</td><td>Production deploy in LHR1 and live pass</td><td>Scout</td><td>Planned</td></tr>
+            <tr><td>21 Nov</td><td>Skill install and first external plan</td><td>Sage</td><td>Planned</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Decisions</h2>
+        <table>
+          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>Viewer runtime</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>Removes the largest exfiltration path and most of the abuse surface.</td></tr>
+            <tr><td>Link policy</td><td>Dead links / clickable links</td><td>Dead links</td><td>A clickable link on our origin is a phishing route. Plans keep their text.</td></tr>
+            <tr><td>Storage</td><td>Public Blob / private Blob</td><td>Private Blob</td><td>The view route must check expiry, delete and takedown before every read.</td></tr>
+            <tr><td>Cache TTL</td><td>5 minutes / 1 hour</td><td>1 hour</td><td>Plans do not change. A purge handles the rare takedown, and the TTL is the fallback.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Risks</h2>
+        <table>
+          <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+          <tbody>
+            <tr><td>A preview deployed on Hobby lands in the wrong region</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Check the function segment of the raw x-vercel-id on /health before promoting.</td><td>Scout</td></tr>
+            <tr><td>A popular plan exhausts the read budget</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>One-hour TTL, per-plan alert at 1,000 origin reads an hour, and the 200 GB guard.</td><td>Steven</td></tr>
+            <tr><td>A purge fails and a takedown stays cached</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Retry the purge on 429, report the purge status, and keep the TTL as the fallback.</td><td>Steven</td></tr>
+            <tr><td>A plan uses a browser bug to escape the sandbox</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Allowlist sanitiser, strict CSP, no scripts, no links, no forms, and a hostile-payload fixture.</td><td>Lens</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Next steps</h2>
+        <ul class="check">
+          <li><span><strong>Replace the public store.</strong> Delete it, create the private store in LHR1, and rotate the burned token.</span></li>
+          <li><span><strong>Set the environment.</strong> Address key, admin token, Blob token, Upstash URL and token, Global Config.</span></li>
+          <li><span><strong>Prove the pause matrix.</strong> One read, then a 503 with the guard name, reset date and no-store.</span></li>
+          <li><span><strong>Prove the region.</strong> /health returns 200 ok, and the raw x-vercel-id has an lhr1 function segment.</span></li>
+          <li><span><strong>Install the skill.</strong> Publish, view, delete and 410 from the command line, then from an agent session.</span></li>
+        </ul>
+      </section>
+    </main>
+
+    <aside>
+      <section class="box">
+        <div class="eyebrow">Confidence</div>
+        <div class="donut">
+          <svg width="92" height="92" viewBox="0 0 92 92" role="img" aria-label="Confidence 78 percent">
+            <circle cx="46" cy="46" r="38" fill="none" stroke="#e4e6e8" stroke-width="10"></circle>
+            <circle cx="46" cy="46" r="38" fill="none" stroke="#1d4ed8" stroke-width="10" stroke-linecap="round" stroke-dasharray="186 239" transform="rotate(-90 46 46)"></circle>
+            <text x="46" y="51" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#0a0a0a">78%</text>
+          </svg>
+          <p>Two unknowns remain: the private store cutover and the preview region. Both have owners and dates.</p>
+        </div>
+      </section>
+
+      <section>
+        <h3>Open questions</h3>
+        <ul class="aside-list">
+          <li>Does the preview need its own Upstash database, or is the prefix enough?</li>
+          <li>Is 4 MiB enough for a plan with embedded screenshots?</li>
+          <li>Who reads the abuse inbox after launch?</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Definition of done</h3>
+        <ul class="aside-list">
+          <li>An upload returns a link and a delete key.</li>
+          <li>The link renders with no external requests.</li>
+          <li>Expired, deleted and taken-down links return 410.</li>
+          <li>A pause returns 503 with the guard and reset date.</li>
+          <li>The skill publishes, views and deletes from an agent session.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <span>This plan is public to anyone with the link. Do not put secrets in it.</span>
+    <span>Made with planny</span>
+  </footer>
+</div>
+</body>
+</html>
