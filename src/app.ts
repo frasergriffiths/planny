@@ -1,5 +1,6 @@
 import { Hono, type Context } from 'hono';
 import * as pages from './pages.js';
+import { PAGES } from './generated-pages.js';
 import { createRecords, type PlanRecord } from './records.js';
 import { SanitizeTooDeepError, sanitize } from './sanitize.js';
 import type { AppConfig } from './config.js';
@@ -22,8 +23,8 @@ const MiB = 1024 * 1024;
 const NEVER = Number.MAX_SAFE_INTEGER;
 const PLAN_CSP = "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
-const SITE_CSP = "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; base-uri 'none'; "
-  + "form-action 'none'; frame-ancestors 'none'";
+const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
+  + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 export interface Logger {
   error(...args: unknown[]): void;
@@ -75,6 +76,13 @@ export interface App extends Hono<AppEnv> {
   sweep(options?: { limit?: number }): Promise<Array<{ id: string; reason: string; outcome: string }>>;
   takedown(id: string): Promise<{ outcome: string; purged: boolean }>;
   resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all'): Promise<{ reads: number; bytes: number; uploads: number }>;
+}
+
+function injectPlanFooter(html: string): string {
+  const footer = '<div style="margin:2.5rem 0 0;padding:1rem 0;border-top:1px solid rgba(255,255,255,.14);'
+    + 'color:#a1a1a1;font:400 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace">Published by planny</div>';
+  if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, `${footer}</body>`);
+  return `${html}${footer}`;
 }
 
 export function createApp(deps: AppDeps): App {
@@ -350,14 +358,17 @@ export function createApp(deps: AppDeps): App {
   }
 
   function unavailable(record: PlanRecord): Response {
+    const gone = { 'x-robots-tag': 'noindex' };
     if (record.hidden || record.reason === 'takedown') {
-      return page(410, pages.takedown({ build, removedAt: record.removedAt }), { 'x-robots-tag': 'noindex' });
+      return page(410, build === 'vercel' ? PAGES.gone : pages.takedown({ build, removedAt: record.removedAt }), gone);
     }
-    if (record.reason === 'deleted') return page(410, pages.deleted({ build, removedAt: record.removedAt }), { 'x-robots-tag': 'noindex' });
+    if (record.reason === 'deleted') {
+      return page(410, build === 'vercel' ? PAGES.gone : pages.deleted({ build, removedAt: record.removedAt }), gone);
+    }
     if (record.reason === 'expired' || record.state === 'live') {
-      return page(410, pages.expired({ build, expiresAt: record.expiresAt }));
+      return page(410, build === 'vercel' ? PAGES.gone : pages.expired({ build, expiresAt: record.expiresAt, name: record.name }), gone);
     }
-    return page(404, pages.notFound({ build }));
+    return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
   }
 
   async function view(rawId: string, request: Request, address: string, withQuery: boolean, raw = false): Promise<Response> {
@@ -365,7 +376,7 @@ export function createApp(deps: AppDeps): App {
     const at = now();
     const limit = await records.rate('views', ownerKey(secret, address), at, config.rateLimits.views);
     if (!limit.allowed) {
-      return page(429, pages.rateLimited({ build, retryAfter: limit.retryAfter }), { 'retry-after': String(limit.retryAfter) });
+      return page(429, build === 'vercel' ? PAGES.gone : pages.rateLimited({ build, retryAfter: limit.retryAfter }), { 'retry-after': String(limit.retryAfter) });
     }
     if (withQuery || !isPlanId(id)) return page(404, pages.notFound({ build }));
     const record = await records.get(id);
@@ -403,16 +414,8 @@ export function createApp(deps: AppDeps): App {
         return page(500, pages.serverError({ build }));
       }
       const ttl = Math.max(1, Math.min(config.cacheTtlSeconds, Math.floor((record.expiresAt - at) / 1000)));
-      if (raw) {
-        return new Response(request.method === 'HEAD' ? null : new Uint8Array(html), { status: 200, headers: rawHeaders(id, ttl) });
-      }
-      const wrapper = pages.planWrapper({ build, id, name: record.name, expiresAt: record.expiresAt });
-      return page(200, wrapper, {
-        'cache-control': `public, max-age=0, s-maxage=${ttl}, must-revalidate`,
-        'vercel-cdn-cache-control': `s-maxage=${ttl}`,
-        'vercel-cache-tag': `plan-${id}`,
-        'x-robots-tag': 'noindex',
-      });
+      const withFooter = injectPlanFooter(Buffer.from(html).toString('utf8'));
+      return new Response(request.method === 'HEAD' ? null : withFooter, { status: 200, headers: rawHeaders(id, ttl) });
     }
     if (record.state === 'live' && !record.hidden) background(removePlan(id, 'expired', at));
     return unavailable(record);
@@ -537,12 +540,20 @@ export function createApp(deps: AppDeps): App {
 
   app.get('/', (c) => {
     const ttl = config.cacheTtlSeconds;
-    return page(200, pages.home({ build, origin, config }), {
+    return page(200, build === 'vercel' ? PAGES.home : pages.home({ build, origin, config }), {
       'cache-control': `public, max-age=0, s-maxage=${ttl}, must-revalidate`,
       'vercel-cdn-cache-control': `s-maxage=${ttl}`,
     });
   });
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
+
+  app.get('/sample', () => page(200, injectPlanFooter(
+    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+    + '<meta name="color-scheme" content="dark"><title>Sample plan | planny</title>'
+    + '<style>body{margin:0;background:#000;color:#f5f5f5;font:16px/1.6 ui-sans-serif,system-ui;padding:8vw}h1{font-size:2.4rem;letter-spacing:-.04em}'
+    + '.k{font:600 11px/1 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:#4d9fff}</style></head><body>'
+    + '<p class="k">Sample plan</p><h1>A plan at a link.</h1><p>This is what a published plan looks like: one page, one link, no account.</p>'
+    + '<p style="color:#a1a1a1">Replace this with a real plan from your agent.</p></body></html>')));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   app.get('/health', () => json(200, {
@@ -557,8 +568,8 @@ export function createApp(deps: AppDeps): App {
     throw new ApiError(405, 'method_not_allowed', 'Upload a plan with POST /plans.', { allow: 'POST' });
   });
 
-  app.get('/p/:id/raw', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== '', true));
-  app.on(['HEAD'], '/p/:id/raw', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== '', true));
+  app.get('/p/:id/raw', (c) => c.redirect(`/p/${c.req.param('id')}`, 301));
+  app.on(['HEAD'], '/p/:id/raw', (c) => c.body(null, 301, { location: `/p/${c.req.param('id')}` }));
   app.get('/p/:id', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== ''));
   app.on(['HEAD'], '/p/:id', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== ''));
   app.delete('/p/:id', (c) => remove(c.req.param('id'), c.req.raw, c.get('address')));

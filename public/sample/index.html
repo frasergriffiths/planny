@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>A plan that lives at a link | planny sample</title>
+<!--
+  planny sample plan.
+
+  This is the sample plan used by the home CTA. It uses the dark planny
+  template and is safe for planny:
+  no scripts, links, forms, frames or external files. Charts are inline
+  SVG or CSS. Fonts are the system stack. Images, if you add any, must be
+  data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
+
+  The plan is public to anyone with the link. Do not put secrets in it.
+-->
+<style>
+  :root {
+    color-scheme: dark;
+    --line-strong: #3f3f3f;
+    --paper: #000000;
+    --panel: #0a0a0a;
+    --ink: #f5f5f5;
+    --muted: #a1a1a1;
+    --line: #262626;
+    --accent: #3291FF;
+    --accent-soft: #0b1b33;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--paper);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    width: 100%;
+    max-width: none;
+    padding: clamp(20px, 4vw, 64px);
+  }
+  .rule { height: 6px; background: var(--ink); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: end;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px);
+    border-bottom: 1px solid var(--line);
+  }
+  h1 {
+    margin: 12px 0 18px;
+    max-width: 15ch;
+    font-size: clamp(40px, 7vw, 92px);
+    line-height: .95;
+    letter-spacing: -.045em;
+    font-weight: 750;
+  }
+  .lede {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(17px, 1.9vw, 23px);
+    line-height: 1.35;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 26px;
+    margin-top: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ok);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: start;
+    padding: clamp(24px, 4vw, 48px) 0;
+  }
+  .measure { max-width: 72ch; }
+  .box {
+    margin: 24px 0;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    background: var(--accent-soft);
+  }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 24px 0 0;
+  }
+  .kpi {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .kpi strong {
+    display: block;
+    margin: 6px 0 2px;
+    font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+  }
+  .kpi span:last-child { font-size: 12px; color: var(--muted); }
+  h2 {
+    margin: 40px 0 12px;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+  }
+  h3 { margin: 24px 0 8px; font-size: 18px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 20px; }
+  li { margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
+  th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th {
+    background: var(--panel);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  .gantt { margin: 16px 0 24px; font-size: 12px; }
+  .gantt-head, .gantt-row {
+    display: grid;
+    grid-template-columns: 180px repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .gantt-head div {
+    padding-bottom: 4px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .track {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 28px;
+  }
+  .bar {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 0 9px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .bar.alt { background: var(--line-strong); }
+  .bar.soft { background: var(--accent-soft); color: var(--accent); border: 1px solid #2b4a7a; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+  .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; background: var(--accent); vertical-align: middle; }
+  .swatch.alt { background: var(--ink); }
+  .swatch.soft { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .risk-high { color: var(--danger); font-weight: 700; }
+  .risk-med { color: var(--warn); font-weight: 700; }
+  .risk-low { color: var(--ok); font-weight: 700; }
+  .check { list-style: none; padding-left: 0; }
+  .check li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .check li::before { content: "□"; color: var(--muted); font-size: 17px; line-height: 1.1; }
+  .donut { display: flex; align-items: center; gap: 16px; }
+  .donut svg { flex: 0 0 auto; }
+  .donut p { margin: 0; font-size: 13px; color: var(--muted); }
+  .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  @media (max-width: 900px) {
+    .hero, .layout { grid-template-columns: 1fr; }
+    .status { justify-self: start; }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gantt-head, .gantt-row { grid-template-columns: 112px repeat(8, minmax(18px, 1fr)); }
+    .bar { padding: 0 5px; font-size: 10px; }
+    th, td { padding: 10px 8px; }
+  }
+  @media print {
+    .page { padding: 0; }
+    .box, tr, .kpi { break-inside: avoid; }
+    .gantt { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="rule"></div>
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Sample plan / planny</div>
+      <h1>A plan that lives at a link.</h1>
+      <p class="lede">This is a sample plan. It is one HTML file, published to a link that anyone can open. No account, no dashboard, no app to install.</p>
+      <div class="meta">
+        <span>Published by planny</span>
+        <span>Sample plan</span>
+        <span>One page</span>
+        <span>Status: Sample</span>
+      </div>
+    </div>
+    <div class="status">Sample</div>
+  </header>
+
+  <section class="box">
+    <div class="eyebrow">TL;DR</div>
+    <ul>
+      <li>One HTML file in, one link out. The link is the whole product.</li>
+      <li>The plan is public to anyone with the link, so share it on purpose.</li>
+      <li>This sample uses the dark planny template. Your plan can use the same layout or its own.</li>
+    </ul>
+  </section>
+
+  <div class="layout">
+    <main>
+      <section>
+        <h2>What this sample shows</h2>
+        <p class="measure">A plan can be one self-contained page: a hero, a timeline, milestones, decisions, risks and next steps. This sample uses the dark planny palette, inline SVG and CSS, and no external files. It is a real page you can open at a link, not a screenshot.</p>
+        <div class="kpis">
+          <div class="kpi"><span class="eyebrow">Format</span><strong>1</strong><span>HTML file</span></div>
+          <div class="kpi"><span class="eyebrow">Cap</span><strong>4 MiB</strong><span>per plan, images included</span></div>
+          <div class="kpi"><span class="eyebrow">Life</span><strong>1h–100y</strong><span>per plan</span></div>
+          <div class="kpi"><span class="eyebrow">Link</span><strong>1 key</strong><span>no account</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Timeline</h2>
+        <div class="legend">
+          <span><span class="swatch"></span>Build</span>
+          <span><span class="swatch alt"></span>Verify</span>
+          <span><span class="swatch soft"></span>Buffer</span>
+        </div>
+        <div class="gantt" role="img" aria-label="Sample plan with five steps">
+          <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
+          <div class="gantt-row"><div class="label">Write the page</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">One HTML file</div></div></div>
+          <div class="gantt-row"><div class="label">Publish the link</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 3;">Name, duration, 201</div></div></div>
+          <div class="gantt-row"><div class="label">Share the link</div><div class="track"><div class="bar" style="grid-column: 4 / span 2;">Anyone with the URL</div></div></div>
+          <div class="gantt-row"><div class="label">Keep it up</div><div class="track"><div class="bar alt" style="grid-column: 5 / span 3;">Stays up</div></div></div>
+          <div class="gantt-row"><div class="label">Delete it</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Author delete</div></div></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Milestones</h2>
+        <table>
+          <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+          <tbody>
+            <tr><td>Step 1</td><td>Write one HTML file</td><td>You</td><td>Start here</td></tr>
+            <tr><td>Step 2</td><td>Publish with a name and duration</td><td>planny</td><td>201</td></tr>
+            <tr><td>Step 3</td><td>Open the link</td><td>Reader</td><td>200</td></tr>
+            <tr><td>Step 4</td><td>Share it, or keep it private</td><td>You</td><td>Your call</td></tr>
+            <tr><td>Step 5</td><td>Delete it when done</td><td>Author</td><td>410</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Decisions</h2>
+        <table>
+          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>Format</td><td>One HTML file / a full site</td><td>One HTML file</td><td>The link is the product. There is no build step.</td></tr>
+            <tr><td>Scripts</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>No scripts means no way to send data out from the plan.</td></tr>
+            <tr><td>Links</td><td>Clickable / dead</td><td>Dead</td><td>A clickable link on planny's origin is a phishing route. Plans keep their text.</td></tr>
+            <tr><td>Theme</td><td>Light / dark</td><td>Dark</td><td>Plans default to the dark planny palette.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Risks</h2>
+        <table>
+          <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+          <tbody>
+            <tr><td>The link is public</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Share it only with the people who should see it.</td><td>You</td></tr>
+            <tr><td>A plan is static</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>Publish a new plan to update it. The old link stays as it was.</td><td>You</td></tr>
+            <tr><td>A plan can be deleted</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>The author can remove it. An expired or deleted link returns 410.</td><td>planny</td></tr>
+            <tr><td>A plan carries no scripts</td><td class="risk-low">Low</td><td class="risk-low">Low</td><td>Charts are inline SVG or CSS. Nothing runs.</td><td>planny</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Next steps</h2>
+        <ul class="check">
+          <li><span><strong>Write your plan.</strong> Start from the dark template. Keep it one HTML file.</span></li>
+          <li><span><strong>Publish it.</strong> Give it a name and a duration. Keep the link and the delete key.</span></li>
+          <li><span><strong>Share the link.</strong> Anyone with the link can read it. No account is needed.</span></li>
+          <li><span><strong>Delete it when done.</strong> The author delete returns 410 and removes the key file.</span></li>
+          <li><span><strong>Keep it under 4 MiB.</strong> Embedded images count toward the cap.</span></li>
+        </ul>
+      </section>
+    </main>
+
+    <aside>
+      <section class="box">
+        <div class="eyebrow">Confidence</div>
+        <div class="donut">
+          <svg width="92" height="92" viewBox="0 0 92 92" role="img" aria-label="Sample plan complete">
+            <circle cx="46" cy="46" r="38" fill="none" stroke="#262626" stroke-width="10"></circle>
+            <circle cx="46" cy="46" r="38" fill="none" stroke="#3291FF" stroke-width="10" stroke-linecap="round" stroke-dasharray="239 239" transform="rotate(-90 46 46)"></circle>
+            <text x="46" y="51" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f5f5f5">100%</text>
+          </svg>
+          <p>This sample is complete: one page, one link, one small footer.</p>
+        </div>
+      </section>
+
+      <section>
+        <h3>Open questions</h3>
+        <ul class="aside-list">
+          <li>What will you plan?</li>
+          <li>Who needs the link?</li>
+          <li>How long should it stay up?</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Definition of done</h3>
+        <ul class="aside-list">
+          <li>A link that opens the plan.</li>
+          <li>A small footer says Published by planny.</li>
+          <li>No scripts, links or external files.</li>
+          <li>The author can delete it.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <span>Published by planny</span>
+  </footer>
+</div>
+</body>
+</html>

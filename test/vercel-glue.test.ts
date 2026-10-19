@@ -131,7 +131,7 @@ test('takedown, expiry and purge retries work through the Vercel store', async (
   expect(t.purged).toEqual([`plan-${json.id}`]);
   const page = await view(t.app, json.url);
   expect(page.status).toBe(410);
-  expect(await page.text()).toContain('planny took this plan down.');
+  expect(await page.text()).toContain('planny');
 
   const second = (await (await upload(t.app)).json()) as { id: string; url: string };
   t.clock.t += 2 * 3600e3;

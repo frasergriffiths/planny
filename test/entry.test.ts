@@ -75,7 +75,7 @@ test('the Vercel entry runs the Vercel app, not the local one, with a fake env',
     const home = await fetch(server.base);
     expect(home.status).toBe(200);
     expect(home.headers.get('x-planny-build')).toBe('vercel');
-    expect(await home.text()).toContain('/plans?name=');
+    expect(await home.text()).toContain('Plans that live at a link');
   } finally {
     server.child.kill('SIGTERM');
   }

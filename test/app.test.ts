@@ -157,7 +157,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     expect(json.removed['link <a>']).toBe(1);
     const page = await view(t, json.url);
     expect(page.status).toBe(200);
-    const raw = await t.app.fetch(new Request(`${json.url}/raw`), { address: ADDRESS });
+    const raw = await t.app.fetch(new Request(json.url), { address: ADDRESS });
     const rawBody = await raw.text();
     for (const bad of ['<script', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
     expect(rawBody).toContain('<title>X</title>');
