@@ -415,8 +415,7 @@ export function createApp(deps: AppDeps): App {
         return page(500, pages.serverError({ build }));
       }
       const ttl = Math.max(1, Math.min(config.cacheTtlSeconds, Math.floor((record.expiresAt - at) / 1000)));
-      const withFooter = injectPlanFooter(Buffer.from(html).toString('utf8'));
-      return new Response(request.method === 'HEAD' ? null : withFooter, { status: 200, headers: rawHeaders(id, ttl) });
+      return new Response(request.method === 'HEAD' ? null : new Uint8Array(html), { status: 200, headers: rawHeaders(id, ttl) });
     }
     if (record.state === 'live' && !record.hidden) background(removePlan(id, 'expired', at));
     return unavailable(record);
@@ -548,7 +547,7 @@ export function createApp(deps: AppDeps): App {
   });
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
-  app.get('/sample', () => page(200, injectPlanFooter(
+  app.get('/sample', () => page(200, (
     '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
     + '<meta name="color-scheme" content="dark"><title>Sample plan | planny</title>'
     + '<style>body{margin:0;background:#000;color:#f5f5f5;font:16px/1.6 ui-sans-serif,system-ui;padding:8vw}h1{font-size:2.4rem;letter-spacing:-.04em}'
@@ -612,7 +611,7 @@ export function createApp(deps: AppDeps): App {
     log.alert('planny: admin reset', { action: 'reset', counter: parsed.data.counter, ...(parsed.data.owner ? { owner: parsed.data.owner } : {}), outcome: 'ok' });
     return json(200, { reset: parsed.data.counter, before });
   });
-  app.notFound(() => page(404, pages.unknownPath({ build })));
+  app.notFound(() => page(404, build === 'vercel' ? PAGES.notFound : pages.unknownPath({ build })));
 
   return Object.assign(app, { sweep, takedown, resetMonth, records });
 }

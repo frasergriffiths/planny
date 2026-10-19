@@ -38,23 +38,13 @@ export function Page({ kind }: { kind: PageKind }) {
       <main className="mx-auto max-w-6xl px-6">
         {kind === 'home' ? (
           <>
-            <section className="grid gap-10 py-16 md:grid-cols-[1.2fr_0.8fr] md:py-24">
+            <section className="py-16 md:py-24">
               <div>
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">{page.kicker}</p>
                 <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.05em] text-white md:text-7xl">{page.title}</h1>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">{page.body}</p>
                 <div className="mt-9 flex flex-wrap gap-3">
                   <a href="/sample" className="rounded-md bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
-                  <a href="#how" className="rounded-md border border-zinc-800 px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">How it works</a>
-                </div>
-              </div>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-500">Example</p>
-                <p className="mt-3 font-mono text-sm text-zinc-300">/p/1a2b3c4d-…</p>
-                <div className="mt-4 space-y-2 border-t border-zinc-800 pt-4 text-sm text-zinc-500">
-                  <p>One page, written by an agent.</p>
-                  <p>One link, shared with the people who need it.</p>
-                  <p>Scripts and outside files removed before it is stored.</p>
                 </div>
               </div>
             </section>
