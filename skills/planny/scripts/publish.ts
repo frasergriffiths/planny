@@ -26,7 +26,7 @@ if (!name) fail('Missing --name. Plans need a name of 1 to 120 characters.');
 if ([...name].length > 120) fail('The name is over 120 characters.');
 const duration = option('duration') ?? '30d';
 if (!/^\d{1,6}[hdwmy]$/i.test(duration)) fail('Duration must look like 12h, 30d, 2w, 3m or 5y.');
-const base = (option('base') ?? process.env.PLANNY_BASE ?? 'https://planny-pink.vercel.app').replace(/\/$/, '');
+const base = (option('base') ?? process.env.PLANNY_URL ?? process.env.PLANNY_BASE ?? 'https://planny-pink.vercel.app').replace(/\/$/, '');
 
 let bytes: Buffer;
 try {

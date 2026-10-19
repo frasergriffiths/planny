@@ -37,7 +37,7 @@ try {
 } catch {
   storedOrigin = undefined;
 }
-const chosen = option('base') ?? process.env.PLANNY_BASE;
+const chosen = option('base') ?? process.env.PLANNY_URL ?? process.env.PLANNY_BASE;
 if (!chosen && storedOrigin && /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(storedOrigin)) {
   fail('That key belongs to the retired local build. Local links no longer work; publish the plan to https://planny-pink.vercel.app.');
 }
