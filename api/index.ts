@@ -23,6 +23,14 @@ export default {
       });
     }
     if (url.pathname === '/health') {
+      if (!app && !failure) {
+        try {
+          app = createVercelApp({ env: process.env, waitUntil });
+        } catch (error) {
+          failure = error instanceof Error ? error.message : String(error);
+          console.error('planny: configuration is incomplete at startup:', failure);
+        }
+      }
       const runtime = typeof Bun !== 'undefined' ? `bun ${Bun.version}` : `node ${process.version}`;
       // Presence only: enough to tell which setting is missing, never a value.
       const env = {
