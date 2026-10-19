@@ -547,13 +547,7 @@ export function createApp(deps: AppDeps): App {
   });
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
-  app.get('/sample', () => page(200, (
-    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-    + '<meta name="color-scheme" content="dark"><title>Sample plan | planny</title>'
-    + '<style>body{margin:0;background:#000;color:#f5f5f5;font:16px/1.6 ui-sans-serif,system-ui;padding:8vw}h1{font-size:2.4rem;letter-spacing:-.04em}'
-    + '.k{font:600 11px/1 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:#4d9fff}</style></head><body>'
-    + '<p class="k">Sample plan</p><h1>A plan at a link.</h1><p>This is what a published plan looks like: one page, one link, no account.</p>'
-    + '<p style="color:#a1a1a1">Replace this with a real plan from your agent.</p></body></html>')));
+  app.get('/sample', () => page(200, PAGES.sample));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   app.get('/health', () => json(200, {

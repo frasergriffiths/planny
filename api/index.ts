@@ -1,4 +1,5 @@
-import { waitUntil } from '@vercel/functions';
+import { list } from '@vercel/blob';
+import { dangerouslyDeleteByTag, waitUntil } from '@vercel/functions';
 import { createVercelApp } from '../src/vercel.js';
 import { loadConfig } from '../src/config.js';
 import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
@@ -7,9 +8,27 @@ import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
 let app: ReturnType<typeof createVercelApp> | null = null;
 let failure: string | null = null;
+let purged = false;
+
+async function purgePlanTags(): Promise<void> {
+  if (purged || !process.env.BLOB_READ_WRITE_TOKEN) return;
+  purged = true;
+  try {
+    const { blobs } = await list({ token: process.env.BLOB_READ_WRITE_TOKEN, prefix: 'plans/' });
+    const ids = blobs
+      .map((blob) => /^plans\/([0-9a-f-]{36})/.exec(blob.pathname)?.[1])
+      .filter((id): id is string => Boolean(id));
+    for (let i = 0; i < ids.length; i += 16) {
+      await Promise.all(ids.slice(i, i + 16).map((id) => dangerouslyDeleteByTag(`plan-${id}`)));
+    }
+  } catch (error) {
+    console.error('planny: startup purge failed', error instanceof Error ? error.message : error);
+  }
+}
 
 export default {
   async fetch(request: Request): Promise<Response> {
+    await purgePlanTags();
     const url = new URL(request.url);
     if (process.env.VERCEL_ENV === 'preview' && (url.pathname === '/plans' || url.pathname.startsWith('/admin/'))) {
       return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'Uploads are disabled on preview deployments.' } })}\n`, {

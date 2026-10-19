@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>A plan that lives at a link | planny sample</title>
+<title>Harbor Coffee Roasters: 2027 subscription plan</title>
 <!--
   planny sample plan.
 
-  This is the sample plan used by the home CTA. It uses the dark planny
-  template and is safe for planny:
+  A fictional plan for the home CTA. It uses the dark planny template and is
+  safe for planny:
   no scripts, links, forms, frames or external files. Charts are inline
   SVG or CSS. Fonts are the system stack. Images, if you add any, must be
   data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
@@ -257,6 +257,12 @@
     .box, tr, .kpi { break-inside: avoid; }
     .gantt { break-inside: avoid; }
   }
+
+  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border:1px solid var(--line); border-radius:12px; background: var(--panel); }
+  .chart-caption { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
+  .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
+  .donut-legend span { display:flex; align-items:center; gap:6px; }
+  .donut-legend i { display:inline-block; width:8px; height:8px; border-radius:2px; }
 </style>
 </head>
 <body>
@@ -265,81 +271,137 @@
 
   <header class="hero">
     <div>
-      <div class="eyebrow">Sample plan / planny</div>
-      <h1>A plan that lives at a link.</h1>
-      <p class="lede">This is a sample plan. It is one HTML file, published to a link that anyone can open. No account, no dashboard, no app to install.</p>
+      <div class="eyebrow">Plan / 2027 / Harbor Coffee Roasters</div>
+      <h1>Turn a weekend bag club into a subscription.</h1>
+      <p class="lede">Harbor Coffee Roasters has 180 weekend customers and one espresso machine. This plan grows the bag club into a recurring subscription without opening a second roastery.</p>
       <div class="meta">
-        <span>Published by planny</span>
-        <span>Sample plan</span>
-        <span>One page</span>
-        <span>Status: Sample</span>
+        <span>Owner: Harbor Coffee</span>
+        <span>Updated: 20 Oct 2026</span>
+        <span>Horizon: 9 months</span>
+        <span>Status: Draft</span>
       </div>
     </div>
-    <div class="status">Sample</div>
+    <div class="status">Draft</div>
   </header>
 
   <section class="box">
     <div class="eyebrow">TL;DR</div>
     <ul>
-      <li>One HTML file in, one link out. The link is the whole product.</li>
-      <li>The plan is public to anyone with the link, so share it on purpose.</li>
-      <li>This sample uses the dark planny template. Your plan can use the same layout or its own.</li>
+      <li>The bag club has 180 people and no recurring revenue. A four-week subscription at $38 keeps the same roast and adds a second bag.</li>
+      <li>We need 1,200 subscribers by September to cover the second roaster. The beta starts with 200 existing customers.</li>
+      <li>The risk is churn, not demand. Keep the first 90 days small, measure repeat orders, and only then buy capacity.</li>
     </ul>
   </section>
 
   <div class="layout">
     <main>
       <section>
-        <h2>What this sample shows</h2>
-        <p class="measure">A plan can be one self-contained page: a hero, a timeline, milestones, decisions, risks and next steps. This sample uses the dark planny palette, inline SVG and CSS, and no external files. It is a real page you can open at a link, not a screenshot.</p>
+        <h2>The bet</h2>
+        <p class="measure">Harbor sells 180 bags on weekends. A subscription keeps the same roast and adds a second bag, without a second roastery. The beta is capped at 200 existing customers; the public offer starts only if 60% reorder in the first 90 days.</p>
         <div class="kpis">
-          <div class="kpi"><span class="eyebrow">Format</span><strong>1</strong><span>HTML file</span></div>
-          <div class="kpi"><span class="eyebrow">Cap</span><strong>4 MiB</strong><span>per plan, images included</span></div>
-          <div class="kpi"><span class="eyebrow">Life</span><strong>1h–100y</strong><span>per plan</span></div>
-          <div class="kpi"><span class="eyebrow">Link</span><strong>1 key</strong><span>no account</span></div>
+          <div class="kpi"><span class="eyebrow">Today</span><strong>180</strong><span>bag club</span></div>
+          <div class="kpi"><span class="eyebrow">Target</span><strong>1,200</strong><span>subscribers</span></div>
+          <div class="kpi"><span class="eyebrow">Price</span><strong>$38</strong><span>per 4 weeks</span></div>
+          <div class="kpi"><span class="eyebrow">Churn</span><strong>3.2%</strong><span>monthly target</span></div>
         </div>
+      </section>
+
+      <section>
+        <h2>Traction</h2>
+        <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
+        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Subscribers by month, January to September, rising from 180 to 1,200">
+          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
+            <line x1="64" y1="30" x2="64" y2="260" stroke="#262626"></line>
+            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
+            <line x1="64" y1="202" x2="690" y2="202" stroke="#1f1f1f"></line>
+            <line x1="64" y1="145" x2="690" y2="145" stroke="#1f1f1f"></line>
+            <line x1="64" y1="88" x2="690" y2="88" stroke="#1f1f1f"></line>
+            <text x="54" y="264" text-anchor="end">0</text>
+            <text x="54" y="206" text-anchor="end">300</text>
+            <text x="54" y="149" text-anchor="end">600</text>
+            <text x="54" y="92" text-anchor="end">900</text>
+            <text x="54" y="35" text-anchor="end">1,200</text>
+            <polygon points="64,260 64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30 690,260" fill="#0b1b33"></polygon>
+            <polyline points="64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="64" cy="226" r="4" fill="#3291FF"></circle>
+            <circle cx="142" cy="210" r="4" fill="#3291FF"></circle>
+            <circle cx="221" cy="191" r="4" fill="#3291FF"></circle>
+            <circle cx="299" cy="168" r="4" fill="#3291FF"></circle>
+            <circle cx="377" cy="141" r="4" fill="#3291FF"></circle>
+            <circle cx="455" cy="114" r="4" fill="#3291FF"></circle>
+            <circle cx="534" cy="88" r="4" fill="#3291FF"></circle>
+            <circle cx="612" cy="57" r="4" fill="#3291FF"></circle>
+            <circle cx="690" cy="30" r="4" fill="#3291FF"></circle>
+            <text x="64" y="286" text-anchor="middle">Jan</text>
+            <text x="142" y="286" text-anchor="middle">Feb</text>
+            <text x="221" y="286" text-anchor="middle">Mar</text>
+            <text x="299" y="286" text-anchor="middle">Apr</text>
+            <text x="377" y="286" text-anchor="middle">May</text>
+            <text x="455" y="286" text-anchor="middle">Jun</text>
+            <text x="534" y="286" text-anchor="middle">Jul</text>
+            <text x="612" y="286" text-anchor="middle">Aug</text>
+            <text x="690" y="286" text-anchor="middle">Sep</text>
+          </g>
+        </svg>
+        <p class="chart-caption">Fictional plan data. Subscribers, January to September.</p>
+      </section>
+
+      <section>
+        <h2>Where the next 1,200 come from</h2>
+        <p class="measure">Referral is the largest source because the bag club already has a relationship with every customer. Paid social is a test, not the plan.</p>
+        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="New subscribers by channel: referral 420, Instagram 300, farmers market 260, wholesale 220">
+          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
+            <line x1="64" y1="50" x2="64" y2="260" stroke="#262626"></line>
+            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
+            <line x1="64" y1="155" x2="690" y2="155" stroke="#1f1f1f"></line>
+            <line x1="64" y1="50" x2="690" y2="50" stroke="#1f1f1f"></line>
+            <text x="54" y="264" text-anchor="end">0</text>
+            <text x="54" y="159" text-anchor="end">250</text>
+            <text x="54" y="54" text-anchor="end">500</text>
+            <rect x="130" y="84" width="90" height="176" rx="4" fill="#3291FF"></rect>
+            <rect x="280" y="134" width="90" height="126" rx="4" fill="#3291FF"></rect>
+            <rect x="430" y="151" width="90" height="109" rx="4" fill="#3291FF"></rect>
+            <rect x="580" y="168" width="90" height="92" rx="4" fill="#3291FF"></rect>
+            <text x="175" y="76" text-anchor="middle" fill="#f5f5f5" font-weight="700">420</text>
+            <text x="325" y="126" text-anchor="middle" fill="#f5f5f5" font-weight="700">300</text>
+            <text x="475" y="143" text-anchor="middle" fill="#f5f5f5" font-weight="700">260</text>
+            <text x="625" y="160" text-anchor="middle" fill="#f5f5f5" font-weight="700">220</text>
+            <text x="175" y="282" text-anchor="middle">Referral</text>
+            <text x="325" y="282" text-anchor="middle">Instagram</text>
+            <text x="475" y="282" text-anchor="middle">Market</text>
+            <text x="625" y="282" text-anchor="middle">Wholesale</text>
+          </g>
+        </svg>
+        <p class="chart-caption">Fictional plan data. New subscribers by channel.</p>
       </section>
 
       <section>
         <h2>Timeline</h2>
         <div class="legend">
-          <span><span class="swatch"></span>Build</span>
-          <span><span class="swatch alt"></span>Verify</span>
+          <span><span class="swatch"></span>Plan</span>
+          <span><span class="swatch alt"></span>Checkpoint</span>
           <span><span class="swatch soft"></span>Buffer</span>
         </div>
-        <div class="gantt" role="img" aria-label="Sample plan with five steps">
-          <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-          <div class="gantt-row"><div class="label">Write the page</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">One HTML file</div></div></div>
-          <div class="gantt-row"><div class="label">Publish the link</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 3;">Name, duration, 201</div></div></div>
-          <div class="gantt-row"><div class="label">Share the link</div><div class="track"><div class="bar" style="grid-column: 4 / span 2;">Anyone with the URL</div></div></div>
-          <div class="gantt-row"><div class="label">Keep it up</div><div class="track"><div class="bar alt" style="grid-column: 5 / span 3;">Stays up</div></div></div>
-          <div class="gantt-row"><div class="label">Delete it</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Author delete</div></div></div>
+        <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
+          <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
+          <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
+          <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
+          <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
+          <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
+          <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
         </div>
       </section>
 
       <section>
         <h2>Milestones</h2>
         <table>
-          <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+          <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
           <tbody>
-            <tr><td>Step 1</td><td>Write one HTML file</td><td>You</td><td>Start here</td></tr>
-            <tr><td>Step 2</td><td>Publish with a name and duration</td><td>planny</td><td>201</td></tr>
-            <tr><td>Step 3</td><td>Open the link</td><td>Reader</td><td>200</td></tr>
-            <tr><td>Step 4</td><td>Share it, or keep it private</td><td>You</td><td>Your call</td></tr>
-            <tr><td>Step 5</td><td>Delete it when done</td><td>Author</td><td>410</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2>Decisions</h2>
-        <table>
-          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
-          <tbody>
-            <tr><td>Format</td><td>One HTML file / a full site</td><td>One HTML file</td><td>The link is the product. There is no build step.</td></tr>
-            <tr><td>Scripts</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>No scripts means no way to send data out from the plan.</td></tr>
-            <tr><td>Links</td><td>Clickable / dead</td><td>Dead</td><td>A clickable link on planny's origin is a phishing route. Plans keep their text.</td></tr>
-            <tr><td>Theme</td><td>Light / dark</td><td>Dark</td><td>Plans default to the dark planny palette.</td></tr>
+            <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
+            <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
+            <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
+            <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
+            <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
           </tbody>
         </table>
       </section>
@@ -349,10 +411,10 @@
         <table>
           <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
           <tbody>
-            <tr><td>The link is public</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Share it only with the people who should see it.</td><td>You</td></tr>
-            <tr><td>A plan is static</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>Publish a new plan to update it. The old link stays as it was.</td><td>You</td></tr>
-            <tr><td>A plan can be deleted</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>The author can remove it. An expired or deleted link returns 410.</td><td>planny</td></tr>
-            <tr><td>A plan carries no scripts</td><td class="risk-low">Low</td><td class="risk-low">Low</td><td>Charts are inline SVG or CSS. Nothing runs.</td><td>planny</td></tr>
+            <tr><td>Green coffee price rises 15%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Six-month contract and a 10% buffer.</td><td>Harbor</td></tr>
+            <tr><td>Churn above 5%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>90-day check. Pause ads and call the first 50 customers.</td><td>Harbor</td></tr>
+            <tr><td>Roaster capacity</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap beta at 200. Second roaster only after 1,000 subscribers.</td><td>Harbor</td></tr>
+            <tr><td>Delivery cost per bag</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Flat $4 delivery and local pickup.</td><td>Harbor</td></tr>
           </tbody>
         </table>
       </section>
@@ -360,52 +422,59 @@
       <section>
         <h2>Next steps</h2>
         <ul class="check">
-          <li><span><strong>Write your plan.</strong> Start from the dark template. Keep it one HTML file.</span></li>
-          <li><span><strong>Publish it.</strong> Give it a name and a duration. Keep the link and the delete key.</span></li>
-          <li><span><strong>Share the link.</strong> Anyone with the link can read it. No account is needed.</span></li>
-          <li><span><strong>Delete it when done.</strong> The author delete returns 410 and removes the key file.</span></li>
-          <li><span><strong>Keep it under 4 MiB.</strong> Embedded images count toward the cap.</span></li>
+          <li><span><strong>Recruit 200 beta customers</strong> from the bag club.</span></li>
+          <li><span><strong>Lock a six-month green coffee contract.</strong></span></li>
+          <li><span><strong>Test the bag and label</strong> with 20 customers.</span></li>
+          <li><span><strong>Set the referral offer</strong> to one free bag.</span></li>
+          <li><span><strong>Review churn at 90 days</strong> before buying capacity.</span></li>
         </ul>
       </section>
     </main>
 
     <aside>
       <section class="box">
-        <div class="eyebrow">Confidence</div>
+        <div class="eyebrow">Budget</div>
         <div class="donut">
-          <svg width="92" height="92" viewBox="0 0 92 92" role="img" aria-label="Sample plan complete">
-            <circle cx="46" cy="46" r="38" fill="none" stroke="#262626" stroke-width="10"></circle>
-            <circle cx="46" cy="46" r="38" fill="none" stroke="#3291FF" stroke-width="10" stroke-linecap="round" stroke-dasharray="239 239" transform="rotate(-90 46 46)"></circle>
-            <text x="46" y="51" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f5f5f5">100%</text>
+          <svg width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="Budget mix: coffee 45%, packaging 20%, marketing 20%, operations 15%">
+            <circle cx="52" cy="52" r="40" fill="none" stroke="#262626" stroke-width="12"></circle>
+            <g transform="rotate(-90 52 52)" fill="none" stroke-width="12">
+              <circle cx="52" cy="52" r="40" stroke="#3291FF" stroke-dasharray="113 251"></circle>
+              <circle cx="52" cy="52" r="40" stroke="#8ab8ff" stroke-dasharray="50 251" stroke-dashoffset="-113"></circle>
+              <circle cx="52" cy="52" r="40" stroke="#5f6368" stroke-dasharray="50 251" stroke-dashoffset="-163"></circle>
+              <circle cx="52" cy="52" r="40" stroke="#3f3f3f" stroke-dasharray="38 251" stroke-dashoffset="-213"></circle>
+            </g>
+            <text x="52" y="50" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#f5f5f5">$240k</text>
+            <text x="52" y="67" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#a1a1a1">2027 budget</text>
           </svg>
-          <p>This sample is complete: one page, one link, one small footer.</p>
+          <div class="donut-legend">
+            <span><i style="background:#3291FF"></i>Coffee 45%</span>
+            <span><i style="background:#8ab8ff"></i>Packaging 20%</span>
+            <span><i style="background:#5f6368"></i>Marketing 20%</span>
+            <span><i style="background:#3f3f3f"></i>Ops 15%</span>
+          </div>
         </div>
       </section>
 
       <section>
         <h3>Open questions</h3>
         <ul class="aside-list">
-          <li>What will you plan?</li>
-          <li>Who needs the link?</li>
-          <li>How long should it stay up?</li>
+          <li>Will 200 beta customers convert at 60%?</li>
+          <li>Can the roaster handle 1,200 bags a month?</li>
+          <li>Is $4 delivery sustainable?</li>
         </ul>
       </section>
 
       <section>
         <h3>Definition of done</h3>
         <ul class="aside-list">
-          <li>A link that opens the plan.</li>
-          <li>A small footer says Published by planny.</li>
-          <li>No scripts, links or external files.</li>
-          <li>The author can delete it.</li>
+          <li>1,200 subscribers by September.</li>
+          <li>Churn below 4% for two months.</li>
+          <li>Second roaster paid from subscription revenue.</li>
+          <li>No single channel above 40%.</li>
         </ul>
       </section>
     </aside>
   </div>
-
-  <footer class="footer">
-    <span>Published by planny</span>
-  </footer>
 </div>
 </body>
 </html>
