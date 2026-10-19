@@ -1,4 +1,5 @@
 import { del, get, head, put } from '@vercel/blob';
+import { dangerouslyDeleteByTag } from '@vercel/functions';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -194,5 +195,23 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
     },
   };
 
-  return { build: 'vercel' as const, redis, blobs, control, async purge() {} };
+  return {
+    build: 'vercel' as const,
+    redis,
+    blobs,
+    control,
+    async purge(id: string): Promise<void> {
+      for (let attempt = 1; ; attempt += 1) {
+        try {
+          await dangerouslyDeleteByTag(`plan-${id}`);
+          return;
+        } catch (error) {
+          const shaped = error as { status?: number; message?: string };
+          const limited = shaped.status === 429 || /\b429\b/.test(String(shaped.message));
+          if (!limited || attempt >= 4) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+        }
+      }
+    },
+  };
 }
