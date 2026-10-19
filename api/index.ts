@@ -1,7 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { createVercelApp } from '../src/vercel.js';
 import { loadConfig } from '../src/config.js';
-import { home } from '../src/pages.js';
+import { home, unknownPath } from '../src/pages.js';
 
 // Vercel's Bun runtime runs this file as the function behind the rewrite in vercel.json.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
@@ -38,8 +38,16 @@ export default {
       }
     }
     if (!app) {
+      const planPath = /^\/p\/[^/]+$/.test(url.pathname);
       const api = url.pathname === '/plans' || url.pathname.startsWith('/admin/')
-        || (url.pathname.startsWith('/p/') && request.method !== 'GET' && request.method !== 'HEAD');
+        || (planPath && request.method !== 'GET' && request.method !== 'HEAD');
+      // A plan view needs the store; any other path is just a 404 and must not claim misconfiguration.
+      if (!api && !planPath) {
+        return new Response(unknownPath({ build: 'vercel' }), {
+          status: 404,
+          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' },
+        });
+      }
       return api
         ? new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, {
           status: 503,
