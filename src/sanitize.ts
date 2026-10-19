@@ -309,7 +309,7 @@ function labelLocal(document: Document, label: string): void {
   const banner = parseFragment(
     '<div class="planny-local" style="position:fixed;top:0;right:0;z-index:2147483647;max-width:70vw;overflow:hidden;'
     + 'text-overflow:ellipsis;white-space:nowrap;margin:0;padding:.35rem .7rem;background:#000;color:#f5f5f5;'
-    + 'border:1px solid #ff5c1a;border-top:0;border-right:0;border-bottom-left-radius:8px;'
+    + 'border:1px solid #4d9fff;border-top:0;border-right:0;border-bottom-left-radius:8px;'
     + 'font:500 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em">'
     + `LOCAL · ${escapeHtml(label)}</div>`,
   ).childNodes as unknown as Node[];

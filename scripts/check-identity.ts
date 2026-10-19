@@ -16,15 +16,17 @@ function git(args: string[]): string {
 
 async function main(): Promise<void> {
   const input = await new Response(Bun.stdin.stream()).text();
-  const shas = input
+  const lines = input
     .split('\n')
     .map((line) => line.trim().split(/\s+/))
-    .filter((parts) => parts.length >= 2)
-    // Tags don't deploy and may point at old snapshots, so only branch pushes are checked.
-    .filter((parts) => !(parts[0] ?? '').includes('/tags/') && !(parts[2] ?? '').includes('/tags/'))
+    .filter((parts) => parts.length >= 2);
+  // Tags don't deploy and may point at old snapshots, so only branch pushes are checked.
+  const branchLines = lines.filter((parts) => !(parts[0] ?? '').includes('/tags/') && !(parts[2] ?? '').includes('/tags/'));
+  const shas = branchLines
     .map((parts) => parts[1] ?? '')
     .filter((sha) => /^[0-9a-f]{40}$/.test(sha));
-  if (shas.length === 0) shas.push(git(['rev-parse', 'HEAD']));
+  // Only fall back to HEAD when the hook got no input at all, never when every line was a tag.
+  if (lines.length === 0) shas.push(git(['rev-parse', 'HEAD']));
 
   const bad: string[] = [];
   for (const sha of shas) {
