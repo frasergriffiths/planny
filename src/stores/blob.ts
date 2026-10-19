@@ -1,0 +1,164 @@
+import { del, get, head, put } from '@vercel/blob';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createLuaRunner } from './lua-runner.js';
+import { createMiniRedis, type CommandFn } from './mini-redis.js';
+import type { RedisLike } from './local.js';
+
+export class StoreUnavailableError extends Error {
+  readonly status = 503;
+  readonly code = 'store_unavailable';
+  constructor(message = 'The plan store is unavailable. Try again in a few seconds.') {
+    super(message);
+  }
+}
+
+interface BlobClientOptions {
+  readonly token: string;
+  readonly access: 'public' | 'private';
+  readonly pathKey?: string;
+  readonly prefix?: string;
+}
+
+const STATE = 'state.json';
+const LOCK = 'state.lock';
+const LOCK_STALE_MS = 15_000;
+
+function hmacSuffix(id: string, key: string | undefined): string {
+  if (!key) return '';
+  return `-${createHash('sha256').update(`${key}:${id}`).digest('hex').slice(0, 16)}`;
+}
+
+export function blobPlanPath(id: string, key: string | undefined): string {
+  return `plans/${id}${hmacSuffix(id, key)}.html`;
+}
+
+// Blob-only store: one JSON state blob holds records, counters and rate windows, and each plan's
+// HTML is a separate blob. A create-only lock serialises the read-modify-write across instances.
+export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobClientOptions) {
+  const runner = createLuaRunner();
+  const store = (name: string) => `${prefix}${name}`;
+
+  async function acquire(): Promise<void> {
+    for (let attempt = 0; attempt < 200; attempt += 1) {
+      try {
+        await put(store(LOCK), String(Date.now()), {
+          access,
+          token,
+          addRandomSuffix: false,
+          allowOverwrite: false,
+          contentType: 'text/plain',
+        });
+        return;
+      } catch {
+        try {
+          const current = await head(store(LOCK), { token });
+          if (Date.now() - new Date(current.uploadedAt).getTime() > LOCK_STALE_MS) {
+            await del(store(LOCK), { token });
+            continue;
+          }
+        } catch {
+          continue;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+    }
+    throw new StoreUnavailableError('The plan store is busy. Try again in a few seconds.');
+  }
+
+  async function withState<T>(work: (file: string) => Promise<T>): Promise<T> {
+    await acquire();
+    try {
+      let existing: Awaited<ReturnType<typeof get>> = null;
+      try {
+        existing = await get(store(STATE), { access, token });
+      } catch (error) {
+        if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
+      }
+      const dir = mkdtempSync(join(tmpdir(), 'planny-blob-'));
+      const file = join(dir, STATE);
+      if (existing && existing.statusCode === 200) {
+        writeFileSync(file, Buffer.from(await new Response(existing.stream).arrayBuffer()));
+      } else {
+        writeFileSync(file, JSON.stringify({ strings: {}, hashes: {}, zsets: {}, expires: {} }));
+      }
+      const result = await work(file);
+      await put(store(STATE), readFileSync(file), {
+        access,
+        token,
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: 'application/json',
+      });
+      return result;
+    } finally {
+      await del(store(LOCK), { token }).catch(() => {});
+    }
+  }
+
+  const redis: RedisLike = {
+    eval: (source, keys, argv) => withState(async (file) => {
+      const db = createMiniRedis({ file });
+      return db.transaction((run: CommandFn) => runner.run(source, keys, argv, run));
+    }),
+    hgetall: (key) => withState(async (file) => {
+      const db = createMiniRedis({ file });
+      return db.transaction((run) => run('HGETALL', [key]) as unknown as Record<string, string>);
+    }),
+    zrangebyscore: (key, max, limit) => withState(async (file) => {
+      const db = createMiniRedis({ file });
+      return db.transaction((run) => run('ZRANGEBYSCORE', [key, '-inf', String(max), 'LIMIT', '0', String(limit)]) as unknown as string[]);
+    }),
+  };
+
+  const blobs = {
+    async put(id: string, bytes: Uint8Array): Promise<void> {
+      await put(blobPlanPath(id, access === 'public' ? pathKey : undefined), Buffer.from(bytes), {
+        access,
+        token,
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: 'text/html; charset=utf-8',
+      });
+    },
+    async get(id: string): Promise<Uint8Array | null> {
+      const result = await get(blobPlanPath(id, access === 'public' ? pathKey : undefined), { access, token });
+      if (!result || result.statusCode !== 200) return null;
+      return new Uint8Array(await new Response(result.stream).arrayBuffer());
+    },
+    async remove(id: string): Promise<void> {
+      try {
+        await del(blobPlanPath(id, access === 'public' ? pathKey : undefined), { token });
+      } catch (error) {
+        if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
+      }
+    },
+  };
+
+  const control = {
+    async uploadsEnabled(): Promise<boolean> {
+      try {
+        const result = await get(store('config/kill.json'), { access, token });
+        if (!result || result.statusCode !== 200) return true;
+        const value = JSON.parse(await new Response(result.stream).text()) as { uploadsEnabled?: unknown };
+        return value.uploadsEnabled === true;
+      } catch (error) {
+        if (error instanceof StoreUnavailableError) throw error;
+        return true;
+      }
+    },
+    async setUploadsEnabled(enabled: boolean): Promise<void> {
+      await put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: enabled }), {
+        access,
+        token,
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: 'application/json',
+      });
+    },
+  };
+
+  return { build: 'vercel' as const, redis, blobs, control, async purge() {} };
+}

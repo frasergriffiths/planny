@@ -5,6 +5,7 @@ import { SanitizeTooDeepError, sanitize } from './sanitize.js';
 import type { AppConfig } from './config.js';
 import type { Store } from './stores/local.js';
 import { ApiError, badType, isHtmlType, parseDuration } from './validate.js';
+import { StoreUnavailableError } from './stores/blob.js';
 import {
   escapeHtml,
   isPlanId,
@@ -501,6 +502,11 @@ export function createApp(deps: AppDeps): App {
     const api = c.req.path === '/plans'
       || c.req.path.startsWith('/admin/')
       || (c.req.path.startsWith('/p/') && c.req.method !== 'GET' && c.req.method !== 'HEAD');
+    if (error instanceof StoreUnavailableError) {
+      return api
+        ? json(503, { error: { code: 'store_unavailable', message: 'The plan store is unavailable. Try again in 5 seconds.' } }, { 'retry-after': '5' })
+        : page(503, pages.paused({ build, guard: 'reads', resumesAt: now() + 5000 }), { 'retry-after': '5' });
+    }
     if (error instanceof ApiError) {
       return api
         ? json(error.status, { error: { code: error.code, message: error.message } }, error.headers)

@@ -2,6 +2,7 @@ import type { AppDeps } from './app.js';
 import { createApp } from './app.js';
 import type { App } from './app.js';
 import { loadConfig } from './config.js';
+import { createBlobStore, StoreUnavailableError } from './stores/blob.js';
 import { createVercelStore } from './stores/vercel.js';
 import type { Logger } from './app.js';
 
@@ -28,11 +29,23 @@ export function createVercelApp({
   readConfig?: (key: string) => Promise<unknown>;
   purge?: (tag: string) => Promise<void>;
 }): App & { handle(request: Request, options?: { address?: string }): Promise<Response> } {
-  const secret = env.PLANNY_ADDRESS_KEY;
-  if (!secret) throw new Error('planny needs PLANNY_ADDRESS_KEY set in the environment.');
+  // The Blob token is already a long-lived secret; use it as the fallback HMAC key so a
+  // working Blob-only deploy needs no extra secret invented by hand.
+  const secret = env.PLANNY_ADDRESS_KEY ?? env.BLOB_READ_WRITE_TOKEN;
+  if (!secret) throw new Error('planny needs BLOB_READ_WRITE_TOKEN or PLANNY_ADDRESS_KEY.');
+  const blobOnly = Boolean(env.BLOB_READ_WRITE_TOKEN) && !env.UPSTASH_REDIS_REST_URL && !env.KV_REST_API_URL;
+  if (blobOnly && !env.BLOB_READ_WRITE_TOKEN) throw new Error('planny needs BLOB_READ_WRITE_TOKEN.');
+  const blobKey = env.PLANNY_BLOB_KEY_1 ?? env.BLOB_READ_WRITE_TOKEN;
+  const store = blobOnly
+    ? createBlobStore({
+      token: env.BLOB_READ_WRITE_TOKEN ?? '',
+      access: env.BLOB_ACCESS === 'private' ? 'private' : 'public',
+      ...(blobKey ? { pathKey: blobKey } : {}),
+    })
+    : createVercelStore({ env, ...storeDeps });
   const app = createApp({
     build: 'vercel',
-    store: createVercelStore({ env, ...storeDeps }),
+    store,
     config: loadConfig(env),
     secret,
     origin: (env.PLANNY_PUBLIC_ORIGIN || DEFAULT_ORIGIN).replace(/\/$/, ''),
