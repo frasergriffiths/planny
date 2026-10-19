@@ -190,6 +190,23 @@ export function paused({ build, guard, resumesAt }: { build: Build; guard: Pause
 }
 
 
+
+export function planWrapper({ build, id, name, expiresAt }: { build: Build; id: string; name: string; expiresAt: number }): string {
+  const title = name || 'Plan';
+  const body = `
+<p class="kicker">Plan</p>
+<h1>${esc(title)}</h1>
+<p class="plan-meta">Open until ${esc(formatUtc(expiresAt))}</p>
+<iframe class="plan-frame" src="/p/${esc(id)}/raw" title="${esc(title)}" sandbox referrerpolicy="no-referrer" loading="eager"></iframe>
+<p class="plan-open"><a href="/p/${esc(id)}/raw" target="_blank" rel="noopener">Open the plan on its own</a></p>`;
+  return layout({
+    build,
+    title,
+    body,
+    rows: [['Plan', title], ['Expires', formatUtc(expiresAt)], ['Link', `planny /p/${id.slice(0, 8)}`]],
+  });
+}
+
 export function notConfigured({ build }: { build: Build }): string {
   return layout({
     build,

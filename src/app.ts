@@ -116,6 +116,14 @@ export function createApp(deps: AppDeps): App {
     });
   }
 
+  function rawHeaders(id: string, ttl: number): Record<string, string> {
+    return {
+      ...planHeaders(id, ttl),
+      'content-security-policy': PLAN_CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+      'x-robots-tag': 'noindex',
+    };
+  }
+
   function planHeaders(id: string, ttl: number): Record<string, string> {
     return {
       'content-type': 'text/html; charset=utf-8',
@@ -343,16 +351,16 @@ export function createApp(deps: AppDeps): App {
 
   function unavailable(record: PlanRecord): Response {
     if (record.hidden || record.reason === 'takedown') {
-      return page(410, pages.takedown({ build, removedAt: record.removedAt }));
+      return page(410, pages.takedown({ build, removedAt: record.removedAt }), { 'x-robots-tag': 'noindex' });
     }
-    if (record.reason === 'deleted') return page(410, pages.deleted({ build, removedAt: record.removedAt }));
+    if (record.reason === 'deleted') return page(410, pages.deleted({ build, removedAt: record.removedAt }), { 'x-robots-tag': 'noindex' });
     if (record.reason === 'expired' || record.state === 'live') {
       return page(410, pages.expired({ build, expiresAt: record.expiresAt }));
     }
     return page(404, pages.notFound({ build }));
   }
 
-  async function view(rawId: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
+  async function view(rawId: string, request: Request, address: string, withQuery: boolean, raw = false): Promise<Response> {
     const id = rawId.toLowerCase();
     const at = now();
     const limit = await records.rate('views', ownerKey(secret, address), at, config.rateLimits.views);
@@ -395,8 +403,16 @@ export function createApp(deps: AppDeps): App {
         return page(500, pages.serverError({ build }));
       }
       const ttl = Math.max(1, Math.min(config.cacheTtlSeconds, Math.floor((record.expiresAt - at) / 1000)));
-      const headers = planHeaders(id, ttl);
-      return new Response(request.method === 'HEAD' ? null : new Uint8Array(html), { status: 200, headers });
+      if (raw) {
+        return new Response(request.method === 'HEAD' ? null : new Uint8Array(html), { status: 200, headers: rawHeaders(id, ttl) });
+      }
+      const wrapper = pages.planWrapper({ build, id, name: record.name, expiresAt: record.expiresAt });
+      return page(200, wrapper, {
+        'cache-control': `public, max-age=0, s-maxage=${ttl}, must-revalidate`,
+        'vercel-cdn-cache-control': `s-maxage=${ttl}`,
+        'vercel-cache-tag': `plan-${id}`,
+        'x-robots-tag': 'noindex',
+      });
     }
     if (record.state === 'live' && !record.hidden) background(removePlan(id, 'expired', at));
     return unavailable(record);

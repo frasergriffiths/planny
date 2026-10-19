@@ -336,3 +336,49 @@ td:first-child {
     border-top: 0;
   }
 }
+
+
+/* Plan wrapper: the frame owns the scroll, the shell stays quiet. */
+.plan-meta {
+  margin: 0 0 1rem;
+  font: 400 0.8rem/1.5 var(--mono);
+  color: var(--muted);
+}
+
+.plan-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 13rem);
+  min-height: 24rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.plan-open {
+  margin: 0.85rem 0 0;
+  font: 500 0.8rem/1.5 var(--mono);
+}
+
+@media (max-width: 30rem) {
+  .plan-frame {
+    height: calc(100vh - 11rem);
+    min-height: 20rem;
+    border-radius: 0;
+  }
+}
+
+@media print {
+  .plan-frame {
+    display: none;
+  }
+
+  .plan-open {
+    display: block;
+  }
+
+  .top,
+  .foot {
+    display: none;
+  }
+}
