@@ -233,6 +233,9 @@ test('/terms-of-use serves the retention licence page', async () => {
   expect(PAGES.terms).toContain('data-page="terms"');
   expect(PAGES.terms).toContain('frasergriffithsisme@icloud.com');
   expect(PAGES.terms).toContain('kept indefinitely');
+  // The client bundle links the footer to the terms page (the footer is
+  // client-rendered, so the path appears inside the bundle, not as static HTML).
+  expect(PAGES.home).toContain('/terms-of-use');
 
   const app = await tokensServed();
   try {

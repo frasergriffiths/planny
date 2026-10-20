@@ -173,3 +173,19 @@ test('the upload gate reports daily and monthly caps without counting', async ()
   expect(monthly.code).toBe('address_upload_monthly_limit');
   expect(monthly.retryAfter).toBeGreaterThan(0);
 });
+
+test('a second concurrent claim loses the race and answers busy', async () => {
+  const f = fixture();
+  const id = newPlanId();
+  const claim = newClaimId();
+  expect(await f.reserve(id, claim)).toBe('ok');
+  expect(await f.records.publish(id, claim, 10 * MIN)).toBe('ok');
+  const first = newClaimId();
+  expect(await f.records.claim(id, { claimId: first, now: 5000, reason: 'deleted', staleBefore: 0 })).toBe('ok');
+  // A second claimer races the first fresh claim: the store answers busy, which the
+  // app maps to HTTP 409.
+  expect(await f.records.claim(id, { claimId: newClaimId(), now: 6000, reason: 'deleted', staleBefore: 0 })).toBe('busy');
+  const record = await f.records.get(id);
+  expect(record?.state).toBe('removing');
+  expect(record?.claimId).toBe(first);
+});

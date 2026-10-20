@@ -71,10 +71,10 @@ const ENV_KEYS = [
   'VERCEL_GIT_COMMIT_SHA',
 ];
 
-const savedEnv = new Map<string, string | undefined>();
 function setEnv(values: Record<string, string | undefined>): void {
+  // Node/bun env is process-global, but each test file runs isolated, so this restore
+  // only needs to keep tests inside this file independent of each other.
   for (const key of ENV_KEYS) {
-    if (!(key in savedEnv)) savedEnv.set(key, process.env[key]);
     if (values[key] === undefined) delete process.env[key];
     else process.env[key] = values[key];
   }
