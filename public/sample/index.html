@@ -246,6 +246,11 @@
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
   @keyframes stack-grow { from { transform: scaleX(0); } }
+
+  :root { --radius: 12px; }
+  .box, .kpi, .stacked, .stacked span, .budget-legend i, .donut-legend i, .legend i, .bar, .swatch { border-radius: var(--radius) !important; }
+  .stacked { gap: 2px; background: var(--bg); }
+  .box { padding-left: 16px; }
 </style>
 </head>
 <body>
