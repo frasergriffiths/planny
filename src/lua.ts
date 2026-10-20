@@ -1,5 +1,5 @@
-// Atomic steps shared by both builds. The local build runs them with fengari, Vercel runs them
-// with Upstash EVAL. Each script touches only KEYS and ARGV, so its steps never interleave.
+// Atomic steps run by both builds with the shared Lua runner. Each script touches only KEYS
+// and ARGV, so its steps never interleave and never read back a stale store copy.
 
 export const RESERVE = `
 if redis.call('EXISTS', KEYS[1]) == 1 then return 'exists' end

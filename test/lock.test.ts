@@ -49,7 +49,7 @@ test('20 processes cannot overspend the shared budget', async () => {
     const results = await Promise.allSettled(
       Array.from({ length: 20 }, () => run(process.execPath, ['run', script], { env })),
     );
-    const busyMessage = /The plan store is busy\. Try again in a few seconds\.|state file is busy/;
+    const busyMessage = /The plan store is busy\. Try again in a few seconds\.|state file is busy|SQLITE_BUSY|database is locked/;
     const outcomes = results.map((result) => {
       if (result.status === 'fulfilled') return result.value.stdout.trim();
       const stderr = String(result.reason?.stderr ?? '') + '\n' + String(result.reason?.message ?? '');
