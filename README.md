@@ -4,7 +4,7 @@ Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone
 
 One TypeScript codebase at the repo root, run with Bun: Hono for the app, Zod at every edge, `bun test` for tests, strict TypeScript with no `any`. The old JavaScript build is kept, unchanged and self-contained, in `reference/` as a parity check. It isn't part of the app.
 
-Design: black and white with one accent for status and focus, Geist and Geist Mono self-hosted under the OFL. The accent is orange, `#FF5C1A`.
+Design: black and white with one accent for status and focus, Geist and Geist Mono self-hosted under the OFL. The accent is blue, `#3291FF`.
 
 ## Limits at launch
 
@@ -40,6 +40,7 @@ Reads and bytes are separate guards: whichever runs out first pauses new views.
 | `GET /` | Home page. |
 | `POST /plans?name=&duration=` | Upload raw `text/html`. Returns `url`, `expiresAt`, `deleteKey` and `removed`. |
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
+| `GET /sample` | The sample plan, with the plan CSP and a publish CTA. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
 | `POST /admin/plans/:uuid/remove` | Operator takedown. Needs `PLANNY_ADMIN_TOKEN`. |
@@ -80,6 +81,8 @@ PLANNY_BUILD=vercel bun run admin takedown <uuid>   # against Vercel's stores, a
 
 ## Parity and guard checks
 
+`bun run tokens` rewrites the generated `:root` and Tailwind token blocks from `tokens.json`; `bun run sample` regenerates the sample from the template and `public/sample/body.html`. Both run as part of `bun run build`.
+
 `bun run parity` starts the JS reference from `reference/` and this build on free ports, each with its own data folder, sends both 22 fixtures (pages, every upload error, a sanitised plan, query strings, the delete flow), and compares status, headers and bodies. It then runs the guard checks on this build: a 1-byte stored guard refuses an upload with `storage_full`, and a 1-read guard pauses views (`no-store`) while deletes and the admin reset still work.
 
 Last run: 29 passed, 0 failed. Known divergence: the admin routes exist only in this build, so that case checks this side only.
@@ -88,13 +91,13 @@ Last run: 29 passed, 0 failed. Known divergence: the admin routes exist only in 
 
 ## Tests
 
-`bun run test` runs `tsc --noEmit` and 45 tests: the sanitiser against hostile markup, deep nesting, the plan states, every budget and limit, the view step with the per-plan counter and the monthly warning, the admin audit, rate limit and resets, the error pages, headers, the upload switch, the SQLite store and its migration from the old JSON file, 20 processes sharing one budget, the raw-body boundary, a 180-case adversarial matrix, the local entry (pages, CSS, Host check), the Vercel entry with a fake env, the deploy guard's fail-closed plan check, the uncached health route, and the Vercel store against fakes.
+`bun run test` runs `tsc --noEmit` and the test suite: the sanitiser against hostile markup, deep nesting, the plan states, every budget and limit, the view step with the per-plan counter and the monthly warning, the admin audit, rate limit and resets, the error pages, headers, the upload switch, the SQLite store and its migration from the old JSON file, 20 processes sharing one budget, the raw-body boundary, a 180-case adversarial matrix, the local entry (pages, CSS, Host check), the Vercel entry with a fake env, the deploy guard's fail-closed plan check, the uncached health route, and the Vercel store against fakes.
 
 Not tested here: the real Blob calls and purge behaviour, and the preview cache behaviour. Those need the Vercel deployment.
 
 ## Deploying on Vercel
 
-The repo is the Vercel project root. `vercel.json` sets `"bunVersion": "1.x"` and `"regions": ["lhr1"]`, with no rewrites and no `api/` folder. Vercel's Bun preset runs `server.ts` at the root, which calls `Bun.serve` once and, with `VERCEL` set, serves the Vercel app (Blob, Upstash, Global Config, `x-vercel-forwarded-for`). Locally the same file serves the local app. `bun.lock` is committed so installs are reproducible.
+The repo is the Vercel project root. `vercel.json` sets the Bun runtime, the LHR1 region and the `api/index.ts` function. The function builds the app lazily, so a missing setting produces the designed 503 rather than a load crash. There is no Upstash, Global Config or separate API folder. `server.ts` is the local entry. `bun.lock` is committed so installs are reproducible.
 
 Needed in the project:
 
@@ -111,6 +114,11 @@ The JavaScript build, frozen at its last reviewed commit, with its own `package.
 
 ## Open decisions
 
-- The $20 Upstash cap and the launch limits need Fraser's yes.
-- The footer contact address, if wanted.
-- The 200 GB and 1.5M read guards: the bytes guard binds first above an average plan size of about 130 KB.
+- The launch limits need Fraser's yes; the 200 GB and 1.5M read guards bind at an average plan size of about 130 KB.
+- A monitored contact address for takedown reports, before the terms page ships.
+- The history rewrite and tag cleanup before the repository is made public.
+- A tombstone retention period, if the terms are going to promise one.
+
+## Open source
+
+MIT licensed. See `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md` and `docs/architecture.md`. The repository is still private until the history scan and author-email rewrite are done.

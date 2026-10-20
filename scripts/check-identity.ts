@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 
 const ALLOWED = new Set([
   'frasergriffiths@users.noreply.github.com',
-  'frasergriffiths@users.noreply.github.com',
+  'steven@planny.invalid',
 ]);
 
 function git(args: string[]): string {

@@ -9,6 +9,7 @@ import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
 let app: ReturnType<typeof createVercelApp> | null = null;
 let failure: string | null = null;
 let purged = false;
+let purgeStatus: 'pending' | 'ok' | 'failed' = 'pending';
 
 async function purgePlanTags(): Promise<void> {
   if (purged || !process.env.BLOB_READ_WRITE_TOKEN) return;
@@ -21,7 +22,9 @@ async function purgePlanTags(): Promise<void> {
     for (let i = 0; i < ids.length; i += 16) {
       await Promise.all(ids.slice(i, i + 16).map((id) => dangerouslyDeleteByTag(`plan-${id}`)));
     }
+    purgeStatus = 'ok';
   } catch (error) {
+    purgeStatus = 'failed';
     console.error('planny: startup purge failed', error instanceof Error ? error.message : error);
   }
 }
@@ -67,7 +70,7 @@ export default {
       };
       const commit = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
       const deploymentEnv = process.env.VERCEL_ENV ?? null;
-      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, commit, env: deploymentEnv, flags: env, error: failure })}\n`, {
+      return new Response(`${JSON.stringify({ ok: true, configured: app !== null, runtime, commit, env: deploymentEnv, flags: env, purge: purgeStatus, error: failure })}\n`, {
         status: 200,
         headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });

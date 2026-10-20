@@ -25,6 +25,13 @@ const PLAN_CSP = "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-
   + "form-action 'none'; frame-ancestors 'none'";
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const SAMPLE_CSP = PLAN_CSP.replace('sandbox;', "sandbox allow-top-navigation-by-user-activation;");
+const SAMPLE_CTA = '<div style="position:fixed;right:20px;bottom:20px;z-index:10;font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;">'
+  + '<a href="/" style="display:inline-block;padding:10px 14px;border:1px solid #3f3f3f;border-radius:4px;background:#0a0a0a;color:#f5f5f5;text-decoration:none;">Make your own plan</a></div>';
+
+function samplePage(): string {
+  return PAGES.sample.replace('</body>', `${SAMPLE_CTA}\n</body>`);
+}
 
 export interface Logger {
   error(...args: unknown[]): void;
@@ -547,7 +554,7 @@ export function createApp(deps: AppDeps): App {
   });
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
-  app.get('/sample', () => page(200, PAGES.sample));
+  app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   app.get('/health', () => json(200, {

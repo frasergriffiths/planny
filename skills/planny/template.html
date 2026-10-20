@@ -24,6 +24,9 @@
     --line: #262626;
     --accent: #3291FF;
     --panel: #0a0a0a;
+    --inset-card: 16px;
+    --border-card: 2px;
+    --pad-card: 14px;
     /* /TOKENS */
     color-scheme: dark;
     --line-strong: #3f3f3f;
@@ -103,23 +106,19 @@
   }
   .measure { max-width: 72ch; }
   .box {
-    position: relative;
+    box-sizing: border-box;
     margin: 24px 0;
-    padding: 20px 22px 20px 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-card);
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
     background: transparent;
   }
-  .box::before, .kpi::before {
-    content: "";
-    position: absolute;
-    left: 1px;
-    top: var(--radius-card);
-    bottom: var(--radius-card);
-    width: 2px;
-    background: var(--accent);
+  .box.outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: calc(var(--inset-card) - 1px);
   }
-  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .kpis {
     display: grid;
@@ -128,11 +127,17 @@
     margin: 24px 0 0;
   }
   .kpi {
-    position: relative;
-    padding: 16px 16px 16px 18px;
+    box-sizing: border-box;
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
+    background: transparent;
+  }
+  .kpi.outline {
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
-    background: transparent;
+    padding: calc(var(--inset-card) - 1px);
   }
   .kpi strong {
     display: block;
@@ -149,6 +154,7 @@
     letter-spacing: -.03em;
   }
   h3 { margin: 24px 0 8px; font-size: 18px; }
+  main > section > h2, aside > section > h3 { padding-left: var(--inset-card); }
   p { margin: 0 0 14px; }
   ul, ol { margin: 0 0 16px; padding-left: 20px; }
   li { margin: 6px 0; }
@@ -232,6 +238,16 @@
     .bar { padding: 0 5px; font-size: 10px; }
     th, td { padding: 10px 8px; }
   }
+  @media (max-width: 420px) {
+    .page { padding: 16px; }
+    .gantt-head, .gantt-row { grid-template-columns: 84px repeat(8, minmax(16px, 1fr)); gap: 3px; }
+    .bar { padding: 0 3px; font-size: 9px; }
+    .kpis { gap: 8px; }
+    .box { padding: var(--pad-card); }
+    .kpi { padding: var(--pad-card); }
+    th, td { padding: 8px 6px; }
+    table { font-size: 12px; }
+  }
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi { break-inside: avoid; }
@@ -249,6 +265,23 @@
   @media print {
     .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
   }
+  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border: 0; border-left: var(--border-card) solid var(--accent); border-radius: 0; background: transparent; }
+  .chart-caption { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
+  .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
+  .donut-legend span { display:flex; align-items:center; gap:6px; }
+  .donut-legend i { display:inline-block; width:6px; height:6px; border-radius: var(--radius-swatch); }
+  .budget-total { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .budget-total span { margin-left: 6px; color: var(--muted); font-family: var(--sans); font-size: 11px; }
+  .stacked { display: flex; height: 10px; overflow: hidden; border-radius: var(--radius-bar); background: var(--line); gap: 2px; }
+  .stacked span { display: block; height: 100%; transform-origin: left; animation: stack-grow .8s ease-out both; }
+  .stack-coffee { background: #3291FF; }
+  .stack-packaging { background: #8ab8ff; }
+  .stack-marketing { background: #5f6368; }
+  .stack-ops { background: #3f3f3f; }
+  .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+  .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  @keyframes stack-grow { from { transform: scaleX(0); } }
 </style>
 </head>
 <body>
@@ -372,8 +405,8 @@
         </div>
       </section>
 
-      <section>
-        <h3>Open questions</h3>
+      <section class="box outline">
+        <div class="eyebrow">Open questions</div>
         <ul class="aside-list">
           <li>Does the preview need its own Upstash database, or is the prefix enough?</li>
           <li>Is 4 MiB enough for a plan with embedded screenshots?</li>
@@ -381,8 +414,8 @@
         </ul>
       </section>
 
-      <section>
-        <h3>Definition of done</h3>
+      <section class="box outline">
+        <div class="eyebrow">Definition of done</div>
         <ul class="aside-list">
           <li>An upload returns a link and a delete key.</li>
           <li>The link renders with no external requests.</li>

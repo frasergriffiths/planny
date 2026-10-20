@@ -1,8 +1,39 @@
 @import "tailwindcss";
 
+/* TOKENS:THEME */
+@theme {
+  --radius-card: 12px;
+  --radius-bar: 4px;
+  --radius-swatch: 3px;
+  --color-line: #262626;
+  --color-accent: #3291FF;
+  --color-panel: #0a0a0a;
+  --inset-card: 16px;
+  --border-card: 2px;
+  --pad-card: 14px;
+}
+/* /TOKENS:THEME */
+
 html,
 body {
   margin: 0;
   background: #000;
   color-scheme: dark;
+}
+
+/* Left-rule card: transparent, no outline, no radius, 16px text inset. */
+.plan-card {
+  padding: var(--pad-card);
+  border: 0;
+  border-left: var(--border-card) solid var(--color-accent);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Outline card: transparent, a full hairline, rounded, with the same 16px inset. */
+.plan-card-outline {
+  padding: calc(var(--inset-card) - 1px);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: transparent;
 }

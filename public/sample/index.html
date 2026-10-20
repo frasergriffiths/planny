@@ -25,6 +25,9 @@
     --line: #262626;
     --accent: #3291FF;
     --panel: #0a0a0a;
+    --inset-card: 16px;
+    --border-card: 2px;
+    --pad-card: 14px;
     /* /TOKENS */
     color-scheme: dark;
     --line-strong: #3f3f3f;
@@ -104,23 +107,19 @@
   }
   .measure { max-width: 72ch; }
   .box {
-    position: relative;
+    box-sizing: border-box;
     margin: 24px 0;
-    padding: 20px 22px 20px 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-card);
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
     background: transparent;
   }
-  .box::before, .kpi::before {
-    content: "";
-    position: absolute;
-    left: 1px;
-    top: var(--radius-card);
-    bottom: var(--radius-card);
-    width: 2px;
-    background: var(--accent);
+  .box.outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: calc(var(--inset-card) - 1px);
   }
-  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .kpis {
     display: grid;
@@ -129,11 +128,17 @@
     margin: 24px 0 0;
   }
   .kpi {
-    position: relative;
-    padding: 16px 16px 16px 18px;
+    box-sizing: border-box;
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
+    background: transparent;
+  }
+  .kpi.outline {
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
-    background: transparent;
+    padding: calc(var(--inset-card) - 1px);
   }
   .kpi strong {
     display: block;
@@ -150,6 +155,7 @@
     letter-spacing: -.03em;
   }
   h3 { margin: 24px 0 8px; font-size: 18px; }
+  main > section > h2, aside > section > h3 { padding-left: var(--inset-card); }
   p { margin: 0 0 14px; }
   ul, ol { margin: 0 0 16px; padding-left: 20px; }
   li { margin: 6px 0; }
@@ -233,6 +239,16 @@
     .bar { padding: 0 5px; font-size: 10px; }
     th, td { padding: 10px 8px; }
   }
+  @media (max-width: 420px) {
+    .page { padding: 16px; }
+    .gantt-head, .gantt-row { grid-template-columns: 84px repeat(8, minmax(16px, 1fr)); gap: 3px; }
+    .bar { padding: 0 3px; font-size: 9px; }
+    .kpis { gap: 8px; }
+    .box { padding: var(--pad-card); }
+    .kpi { padding: var(--pad-card); }
+    th, td { padding: 8px 6px; }
+    table { font-size: 12px; }
+  }
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi { break-inside: avoid; }
@@ -250,8 +266,7 @@
   @media print {
     .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
   }
-
-  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border:1px solid var(--line); border-radius: var(--radius-card); background: transparent; }
+  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border: 0; border-left: var(--border-card) solid var(--accent); border-radius: 0; background: transparent; }
   .chart-caption { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
   .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
   .donut-legend span { display:flex; align-items:center; gap:6px; }
@@ -410,6 +425,19 @@
       </section>
 
       <section>
+        <h2>Decisions</h2>
+        <table>
+          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>Subscription model</td><td>Weekend bag / four-week subscription</td><td>Four-week</td><td>Keeps the same roast and adds a second bag without a second roastery.</td></tr>
+            <tr><td>Price</td><td>$32 / $38 / $42 per four weeks</td><td>$38</td><td>Covers the second roaster at 1,200 subscribers.</td></tr>
+            <tr><td>Beta size</td><td>100 / 200 / 400 customers</td><td>200</td><td>Enough signal on churn without buying capacity first.</td></tr>
+            <tr><td>Delivery</td><td>Flat $4 / free over $60</td><td>Flat $4</td><td>Simple to explain; local pickup stays free.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
         <h2>Risks</h2>
         <table>
           <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
@@ -465,8 +493,8 @@
         </div>
       </section>
 
-      <section>
-        <h3>Open questions</h3>
+      <section class="box outline">
+        <div class="eyebrow">Open questions</div>
         <ul class="aside-list">
           <li>Will 200 beta customers convert at 60%?</li>
           <li>Can the roaster handle 1,200 bags a month?</li>
@@ -474,8 +502,8 @@
         </ul>
       </section>
 
-      <section>
-        <h3>Definition of done</h3>
+      <section class="box outline">
+        <div class="eyebrow">Definition of done</div>
         <ul class="aside-list">
           <li>1,200 subscribers by September.</li>
           <li>Churn below 4% for two months.</li>

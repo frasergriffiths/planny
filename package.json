@@ -9,7 +9,9 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && bun test --concurrency 1 && bun run scripts/generate-skill-errors.ts --check",
+    "tokens": "bun run scripts/generate-tokens.ts",
+    "sample": "bun run scripts/generate-sample.ts",
+    "test": "tsc --noEmit && bun run scripts/generate-tokens.ts --check && bun run scripts/generate-sample.ts --check && bun test --concurrency=1 && bun run scripts/generate-skill-errors.ts --check",
     "dev": "bun run local/server.ts",
     "start": "bun run local/server.ts",
     "parity": "bun run scripts/parity.ts",
@@ -17,7 +19,7 @@
     "local:install": "bun run local/service.ts install",
     "local:uninstall": "bun run local/service.ts uninstall",
     "local:status": "bun run local/service.ts status",
-    "build": "vite build --config web/vite.config.ts && bun run scripts/generate-pages.ts"
+    "build": "bun run scripts/generate-tokens.ts && bun run scripts/generate-sample.ts && vite build --config web/vite.config.ts && bun run scripts/generate-pages.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
