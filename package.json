@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "tokens": "bun run scripts/generate-tokens.ts",
     "sample": "bun run scripts/generate-sample.ts",
-    "test": "tsc --noEmit && bun run scripts/generate-tokens.ts --check && bun run scripts/generate-sample.ts --check && bun test --concurrency=1 && bun run scripts/generate-skill-errors.ts --check",
+    "test": "tsc --noEmit && bun run scripts/generate-tokens.ts --check && bun run scripts/generate-sample.ts --check && bun test --isolate --concurrency=1 && bun run scripts/generate-skill-errors.ts --check",
     "dev": "bun run local/server.ts",
     "start": "bun run local/server.ts",
     "admin": "bun run scripts/admin.ts",

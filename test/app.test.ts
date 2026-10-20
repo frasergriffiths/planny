@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'bun:test';
+import { newPlanId } from '../src/util.js';
 import { createApp } from '../src/app.js';
 import type { App, Logger } from '../src/app.js';
 import { loadConfig, MiB, type AppConfig } from '../src/config.js';
@@ -296,8 +297,155 @@ test('the per-plan and monthly alerts are logged once', async () => {
     const json = await uploaded(t);
     expect((await view(t, json.url)).status).toBe(200);
     expect((await view(t, json.url)).status).toBe(200);
-    expect(t.alerts.some((alert) => alert.fields.plan === json.id)).toBe(true);
-    expect(t.alerts.some((alert) => alert.message.includes('half of the monthly read budget'))).toBe(true);
+    expect(t.alerts.filter((alert) => alert.fields.plan === json.id)).toHaveLength(1);
+    expect(t.alerts.filter((alert) => alert.message.includes('half of the monthly read budget'))).toHaveLength(1);
+    t.clock.t += 60 * 60e3 + 1; // a later hour is a fresh plan-alert window
+    expect(t.alerts.filter((alert) => alert.fields.plan === json.id)).toHaveLength(1);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('a failed blob put rolls the reservation back so uploads keep working', async () => {
+  const t = setup();
+  try {
+    const realPut = t.store.blobs.put.bind(t.store.blobs);
+    t.store.blobs.put = async () => {
+      throw new Error('disk dead');
+    };
+    const failed = await upload(t);
+    expect(failed.status).toBe(500);
+    expect(((await failed.json()) as { error: { code: string } }).error.code).toBe('upload_failed');
+    expect(t.logs.some((args) => args[0] === 'planny: could not store the plan file')).toBe(true);
+
+    // The reservation was released: no pending record and site bytes are back to 0.
+    t.store.blobs.put = realPut;
+    const counter = await t.store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:site:bytes'], []);
+    expect(Number(counter)).toBe(0);
+    const pending = await (t.app as unknown as { records: { staleIds(staleBefore: number, limit: number): Promise<unknown[]> } }).records.staleIds(t.clock.t - 60_000, 20);
+    expect(pending).toEqual([]);
+
+    const next = await upload(t);
+    expect(next.status).toBe(201);
+
+    // Site bytes were also released: the quota senses only the stored plan.
+    const second = await upload(t, { name: 'Second' });
+    expect(second.status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('a store outage maps to 503 with retry-after on uploads and views', async () => {
+  const t = setup();
+  try {
+    const realEval = t.store.redis.eval.bind(t.store.redis);
+    const outage = async () => {
+      throw new (await import('../src/stores/blob.js')).StoreUnavailableError();
+    };
+    t.store.redis.eval = outage;
+    const down = await upload(t);
+    expect(down.status).toBe(503);
+    expect(down.headers.get('retry-after')).toBe('5');
+    expect(((await down.json()) as { error: { code: string } }).error.code).toBe('store_unavailable');
+
+    // Views are pages, so the same outage yields the paused HTML page.
+    const viewDown = await t.app.fetch(new Request(`${ORIGIN}/p/00000000-0000-4000-8000-000000000001`), { address: ADDRESS });
+    expect(viewDown.status).toBe(503);
+    expect(viewDown.headers.get('retry-after')).toBe('5');
+    expect(await viewDown.text()).toContain('New plan reads are paused');
+    t.store.redis.eval = realEval;
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('app-level storage and upload limits map to the documented status and code', async () => {
+  const cases = [
+    { overrides: { siteBytes: 50 }, status: 503, code: 'storage_full' },
+    { overrides: { ownerBytes: 50 }, status: 429, code: 'storage_limit' },
+    { overrides: { monthly: { uploads: 0, reads: 1_500_000, readBytes: 200 * MiB } }, status: 503, code: 'site_upload_monthly_limit' },
+    { overrides: { uploadsPerDay: 0 }, status: 429, code: 'address_upload_daily_limit' },
+  ];
+  for (const testCase of cases) {
+    const t = setup({}, testCase.overrides);
+    try {
+      const response = await upload(t);
+      expect(response.status, `${testCase.code}`).toBe(testCase.status);
+      expect(((await response.json()) as { error: { code: string } }).error.code, `${testCase.code}`).toBe(testCase.code);
+    } finally {
+      t.cleanup();
+    }
+  }
+});
+
+test('upload validation and method handling cover the remaining cases', async () => {
+  const t = setup();
+  try {
+    const tooLong = await upload(t, { name: 'x'.repeat(121) });
+    expect(tooLong.status).toBe(400);
+    expect(((await tooLong.json()) as { error: { code: string } }).error.code).toBe('name_too_long');
+
+    // NOTE: an unknown query key is asserted below: querySchema is .strict(), so any
+    // extra key is rejected with invalid_query per the documented contract.
+    const unknown = await t.app.fetch(new Request(`${ORIGIN}/plans?name=A&duration=1h&x=1`, {
+      method: 'POST', headers: { 'content-type': 'text/html' }, body: PLAN,
+    }), { address: ADDRESS });
+    expect(unknown.status).toBe(400);
+    expect(((await unknown.json()) as { error: { code: string } }).error.code).toBe('invalid_query');
+
+    const getPlans = await t.app.fetch(new Request(`${ORIGIN}/plans`), { address: ADDRESS });
+    expect(getPlans.status).toBe(405);
+    expect(getPlans.headers.get('allow')).toBe('POST');
+
+    const id = newPlanId();
+    const put = await t.app.fetch(new Request(`${ORIGIN}/p/${id}`, { method: 'PUT' }), { address: ADDRESS });
+    expect(put.status).toBe(405);
+    expect(put.headers.get('allow')).toBe('GET, HEAD, DELETE');
+
+    const headHome = await t.app.fetch(new Request(ORIGIN, { method: 'HEAD' }), { address: ADDRESS });
+    expect(headHome.status).toBe(200);
+    expect(headHome.headers.get('content-type')).toContain('text/html');
+    expect((await headHome.arrayBuffer()).byteLength).toBe(0);
+
+    const json = await uploaded(t);
+    const headPlan = await t.app.fetch(new Request(json.url, { method: 'HEAD' }), { address: ADDRESS });
+    expect(headPlan.status).toBe(200);
+    expect(headPlan.headers.get('x-planny-build')).toBe('local');
+    expect(headPlan.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600, must-revalidate');
+    expect((await headPlan.arrayBuffer()).byteLength).toBe(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('delete attempts are rate limited and concurrent removals answer 409 busy', async () => {
+  const t = setup();
+  try {
+    // The delete limiter allows 60 attempts per hour; a lower limit makes the mapping testable.
+    t.config.rateLimits.deletes = { max: 2, windowSeconds: 3600 };
+    const json = await uploaded(t);
+    t.config.rateLimits.deletes = { max: 1, windowSeconds: 3600 };
+    expect((await remove(t, json.id, json.deleteKey)).status).toBe(200);
+
+    const second = await uploaded(t, { name: 'Second' });
+    const limited = await remove(t, second.id, second.deleteKey);
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(((await limited.json()) as { error: { code: string } }).error.code).toBe('rate_limited');
+
+    // A concurrent removal loses the claim race: the second claimer answers 409 busy.
+    const third = await uploaded(t, { name: 'Third' });
+    t.clock.t += 3600e3; // reset the limiter window
+    const records = (t.app as unknown as { records: { claim(): Promise<string> } }).records;
+    const realClaim = records.claim;
+    records.claim = async () => 'busy';
+    const busy = await t.app.fetch(new Request(`${ORIGIN}/p/${third.id}`, {
+      method: 'DELETE', headers: { authorization: `Bearer ${third.deleteKey}` },
+    }), { address: ADDRESS });
+    records.claim = realClaim;
+    expect(busy.status).toBe(409);
+    expect(((await busy.json()) as { error: { code: string } }).error.code).toBe('busy');
   } finally {
     t.cleanup();
   }

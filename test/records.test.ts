@@ -153,3 +153,39 @@ test('reset clears the month', async () => {
   const after = await f.store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:month:1970-01:uploads'], []);
   expect(Number(after)).toBe(0);
 });
+
+test('the upload gate reports daily and monthly caps without counting', async () => {
+  const f = fixture();
+  const owner = 'owner-gated';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const limits = { spacingSeconds: 0, perDay: 0, perMonth: 500 };
+  const daily = await f.records.uploadGate(owner, now, limits);
+  expect(daily.ok).toBe(false);
+  expect(daily.code).toBe('address_upload_daily_limit');
+  expect(daily.retryAfter).toBeGreaterThan(0);
+  expect(daily.retryAfter).toBeLessThanOrEqual(24 * 60 * 60);
+
+  // The gate is read-only: nothing was counted for the address or the day.
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(0);
+
+  const monthly = await f.records.uploadGate(owner, now, { spacingSeconds: 0, perDay: 50, perMonth: 0 });
+  expect(monthly.ok).toBe(false);
+  expect(monthly.code).toBe('address_upload_monthly_limit');
+  expect(monthly.retryAfter).toBeGreaterThan(0);
+});
+
+test('a second concurrent claim loses the race and answers busy', async () => {
+  const f = fixture();
+  const id = newPlanId();
+  const claim = newClaimId();
+  expect(await f.reserve(id, claim)).toBe('ok');
+  expect(await f.records.publish(id, claim, 10 * MIN)).toBe('ok');
+  const first = newClaimId();
+  expect(await f.records.claim(id, { claimId: first, now: 5000, reason: 'deleted', staleBefore: 0 })).toBe('ok');
+  // A second claimer races the first fresh claim: the store answers busy, which the
+  // app maps to HTTP 409.
+  expect(await f.records.claim(id, { claimId: newClaimId(), now: 6000, reason: 'deleted', staleBefore: 0 })).toBe('busy');
+  const record = await f.records.get(id);
+  expect(record?.state).toBe('removing');
+  expect(record?.claimId).toBe(first);
+});
