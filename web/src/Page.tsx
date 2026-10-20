@@ -1,6 +1,4 @@
-import { Terms } from './Terms';
-
-export type PageKind = 'home' | 'notfound' | 'gone' | 'paused' | 'terms';
+export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 
 const copy: Record<PageKind, { kicker: string; title: string; body: string; code?: string }> = {
   home: {
@@ -25,11 +23,6 @@ const copy: Record<PageKind, { kicker: string; title: string; body: string; code
     title: 'planny is paused.',
     body: 'A limit was reached. Reading resumes at the reset time.',
     code: '503',
-  },
-  terms: {
-    kicker: 'Terms of use',
-    title: 'Terms of use',
-    body: 'The rules for publishing and reading a plan.',
   },
 };
 
@@ -103,8 +96,6 @@ export function Page({ kind }: { kind: PageKind }) {
               </dl>
             </section>
           </>
-        ) : kind === 'terms' ? (
-          <Terms />
         ) : (
           <section className="plan-card mx-auto my-16 max-w-2xl">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">{page.kicker}</p>
@@ -118,7 +109,7 @@ export function Page({ kind }: { kind: PageKind }) {
 
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-6 py-6 font-mono text-xs text-zinc-600">
         <span>
-          planny, plans for agents · <a href="/terms-of-use" className="text-zinc-500 no-underline hover:text-white">Terms</a>
+          planny, plans for agents · <a href="https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Terms</a>
           {' · '}
           <a href="https://github.com/frasergriffiths/planny/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Privacy</a>
           {' · '}

@@ -16,7 +16,6 @@ export default defineConfig({
         '404': resolve(import.meta.dirname, '404.html'),
         '410': resolve(import.meta.dirname, '410.html'),
         '503': resolve(import.meta.dirname, '503.html'),
-        terms: resolve(import.meta.dirname, 'terms.html'),
       },
     },
   },

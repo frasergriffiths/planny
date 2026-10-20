@@ -10,7 +10,6 @@ const pages = {
   notFound: read('404.html'),
   gone: read('410.html'),
   paused: read('503.html'),
-  terms: read('terms.html'),
   sample: readFileSync(join(root, 'public', 'sample', 'index.html'), 'utf8'),
   og: readFileSync(join(root, 'public', 'og.png'), 'base64'),
   icons: {

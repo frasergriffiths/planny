@@ -547,7 +547,7 @@ export function createApp(deps: AppDeps): App {
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
   app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
-  app.get('/terms-of-use', () => page(200, PAGES.terms));
+  app.get('/terms-of-use', () => page(301, '', { location: 'https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md' }));
   app.get('/robots.txt', (c) => c.text(PAGES.robots, 200, {
     'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
   }));

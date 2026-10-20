@@ -75,9 +75,10 @@ describe('seo', () => {
 
   test('sitemap.xml lists the public pages at the canonical origin', () => {
     const sitemap = readFileSync(join(root, 'public', 'sitemap.xml'), 'utf8');
-    for (const path of ['/', '/sample', '/terms-of-use']) {
+    for (const path of ['/', '/sample']) {
       expect(sitemap).toContain(`<loc>${origin.slice(0, -1)}${path}</loc>`);
     }
+    expect(sitemap).not.toContain('terms-of-use');
     expect(PAGES.sitemap as string).toBe(sitemap);
   });
 
@@ -181,7 +182,7 @@ describe('seo', () => {
       expect(body).toContain('<?xml');
       expect(body).toContain('<urlset');
       expect(body).toContain(`${origin}</loc>`);
-      expect(body).toContain(`${origin}terms-of-use</loc>`);
+      expect(body).not.toContain('terms-of-use</loc>');
     } finally {
       t.cleanup();
     }
@@ -217,12 +218,14 @@ describe('seo', () => {
   });
 
   test('page shells link the favicon set and manifest', () => {
-    for (const page of [PAGES.home, PAGES.notFound, PAGES.gone, PAGES.paused, PAGES.terms]) {
+    for (const page of [PAGES.home, PAGES.notFound, PAGES.gone, PAGES.paused]) {
       expect(page).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
       expect(page).toContain('<link rel="icon" href="/favicon.ico" sizes="any">');
       expect(page).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png">');
       expect(page).toContain('<link rel="manifest" href="/site.webmanifest">');
       expect(page).toContain('name="theme-color"');
+      // The footer carries the GitHub terms link in every shell's bundle.
+      expect(page).toContain('https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md');
     }
   });
 });
