@@ -123,6 +123,8 @@ export function Page({ kind }: { kind: PageKind }) {
           <a href="https://github.com/frasergriffiths/planny/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Privacy</a>
           {' · '}
           <a href="https://github.com/frasergriffiths/planny/blob/main/ACCEPTABLE_USE.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Acceptable use</a>
+          {' · '}
+          <a href="https://github.com/frasergriffiths/planny/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Licences</a>
         </span>
         <span>One link. One key.</span>
       </footer>
