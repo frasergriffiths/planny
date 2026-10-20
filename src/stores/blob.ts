@@ -25,7 +25,7 @@ interface BlobClientOptions {
 
 const STATE = 'state.json';
 const LOCK = 'state.lock';
-const LOCK_STALE_MS = 15_000;
+const LOCK_STALE_MS = 2_000;
 
 function hmacSuffix(id: string, key: string | undefined): string {
   if (!key) return '';
@@ -46,7 +46,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   const store = (name: string) => `${prefix}${name}`;
 
   async function acquire(): Promise<void> {
-    for (let attempt = 0; attempt < 200; attempt += 1) {
+    for (let attempt = 0; attempt < 400; attempt += 1) {
       try {
         await put(store(LOCK), String(Date.now()), {
           access,
