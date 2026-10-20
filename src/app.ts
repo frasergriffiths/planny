@@ -556,6 +556,13 @@ export function createApp(deps: AppDeps): App {
 
   app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
   app.get('/terms-of-use', () => page(200, PAGES.terms));
+  app.get('/robots.txt', (c) => c.text(PAGES.robots, 200, {
+    'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
+  }));
+  app.get('/sitemap.xml', (c) => c.text(PAGES.sitemap, 200, {
+    'content-type': 'application/xml; charset=utf-8',
+    'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
+  }));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   app.get('/health', () => json(200, {
