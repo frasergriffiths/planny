@@ -71,7 +71,7 @@ objects directly. Do not create one.
 2. Acknowledge within 72 hours. Agree a disclosure timeline; credit the reporter if
    they want it.
 3. Reproduce in a local instance. Treat the sanitiser, the plan CSP, the delete path,
-   the Blob store and the deploy guard as the highest severity.
+   the Blob store, the preview upload block and the deploy helper as the highest severity.
 4. Fix, add a regression test, deploy, then publish an advisory if needed.
 5. If a token may be exposed, rotate it before anything else.
 

@@ -6,7 +6,7 @@ Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone
 
 Try it at https://use-planny.vercel.app.
 
-Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [operator runbook](docs/runbook.md).
+Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md), the [operator runbook](docs/runbook.md) and the [changelog](CHANGELOG.md).
 
 ## Install the agent skill
 
@@ -14,7 +14,7 @@ Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architectur
 npx skills add frasergriffiths/planny --skill planny
 ```
 
-The one command installs the skill into Claude Code, Cursor, Codex, OpenCode, Copilot and other skill agents. Runs on Node 22+ or Bun (`bunx skills add frasergriffiths/planny --skill planny`). See the [skills.sh page](https://www.skills.sh/frasergriffiths/planny/planny) and the [skill source](https://github.com/frasergriffiths/planny/tree/main/skills/planny).
+One command installs the skill into Claude Code, Cursor, Codex, OpenCode, Copilot and other skill agents. Add `-g` to install it globally. Runs on Node 22+ or Bun (`bunx skills add frasergriffiths/planny --skill planny`). Set `PLANNY_URL` in the agent's environment to publish to a self-hosted instance instead of the hosted default. See the [skills.sh page](https://www.skills.sh/frasergriffiths/planny/planny) and the [skill source](https://github.com/frasergriffiths/planny/tree/main/skills/planny).
 
 ## How it works
 
@@ -104,9 +104,9 @@ Core production settings:
 | --- | --- |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read-write token. Required. It can read and write the whole store. |
 | `BLOB_ACCESS` | `private` or `public`. Production requires `private`: a public store exposes every object at its Blob URL, including `state.json` and `config/kill.json`. |
-| `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Required only for a public store; rotating it breaks existing links. |
-| `PLANNY_ADDRESS_KEY` | Stable keyed hash of client addresses for rates and pauses. Rotating it resets every derived address and every rate limit. |
-| `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. |
+| `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Set it for a public store; if unset, the Blob token is used and rotating it breaks existing links. |
+| `PLANNY_ADDRESS_KEY` | Recommended stable keyed hash of client addresses for rates and pauses. If unset, the Blob token is used; rotating either resets every derived address and rate limit. |
+| `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. Defaults to `https://use-planny.vercel.app`; set it for a self-hosted instance. |
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
@@ -135,9 +135,9 @@ See [`docs/architecture.md`](docs/architecture.md) for the request flow, the rec
 - The delete key is returned once; only its hash is stored. The operator can take a plan down.
 - Client addresses are used only through a keyed hash for rate limits and pauses. The raw address is not stored in the plan record.
 - The Vercel Blob token is a secret. It can read and write the whole store; a public store token also exposes objects directly.
-- The deploy guard refuses to publish unless the Vercel project is Pro, and the production branch should stay `main`. Previews must not accept uploads.
+- The optional deploy helper refuses to deploy unless the Vercel project is Pro; Vercel itself does not enforce that check. The production branch should stay `main`, and previews must not accept uploads.
 
-For vulnerability reporting and the takedown route, see [`SECURITY.md`](SECURITY.md). The terms of use are at [`docs/terms-of-use.md`](docs/terms-of-use.md) and at `/terms-of-use`.
+For vulnerability reporting and the takedown route, see [`SECURITY.md`](SECURITY.md). The canonical terms are [`docs/terms-of-use.md`](docs/terms-of-use.md); `/terms-of-use` returns a 301 there.
 
 ## Deploying on Vercel
 
@@ -146,9 +146,9 @@ The repo is the Vercel project root. `vercel.json` sets the LHR1 region and rout
 Needed in the project:
 
 1. A Blob store in LHR1. A private store is the safe default; a public store exposes every object at its Blob URL.
-2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY` and `PLANNY_PUBLIC_ORIGIN`. The operator token required for takedown and reset is documented in the [self-hosting guide](docs/self-hosting.md).
+2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS=private`, `PLANNY_ADDRESS_KEY`, `PLANNY_PUBLIC_ORIGIN` and, only for a public store, `PLANNY_BLOB_KEY_1`. The operator token required for takedown and reset is documented in the [self-hosting guide](docs/self-hosting.md). Only the Blob token is required to serve and publish.
 
-Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro. `GET /health` is uncached and reports the build, runtime and which settings are present.
+Production branch is `main`. A push to `main` deploys when the Vercel project is connected to the GitHub repository; any other branch makes a preview. Check `/health` after a minute; if the push did not produce a deployment, deploy by hand with `bunx vercel@latest --prod --yes`, or use the optional `bun run scripts/deploy.ts --prod` helper, which refuses unless the project is Pro. `GET /health` is uncached and reports the build, runtime, commit and which settings are present.
 
 On a production check:
 
@@ -168,7 +168,7 @@ bun run build       # tokens, sample, Vite build and generated pages
 bun test --isolate --concurrency=1   # the test suite alone
 ```
 
-The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy guard, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
+The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy helper, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
 CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test --isolate --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 

@@ -12,7 +12,7 @@ A short description of the change and why.
 ## Security boundary
 
 Does this change touch the sanitiser, the plan CSP, the delete key, the Blob store,
-the admin route, the address hash or the deploy guard?
+the admin route, the address hash, the deploy helper or the preview upload block?
 
 - [ ] No
 - [ ] Yes, and I have explained the change and its risk below

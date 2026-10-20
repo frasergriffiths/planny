@@ -100,7 +100,7 @@ The optional helper in `scripts/deploy.ts` refuses unless the checked-out branch
 - **Store:** the Blob token and the private store. The plan-path HMAC protects plan HTML only; on a public store `state.json` and `config/kill.json` stay reachable at their Blob URLs, so use a private store.
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
-- **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits.
+- **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits. If the key is unset, the Blob token is used, so rotating the token has the same effect.
 - **Deploy helper:** the optional `scripts/deploy.ts` refuses non-Pro projects and fails closed on unknown plans; previews must not publish. Vercel itself does not enforce the Pro check.
 - **Secrets:** the Blob token, address key, Blob path key and admin token. See `SECURITY.md`.
 
@@ -117,7 +117,7 @@ The optional helper in `scripts/deploy.ts` refuses unless the checked-out branch
 
 ## Tests and CI
 
-`bun test` covers the sanitiser, the plan state machine, limits and guards, the view path with the per-plan counter, the admin audit, rate limits and resets, error pages and headers, the upload switch, the local SQLite store and its migration, the raw-body boundary, the adversarial sanitiser matrix, the Vercel entry with a fake environment, the deploy guard, the token/sample generators and the React card contract.
+`bun test` covers the sanitiser, the plan state machine, limits and guards, the view path with the per-plan counter, the admin audit, rate limits and resets, error pages and headers, the upload switch, the local SQLite store and its migration, the raw-body boundary, the adversarial sanitiser matrix, the Vercel entry with a fake environment, the deploy helper, the token/sample generators and the React card contract.
 
 The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project. The CI workflow runs install, typecheck, build and test. The live smoke test checks raw HTML delivery, a cache HIT, 404/410 MISS, a takedown purge, `/health` and `/sample`.
 

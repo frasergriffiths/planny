@@ -72,7 +72,7 @@ By contributing, you agree that your contribution is licensed under the MIT lice
 
 ## Pull requests
 
-Small, single-purpose PRs are easiest to review. Include what changed, why, the commands you ran, and any behaviour that is deliberately left out. If a change affects the Blob store, the sanitiser, the delete path, the terms or the deploy guard, say so explicitly.
+Small, single-purpose PRs are easiest to review. Include what changed, why, the commands you ran, and any behaviour that is deliberately left out. If a change affects the Blob store, the sanitiser, the delete path, the terms or the deploy helper, say so explicitly.
 
 Before opening a PR, run `bun run test` and `bun run build`. Do not commit generated build output, local data, `.env` files or real plan content.
 

@@ -75,7 +75,8 @@ The optional limit variables are documented in `.env.example` and the README.
 ### 4. Deploy
 
 A push to `main` deploys when the Vercel project is connected to the GitHub
-repository. To deploy by hand:
+repository. Check `/health` after a minute; if the push did not produce a
+deployment, deploy by hand:
 
 ```sh
 bunx vercel@latest --prod --yes

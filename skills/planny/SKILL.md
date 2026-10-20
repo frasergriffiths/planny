@@ -27,5 +27,5 @@ Resolve the directory that contains this SKILL.md and run:
 node <skill-dir>/scripts/publish.mjs plan.html --name "Q4 rollout" --duration 90d
 ```
 
-Manual Kuvo/OpenClaw install: `./install.sh` adds the `/planny` command and makes the scripts executable.
+The script posts to `https://use-planny.vercel.app` by default. Set `PLANNY_URL` or pass `--base` to publish to a self-hosted instance. Manual Kuvo/OpenClaw install: `./install.sh` adds the `/planny` command and makes the scripts executable.
 
