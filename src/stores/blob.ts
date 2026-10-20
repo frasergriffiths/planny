@@ -74,61 +74,48 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   }
 
   async function withState<T>(work: (file: string) => Promise<T>): Promise<T> {
-    await acquire();
-    try {
-      let existing: Awaited<ReturnType<typeof get>> = null;
+    for (let attempt = 1; attempt <= 5; attempt += 1) {
+      await acquire();
       try {
-        existing = await get(store(STATE), { access, token, useCache: false });
+        let existing: Awaited<ReturnType<typeof get>> = null;
+        try {
+          existing = await get(store(STATE), { access, token, useCache: false });
+        } catch (error) {
+          if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
+        }
+        const dir = mkdtempSync(join(tmpdir(), 'planny-blob-'));
+        const file = join(dir, STATE);
+        const fresh = existing && existing.statusCode === 200
+          ? await new Response(existing.stream).text()
+          : '';
+        writeFileSync(file, fresh || JSON.stringify({ strings: {}, hashes: {}, zsets: {}, expires: {} }));
+        const result = await work(file);
+        const next = readFileSync(file);
+        const etag = existing?.blob?.etag;
+        await put(store(STATE), next, {
+          access,
+          token,
+          addRandomSuffix: false,
+          contentType: 'application/json',
+          cacheControlMaxAge: 60,
+          ...(etag ? { ifMatch: etag } : { allowOverwrite: false }),
+        });
+        return result;
       } catch (error) {
-        if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
-      }
-      const dir = mkdtempSync(join(tmpdir(), 'planny-blob-'));
-      const file = join(dir, STATE);
-      let fresh = '';
-      if (existing && existing.statusCode === 200) {
-        fresh = await new Response(existing.stream).text();
-      }
-      let par = (() => {
-        try {
-          return JSON.parse(fresh) as { seq?: number };
-        } catch {
-          return {};
+        const name = error instanceof Error ? error.name : '';
+        const message = error instanceof Error ? error.message : '';
+        const precondition = name === 'BlobPreconditionFailedError' || /precondition/i.test(message);
+        if (precondition && attempt < 5) {
+          await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
+          continue;
         }
-      })();
-      let source = fresh || JSON.stringify({ strings: {}, hashes: {}, zsets: {}, expires: {} });
-      if (last && (par.seq ?? 0) < last.seq) {
-        source = last.raw;
-        par = JSON.parse(source) as { seq?: number };
+        if (error instanceof StoreUnavailableError) throw error;
+        throw new StoreUnavailableError(message || undefined);
+      } finally {
+        await del(store(LOCK), { token }).catch(() => {});
       }
-      writeFileSync(file, source);
-      const result = await work(file);
-      const updated = readFileSync(file);
-      const next = (() => {
-        try {
-          const parsed = JSON.parse(updated.toString('utf8')) as { seq?: number };
-          parsed.seq = Math.max(par.seq ?? 0, last?.seq ?? 0) + 1;
-          return JSON.stringify(parsed);
-        } catch {
-          return updated.toString('utf8');
-        }
-      })();
-      writeFileSync(file, next);
-      await put(store(STATE), Buffer.from(next), {
-        access,
-        token,
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        contentType: 'application/json',
-        cacheControlMaxAge: 60,
-      });
-      last = { seq: (JSON.parse(next) as { seq?: number }).seq ?? 0, raw: next };
-      return result;
-    } catch (error) {
-      if (error instanceof StoreUnavailableError) throw error;
-      throw new StoreUnavailableError(error instanceof Error ? error.message : undefined);
-    } finally {
-      await del(store(LOCK), { token }).catch(() => {});
     }
+    throw new StoreUnavailableError();
   }
 
   const redis: RedisLike = {
