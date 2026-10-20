@@ -46,6 +46,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   const store = (name: string) => `${prefix}${name}`;
 
   async function acquire(): Promise<void> {
+    return;
     for (let attempt = 0; attempt < 400; attempt += 1) {
       try {
         await put(store(LOCK), String(Date.now()), {
@@ -98,7 +99,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
           addRandomSuffix: false,
           contentType: 'application/json',
           cacheControlMaxAge: 60,
-          ...(etag && attempt < 3 ? { ifMatch: etag } : { allowOverwrite: true }),
+          allowOverwrite: true,
         });
         return result;
       } catch (error) {
