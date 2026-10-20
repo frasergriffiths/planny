@@ -66,9 +66,8 @@ objects directly. Do not create one.
 
 ## Suspected vulnerability
 
-1. Move the report to GitHub's private vulnerability reporting when it is enabled.
-   While the repository is private, keep it in the security inbox and do not discuss
-   a working exploit in a public issue.
+1. Keep the report in the security inbox and do not discuss a working exploit in a
+   public issue.
 2. Acknowledge within 72 hours. Agree a disclosure timeline; credit the reporter if
    they want it.
 3. Reproduce in a local instance. Treat the sanitiser, the plan CSP, the delete path,

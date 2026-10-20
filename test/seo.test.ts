@@ -74,4 +74,65 @@ describe('seo', () => {
     expect(body.length).toBeGreaterThan(1000);
     expect(body[0]).toBe(0x89);
   });
+
+  test('every icon route serves the right type with a long cache', async () => {
+    const { createApp } = await import('../src/app.js');
+    const { createLocalStore } = await import('../src/stores/local.js');
+    const { loadConfig } = await import('../src/config.js');
+    const app = createApp({
+      build: 'vercel',
+      store: createLocalStore({ dataDir: join(tmpdir(), `planny-seo-icons-${Date.now()}`) }),
+      config: loadConfig({}),
+      secret: 'test-secret',
+      origin: origin.slice(0, -1),
+      log: { error: () => {}, alert: () => {} },
+    });
+    // Binary bodies are compared against their base64 source in PAGES.
+    const cases: Array<[string, string, () => string]> = [
+      ['/favicon.svg', 'image/svg+xml', () => PAGES.icons.faviconSvg],
+      ['/favicon.ico', 'image/x-icon', () => PAGES.icons.faviconIco],
+      ['/apple-touch-icon.png', 'image/png', () => PAGES.icons.appleTouchIcon],
+      ['/icon-192.png', 'image/png', () => PAGES.icons.icon192],
+      ['/icon-512.png', 'image/png', () => PAGES.icons.icon512],
+      ['/site.webmanifest', 'application/manifest+json', () => PAGES.icons.manifest],
+    ];
+    for (const [path, type, source] of cases) {
+      const response = await app.fetch(new Request(`${origin.slice(0, -1)}${path}`), { address: '198.51.100.9' });
+      expect(response.status, path).toBe(200);
+      expect(response.headers.get('content-type'), path).toBe(type);
+      expect(response.headers.get('cache-control'), path).toContain('immutable');
+      const body = await response.arrayBuffer();
+      const expected = source();
+      let raw = '';
+      const bytes = new Uint8Array(body);
+      for (let i = 0; i < bytes.length; i += 0x8000) raw += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      if (type === 'image/png' || type === 'image/x-icon') {
+        expect(btoa(raw), path).toBe(expected);
+      } else {
+        expect(new TextDecoder().decode(body), path).toBe(expected);
+      }
+    }
+  });
+
+  test('icon bodies carry the right magic bytes', () => {
+    const pngs = [PAGES.icons.appleTouchIcon, PAGES.icons.icon192, PAGES.icons.icon512];
+    for (const b64 of pngs) {
+      const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+      expect(Array.from(bytes.slice(0, 4))).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    }
+    const ico = Uint8Array.from(atob(PAGES.icons.faviconIco), (ch) => ch.charCodeAt(0));
+    expect(ico[0]).toBe(0);
+    expect(ico[2]).toBe(1); // icon resource type
+    expect(ico[6]).toBe(16); // first entry is 16x16
+  });
+
+  test('page shells link the favicon set and manifest', () => {
+    for (const page of [PAGES.home, PAGES.notFound, PAGES.gone, PAGES.paused, PAGES.terms]) {
+      expect(page).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
+      expect(page).toContain('<link rel="icon" href="/favicon.ico" sizes="any">');
+      expect(page).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png">');
+      expect(page).toContain('<link rel="manifest" href="/site.webmanifest">');
+      expect(page).toContain('name="theme-color"');
+    }
+  });
 });

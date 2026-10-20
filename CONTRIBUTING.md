@@ -2,7 +2,7 @@
 
 Thanks for taking a look. planny is a small service: one HTML file in, one link out. Keep changes focused and leave the security boundaries alone unless the change is about them.
 
-By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). For a vulnerability, use the private route in [SECURITY.md](SECURITY.md), not a public issue.
+By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). For a vulnerability, use the email route in [SECURITY.md](SECURITY.md), not a public issue.
 
 ## Setup
 
@@ -60,11 +60,11 @@ If you add an error code, add it to `src/error-codes.ts`, run the errors generat
 
 ## Documentation
 
-The user-facing terms copy is `docs/terms-of-use.md`; the React route is wired separately. The terms must keep the honest retention wording: the plan HTML is deleted at expiry, deletion or takedown, while the name/status/date record currently has no automatic expiry. The takedown contact is a single placeholder until Fraser supplies the address; do not invent an address or add a second placeholder.
+The user-facing terms copy is `docs/terms-of-use.md`; the React route is wired separately. The terms must keep the honest retention wording: the plan HTML is deleted at expiry, deletion or takedown, while the name/status/date record currently has no automatic expiry. Use the contact addresses already published in the terms and security documents; do not invent one or add a second.
 
 ## Security, privacy and licence
 
-Plans are public to anyone with the link. Do not put secrets or personal data in a plan, a test fixture, a screenshot or a commit. Report a vulnerability through GitHub's private security advisory flow rather than a public issue; see `SECURITY.md`. Takedown requests use the contact on the terms page.
+Plans are public to anyone with the link. Do not put secrets or personal data in a plan, a test fixture, a screenshot or a commit. Report a vulnerability by email using the contact in `SECURITY.md` rather than a public issue. Takedown requests use the contact on the terms page.
 
 By contributing, you agree that your contribution is licensed under the MIT licence in `LICENSE`. There is no separate CLA.
 

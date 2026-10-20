@@ -572,6 +572,27 @@ export function createApp(deps: AppDeps): App {
       'cache-control': `public, max-age=${60 * 60 * 24 * 30}, immutable`,
     });
   });
+  // Icon routes follow the /og.png precedent: assets live in public/, embedded
+  // into PAGES at build time, served with immutable caching. Text assets
+  // (SVG, manifest) are served as strings; binaries as base64-decoded bytes.
+  const iconAssets: Array<[string, string, string, boolean]> = [
+    ['/favicon.svg', PAGES.icons.faviconSvg, 'image/svg+xml', true],
+    ['/favicon.ico', PAGES.icons.faviconIco, 'image/x-icon', false],
+    ['/apple-touch-icon.png', PAGES.icons.appleTouchIcon, 'image/png', false],
+    ['/icon-192.png', PAGES.icons.icon192, 'image/png', false],
+    ['/icon-512.png', PAGES.icons.icon512, 'image/png', false],
+    ['/site.webmanifest', PAGES.icons.manifest, 'application/manifest+json', true],
+  ];
+  for (const [path, data, type, isText] of iconAssets) {
+    app.get(path, (c) => {
+      if (!data) return c.text('icon missing', 404);
+      const body = isText ? data : Uint8Array.from(atob(data), (ch) => ch.charCodeAt(0));
+      return c.body(body, 200, {
+        'content-type': type,
+        'cache-control': `public, max-age=${60 * 60 * 24 * 30}, immutable`,
+      });
+    });
+  }
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   // access echoes the configured BLOB_ACCESS value; it is not a store ACL check. Verify

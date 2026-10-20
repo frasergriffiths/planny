@@ -1,8 +1,8 @@
 # Architecture
 
-planny is a single TypeScript service. It accepts one HTML file, sanitises it, stores it in Vercel Blob, and serves it at an unguessable link until it expires or is deleted. Bun runs the local server and the tests; the production function runs on Vercel, and `/health` reports the runtime actually in use.
+planny is a single TypeScript service. It accepts one HTML file, sanitises it, stores it in Vercel Blob, and serves it at an unguessable link until it expires or is deleted. Bun runs local development, tests and builds; the production function runs on Vercel's Node 24 runtime, and `/health` reports the runtime actually in use.
 
-This document describes the current design and its trade-offs. The launch gates are listed at the end and in the README.
+This document describes the current design and its trade-offs.
 
 ## Request flow
 
@@ -49,7 +49,7 @@ The plan HTML and the state record are separate objects. A process can die after
 
 ### Public versus private Blob
 
-A private store is the safe default. A public Vercel Blob store exposes every object at its Blob URL. The HMAC suffix makes plan HTML names unguessable, but `state.json` and `config/kill.json` have no such protection. Do not run a public store in production until the state HMAC/private-state gate is implemented, or keep the store private.
+A private store is the safe default. A public Vercel Blob store exposes every object at its Blob URL. The HMAC suffix makes plan HTML names unguessable, but `state.json` and `config/kill.json` have no such protection. Use a private store, or implement the state HMAC before making the store public.
 
 The Blob read-write token can read and write every plan and the state. It is a full-store secret; rotate it if exposed.
 
@@ -88,16 +88,16 @@ Headings outside cards use the 16px inset; subheads inside cards use `.eyebrow` 
 
 ## Deployment
 
-Vercel builds `main`. `api/index.ts` is the function entry; `vercel.json` requests the Bun runtime and sets the LHR1 region. `/health` is uncached and reports the build, runtime and configuration flags. The startup purge removes stale cache tags for every plan blob, once per instance.
+Vercel builds `main`. `api/index.ts` is the function entry; `vercel.json` sets the LHR1 region and routes requests to it. Vercel runs the function on Node 24; Bun runs local development, tests and builds. `/health` is uncached and reports the build, runtime and configuration flags. The startup purge removes stale cache tags for every plan blob, once per instance.
 
-The deploy guard in `scripts/deploy.ts` refuses to publish unless the project plan is Pro. The production branch should stay `main`; a preview must not accept uploads. A public store must be private or state-protected before launch.
+The deploy guard in `scripts/deploy.ts` refuses to publish unless the project plan is Pro. The production branch should stay `main`; a preview must not accept uploads.
 
-The runtime setting and the actual runtime can differ. `/health` is the source of truth: confirm it reports Bun before treating the runtime gate as closed.
+`/health` reports the runtime actually in use.
 
 ## Security boundaries
 
 - **Plan content:** the sanitiser and the sandboxed plan CSP. No scripts, links, forms, frames or remote requests.
-- **Store:** the Blob token, the private store, the plan-path HMAC and the state HMAC. The public-store caveat above is a launch gate.
+- **Store:** the Blob token, the private store, the plan-path HMAC and the state HMAC.
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
 - **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits.
@@ -121,9 +121,8 @@ The runtime setting and the actual runtime can differ. `/health` is the source o
 
 The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project. The CI workflow runs install, typecheck, build and test. The live smoke test checks raw HTML delivery, a cache HIT, 404/410 MISS, a takedown purge, `/health` and `/sample`.
 
-## Open work
+## Known limitations
 
-- State HMAC/private-state for a public Blob store, or keep the production store private.
-- Rotate the exposed Blob token; assign the store firewall; confirm the project is Pro.
-- Implement the tombstone/record TTL or keep the terms' honest indefinite wording.
-- Verify `/sample`, 404/410/purge and the 320px layout on the deployed build.
+- A public Blob store exposes `state.json` and `config/kill.json`; use a private store unless the state HMAC is implemented.
+- The plan record has no automatic expiry, as the terms state.
+- The deployed smoke checks (raw HTML delivery, a cache HIT, 404/410 MISS, a takedown purge, `/sample` and the 320px layout) are manual.

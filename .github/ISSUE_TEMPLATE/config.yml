@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
     url: mailto:frasergriffithsisme@icloud.com?subject=planny%20security
-    about: While the repository is private, report vulnerabilities by email. Do not open a public issue with an exploit or a token.
+    about: Report vulnerabilities privately by email. Do not open a public issue with an exploit or a token.
   - name: Takedown or legal request
     url: mailto:frasergriffithsisme@icloud.com
     about: Report a plan that should be removed. Include the plan URL and why.

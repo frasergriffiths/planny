@@ -91,6 +91,6 @@ If any provision is found unenforceable, the rest remains in force. These terms 
 
 For takedowns, legal notices and terms questions: `frasergriffithsisme@icloud.com`.
 
-For security vulnerabilities, please use the reporting route in `SECURITY.md`.
+For security vulnerabilities, email `frasergriffithsisme@icloud.com` with `planny security` in the subject.
 
 These terms are governed by the laws of England and Wales, and the courts of England and Wales have exclusive jurisdiction, except where consumer law gives you a different right.
