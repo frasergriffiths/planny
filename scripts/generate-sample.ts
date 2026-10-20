@@ -34,9 +34,10 @@ const sample = template
 
   A fictional plan for the home CTA. It uses the dark planny template and is
   safe for planny:
-  no scripts, links, forms, frames or external files. Charts are inline
-  SVG or CSS. Fonts are the system stack. Images, if you add any, must be
-  data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
+  no scripts, links, forms, frames or external files. Charts are HTML/CSS
+  or inline SVG (fixed size). Fonts are the system stack. Images, if you add
+  any, must be data:image/png, jpeg, gif, webp or avif. Keep the file under
+  4 MiB.
 
   The plan is public to anyone with the link. Do not put secrets in it.
 -->`)

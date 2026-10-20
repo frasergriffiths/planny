@@ -6,6 +6,14 @@ All notable changes to planny are recorded here. The format follows
 
 ## 1.2.0 — 2026-10-20
 
+### Changed
+
+- The plan template and component library read as a compact editorial layout:
+  a centred 1240px page, a balanced clamp-based type scale, four KPI cards that
+  fall to a clean 2x2 on phones, tables and the Gantt scroll inside
+  `.table-wrap` / `.gantt-wrap`, and charts moved out of stretched SVG into
+  quiet chart cards whose text stays 11-12px at 390, 768 and 1440px.
+
 ### Added
 
 - The Planny agent skill is published on skills.sh and installable with

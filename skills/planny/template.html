@@ -9,9 +9,10 @@
   planny plan template.
 
   Replace the copy, keep the structure. This file is safe for planny:
-  no scripts, links, forms, frames or external files. Charts are inline
-  SVG or CSS. Fonts are the system stack. Images, if you add any, must be
-  data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
+  no scripts, links, forms, frames or external files. Charts are HTML/CSS
+  or inline SVG (fixed size). Fonts are the system stack. Images, if you
+  add any, must be data:image/png, jpeg, gif, webp or avif. Keep the file
+  under 4 MiB.
 
   The plan is public to anyone with the link. Do not put secrets in it.
 -->
@@ -49,14 +50,15 @@
     background: var(--paper);
     font-family: var(--sans);
     font-size: 16px;
-    line-height: 1.55;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   .page {
     width: 100%;
-    max-width: none;
-    padding: clamp(20px, 4vw, 64px);
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vw, 52px);
   }
   .eyebrow {
     font-family: var(--mono);
@@ -69,42 +71,42 @@
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
+    gap: 28px;
     align-items: end;
-    padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px);
+    padding: clamp(24px, 4vw, 48px) 0 clamp(20px, 3vw, 36px);
   }
   h1 {
-    margin: 12px 0 18px;
-    max-width: 15ch;
-    font-size: clamp(40px, 7vw, 92px);
-    line-height: .95;
-    letter-spacing: -.045em;
+    margin: 12px 0 16px;
+    max-width: 18ch;
+    font-size: clamp(34px, 5.5vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -.03em;
     font-weight: 750;
+    text-wrap: balance;
   }
   .lede {
     max-width: 62ch;
     margin: 0;
     color: var(--muted);
-    font-size: clamp(17px, 1.9vw, 23px);
-    line-height: 1.35;
+    font-size: clamp(16px, 1.6vw, 20px);
+    line-height: 1.55;
   }
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 26px;
-    margin-top: 24px;
+    gap: 8px 24px;
+    margin-top: 20px;
     font-family: var(--mono);
     font-size: 12px;
     color: var(--muted);
   }
   .layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-    gap: clamp(24px, 4vw, 64px);
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: clamp(24px, 3.5vw, 48px);
     align-items: start;
-    padding: clamp(24px, 4vw, 48px) 0;
-  }
-  .measure { max-width: 72ch; }
+    padding: clamp(16px, 2.5vw, 32px) 0;
+  }  .measure { max-width: 70ch; }
   .box {
     box-sizing: border-box;
     margin: 24px 0;
@@ -124,10 +126,11 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
-    margin: 24px 0 0;
+    margin: 20px 0 0;
   }
   .kpi {
     box-sizing: border-box;
+    height: 100%;
     padding: var(--pad-card);
     border: 0;
     border-left: var(--border-card) solid var(--accent);
@@ -141,24 +144,30 @@
   }
   .kpi strong {
     display: block;
-    margin: 6px 0 2px;
-    font-size: clamp(22px, 2.4vw, 30px);
+    margin: 6px 0 3px;
+    font-size: clamp(24px, 2.4vw, 30px);
     line-height: 1.1;
     letter-spacing: -.03em;
   }
-  .kpi span:last-child { font-size: 12px; color: var(--muted); }
+  .kpi span:last-child {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
   h2 {
-    margin: 40px 0 12px;
-    font-size: clamp(24px, 3vw, 36px);
-    line-height: 1.1;
-    letter-spacing: -.03em;
+    margin: 34px 0 12px;
+    font-size: clamp(22px, 2.8vw, 30px);
+    line-height: 1.15;
+    letter-spacing: -.02em;
   }
-  h3 { margin: 24px 0 8px; font-size: 18px; }
+  h3 { margin: 22px 0 8px; font-size: 17px; }
   p { margin: 0 0 14px; }
   ul, ol { margin: 0 0 16px; padding-left: 20px; }
   li { margin: 6px 0; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
-  th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .table-wrap { overflow-x: auto; margin: 12px 0 24px; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { width: 100%; min-width: 520px; margin: 0; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
   th {
     background: var(--panel);
     color: var(--muted);
@@ -169,10 +178,11 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt { margin: 16px 0 24px; font-size: 12px; }
+  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
+  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
   .gantt-head, .gantt-row {
     display: grid;
-    grid-template-columns: 180px repeat(8, minmax(0, 1fr));
+    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
     gap: 6px;
     align-items: center;
     margin-bottom: 6px;
@@ -191,7 +201,7 @@
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 6px;
-    min-height: 28px;
+    min-height: 26px;
   }
   .bar {
     grid-row: 1;
@@ -220,55 +230,78 @@
     display: grid;
     grid-template-columns: 22px minmax(0, 1fr);
     gap: 8px;
-    padding: 10px 0;
+    padding: 9px 0;
     border-bottom: 1px solid var(--line);
   }
-  .check li::before { content: "□"; color: var(--muted); font-size: 17px; line-height: 1.1; }
+  .check li::before { content: "□"; color: var(--muted); font-size: 16px; line-height: 1.2; }
   .donut { display: flex; align-items: center; gap: 16px; }
   .donut svg { flex: 0 0 auto; }
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
-  @media (max-width: 900px) {
-    .hero, .layout { grid-template-columns: 1fr; }
+
+  /* Charts: HTML/CSS bars and HTML-labelled lines are the default. SVG <text>
+     scales with the viewBox, so labels and values stay in HTML with fixed px. */
+  .chart-card {
+    margin: 16px 0 14px;
+    padding: calc(var(--inset-card) - 1px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: transparent;
   }
-  @media (max-width: 700px) {
-    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .gantt-head, .gantt-row { grid-template-columns: 112px repeat(8, minmax(18px, 1fr)); }
-    .bar { padding: 0 5px; font-size: 10px; }
-    th, td { padding: 10px 8px; }
+  .chart-title { margin: 0 0 12px; font-size: 13px; font-weight: 650; }
+  .hbars { display: grid; gap: 2px; }
+  .hbar {
+    display: grid;
+    grid-template-columns: minmax(84px, 116px) minmax(0, 1fr) 52px;
+    gap: 10px;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--ink);
   }
-  @media (max-width: 420px) {
-    .page { padding: 16px; }
-    .gantt-head, .gantt-row { grid-template-columns: 84px repeat(8, minmax(16px, 1fr)); gap: 3px; }
-    .bar { padding: 0 3px; font-size: 9px; }
-    .kpis { gap: 8px; }
-    .box { padding: var(--pad-card); }
-    .kpi { padding: var(--pad-card); }
-    th, td { padding: 8px 6px; }
-    table { font-size: 12px; }
+  .hbar .bar-track { display: flex; align-items: center; height: 20px; border-radius: var(--radius-bar); background: var(--panel); overflow: hidden; }
+  .hbar .bar-track.group { height: 44px; flex-direction: column; justify-content: center; gap: 3px; }
+  .hbar .fill { display: block; height: 100%; border-radius: var(--radius-bar); background: var(--accent); transform-origin: left; animation: bar-grow .7s ease-out both; }
+  .hbar .fill.slim { height: 9px; }
+  .hbar .fill.alt { background: var(--line-strong); }
+  .hbar .fill.soft { background: #8ab8ff; }
+  .hbar .val { color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+  .line-chart { position: relative; margin: 4px 0 0; }
+  .line-plot { position: relative; height: 200px; margin-left: 40px; }
+  .line-plot svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+  .gridline.dim { background: #1f1f1f; }
+  .y-label {
+    position: absolute;
+    right: 100%;
+    transform: translateY(-50%);
+    padding-right: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
   }
-  @media print {
-    .page { padding: 0; }
-    .box, tr, .kpi { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
-  }
+  .x-labels { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .x-labels span { padding-top: 8px; text-align: center; white-space: nowrap; }
+  .x-labels span:first-child { text-align: left; }
+  .x-labels span:last-child { text-align: right; }
+  .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-swatch); }
+
   .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
-  .chart-bar { rx: var(--radius-bar); transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
   .donut-seg { animation: draw-donut 1.1s ease-out both; }
   @keyframes draw { from { stroke-dashoffset: 1; } }
   @keyframes draw-donut { from { stroke-dashoffset: 1; } }
-  @keyframes grow { from { transform: scaleY(0); } }
+  @keyframes bar-grow { from { transform: scaleX(0); } }
+  @keyframes stack-grow { from { transform: scaleX(0); } }
   @media (prefers-reduced-motion: reduce) {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
   }
   @media print {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
   }
-  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border: 0; border-left: var(--border-card) solid var(--accent); border-radius: 0; background: transparent; }
-  .chart-caption { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
-  .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
-  .donut-legend span { display:flex; align-items:center; gap:6px; }
-  .donut-legend i { display:inline-block; width:6px; height:6px; border-radius: var(--radius-swatch); }
   .budget-total { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
   .budget-total span { margin-left: 6px; color: var(--muted); font-family: var(--sans); font-size: 11px; }
   .stacked { display: flex; height: 10px; overflow: hidden; border-radius: var(--radius-bar); background: var(--line); gap: 2px; }
@@ -280,7 +313,42 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
-  @keyframes stack-grow { from { transform: scaleX(0); } }
+  @media (max-width: 900px) {
+    .hero, .layout { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hbar { grid-template-columns: minmax(76px, 96px) minmax(0, 1fr) 48px; }
+    .line-plot, .x-labels { margin-left: 34px; }
+    .line-plot { height: 180px; }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 9px 8px; }
+    .chart-caption { font-size: 12px; }
+    .gantt { min-width: 0; }
+    .gantt-head { display: none; }
+    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
+    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .track {
+      grid-column: 1 / -1;
+      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
+    }
+  }
+  @media (max-width: 700px) {
+    .x-labels span:nth-child(2n) { visibility: hidden; }
+  }
+  @media (max-width: 420px) {
+    .page { padding: 16px; }
+    .kpis { gap: 8px; }
+    .box { padding: var(--pad-card); }
+    .kpi { padding: var(--pad-card); }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 8px 6px; }
+  }
+  @media print {
+    .page { padding: 0; }
+    .box, tr, .kpi, .chart-card { break-inside: avoid; }
+    .gantt { break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -323,60 +391,117 @@
       </section>
 
       <section>
+        <h2>Read budget</h2>
+        <div class="chart-card">
+          <p class="chart-title">Origin reads: planny plan vs pay-as-you-go</p>
+          <div class="hbars" role="img" aria-label="Origin reads by month, planny plan versus pay-as-you-go: April 570 versus 900, May 630 versus 1,050, June 700 versus 1,150">
+            <div class="hbar"><span>April</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:49%"></span><span class="fill slim alt" style="width:78%"></span></div><span class="val">−37%</span></div>
+            <div class="hbar"><span>May</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:55%"></span><span class="fill slim alt" style="width:91%"></span></div><span class="val">−40%</span></div>
+            <div class="hbar"><span>June</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:61%"></span><span class="fill slim alt" style="width:100%"></span></div><span class="val">−39%</span></div>
+          </div>
+          <div class="chart-legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Planny plan</span><span><i style="background:var(--line-strong)"></i>Pay-as-you-go</span></div>
+          <p class="chart-caption">Fictional plan data. Two slim bars per row, scaled to 0-1,150 reads.</p>
+        </div>
+      </section>
+
+      <section>
         <h2>Timeline</h2>
         <div class="legend">
           <span><span class="swatch"></span>Build</span>
           <span><span class="swatch alt"></span>Verify</span>
           <span><span class="swatch soft"></span>Buffer</span>
         </div>
-        <div class="gantt" role="img" aria-label="Eight week plan with five workstreams">
-          <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-          <div class="gantt-row"><div class="label">Store + upload</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
-          <div class="gantt-row"><div class="label">View + cache</div><div class="track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
-          <div class="gantt-row"><div class="label">Safety + limits</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
-          <div class="gantt-row"><div class="label">Preview + deploy</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
-          <div class="gantt-row"><div class="label">Skill + docs</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
+        <div class="gantt-wrap">
+          <div class="gantt" role="img" aria-label="Eight week plan with five workstreams">
+            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
+            <div class="gantt-row"><div class="label">Store + upload</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
+            <div class="gantt-row"><div class="label">View + cache</div><div class="track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
+            <div class="gantt-row"><div class="label">Safety + limits</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
+            <div class="gantt-row"><div class="label">Preview + deploy</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
+            <div class="gantt-row"><div class="label">Skill + docs</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
+          </div>
         </div>
       </section>
 
       <section>
         <h2>Milestones</h2>
-        <table>
-          <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-          <tbody>
-            <tr><td>24 Oct</td><td>Private Blob store and upload path live</td><td>Steven</td><td>In progress</td></tr>
-            <tr><td>31 Oct</td><td>View route with cache, purge and 410 path</td><td>Steven</td><td>Next</td></tr>
-            <tr><td>07 Nov</td><td>Pause matrix and address reset proven on preview</td><td>Lens</td><td>Planned</td></tr>
-            <tr><td>14 Nov</td><td>Production deploy in LHR1 and live pass</td><td>Scout</td><td>Planned</td></tr>
-            <tr><td>21 Nov</td><td>Skill install and first external plan</td><td>Sage</td><td>Planned</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><td>24 Oct</td><td>Private Blob store and upload path live</td><td>Steven</td><td>In progress</td></tr>
+              <tr><td>31 Oct</td><td>View route with cache, purge and 410 path</td><td>Steven</td><td>Next</td></tr>
+              <tr><td>07 Nov</td><td>Pause matrix and address reset proven on preview</td><td>Lens</td><td>Planned</td></tr>
+              <tr><td>14 Nov</td><td>Production deploy in LHR1 and live pass</td><td>Scout</td><td>Planned</td></tr>
+              <tr><td>21 Nov</td><td>Skill install and first external plan</td><td>Sage</td><td>Planned</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Cost comparison</h2>
+        <div class="chart-card">
+          <p class="chart-title">Host budget: origin reads per quarter</p>
+          <div class="hbars" role="img" aria-label="Origin reads per quarter by band: July 900 reads, August 1,100, September 760">
+            <div class="hbar"><span>July</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:82%"></div></div><span class="val">900</span></div>
+            <div class="hbar"><span>August</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">1,100</span></div>
+            <div class="hbar"><span>September</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:69%"></div></div><span class="val">760</span></div>
+          </div>
+          <p class="chart-caption">One series, one value per row. The 200 GB read guard covers each figure.</p>
+        </div>
       </section>
 
       <section>
         <h2>Decisions</h2>
-        <table>
-          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
-          <tbody>
-            <tr><td>Viewer runtime</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>Removes the largest exfiltration path and most of the abuse surface.</td></tr>
-            <tr><td>Link policy</td><td>Dead links / clickable links</td><td>Dead links</td><td>A clickable link on our origin is a phishing route. Plans keep their text.</td></tr>
-            <tr><td>Storage</td><td>Public Blob / private Blob</td><td>Private Blob</td><td>The view route must check expiry, delete and takedown before every read.</td></tr>
-            <tr><td>Cache TTL</td><td>5 minutes / 1 hour</td><td>1 hour</td><td>Plans do not change. A purge handles the rare takedown, and the TTL is the fallback.</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+            <tbody>
+              <tr><td>Viewer runtime</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>Removes the largest exfiltration path and most of the abuse surface.</td></tr>
+              <tr><td>Link policy</td><td>Dead links / clickable links</td><td>Dead links</td><td>A clickable link on our origin is a phishing route. Plans keep their text.</td></tr>
+              <tr><td>Storage</td><td>Public Blob / private Blob</td><td>Private Blob</td><td>The view route must check expiry, delete and takedown before every read.</td></tr>
+              <tr><td>Cache TTL</td><td>5 minutes / 1 hour</td><td>1 hour</td><td>Plans do not change. A purge handles the rare takedown, and the TTL is the fallback.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
         <h2>Risks</h2>
-        <table>
-          <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
-          <tbody>
-            <tr><td>A preview deployed on Hobby lands in the wrong region</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Check the function segment of the raw x-vercel-id on /health before promoting.</td><td>Scout</td></tr>
-            <tr><td>A popular plan exhausts the read budget</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>One-hour TTL, per-plan alert at 1,000 origin reads an hour, and the 200 GB guard.</td><td>Steven</td></tr>
-            <tr><td>A purge fails and a takedown stays cached</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Retry the purge on 429, report the purge status, and keep the TTL as the fallback.</td><td>Steven</td></tr>
-            <tr><td>A plan uses a browser bug to escape the sandbox</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Allowlist sanitiser, strict CSP, no scripts, no links, no forms, and a hostile-payload fixture.</td><td>Lens</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+            <tbody>
+              <tr><td>A preview deployed on Hobby lands in the wrong region</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Check the function segment of the raw x-vercel-id on /health before promoting.</td><td>Scout</td></tr>
+              <tr><td>A popular plan exhausts the read budget</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>One-hour TTL, per-plan alert at 1,000 origin reads an hour, and the 200 GB guard.</td><td>Steven</td></tr>
+              <tr><td>A purge fails and a takedown stays cached</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Retry the purge on 429, report the purge status, and keep the TTL as the fallback.</td><td>Steven</td></tr>
+              <tr><td>A plan uses a browser bug to escape the sandbox</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Allowlist sanitiser, strict CSP, no scripts, no links, no forms, and a hostile-payload fixture.</td><td>Lens</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Read forecast</h2>
+        <div class="chart-card">
+          <p class="chart-title">Weekly origin reads, W1 to W9</p>
+          <div class="line-chart" role="img" aria-label="Weekly origin reads, weeks 1 to 9: W1 120, W2 240, W3 380, W4 340, W5 520, W6 640, W7 780, W8 720, W9 900">
+            <div class="line-plot" aria-hidden="true">
+              <div class="gridline" style="top:0"><span class="y-label">1,000</span></div>
+              <div class="gridline dim" style="top:25%"><span class="y-label">750</span></div>
+              <div class="gridline dim" style="top:50%"><span class="y-label">500</span></div>
+              <div class="gridline dim" style="top:75%"><span class="y-label">250</span></div>
+              <div class="gridline" style="top:100%"><span class="y-label">0</span></div>
+              <svg viewBox="0 0 800 200" preserveAspectRatio="none" fill="none">
+                <polyline class="chart-line" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="0,178 100,161 200,138 300,146 400,112 500,89 600,62 700,69 800,41" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              </svg>
+            </div>
+            <div class="x-labels" aria-hidden="true"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span></div>
+          </div>
+          <div class="chart-legend"><span><i style="background:var(--accent)"></i>Weekly reads</span></div>
+          <p class="chart-caption">Fictional plan data. The SVG carries the shape only; labels and values are HTML outside it, so they never scale with the viewBox. Every second week label hides under 700px.</p>
+        </div>
       </section>
 
       <section>
