@@ -99,7 +99,7 @@ test('the Tailwind theme carries every token value', () => {
   expect(themeDecls.get('--pad-card')).toBe(padCard);
 });
 
-test('the card border and padding add up to the heading inset', () => {
+test('the card padding adds up to the inset and headings share the column edge', () => {
   for (const decls of [templateDecls, sampleDecls, themeDecls]) {
     expect(px(decls.get('--border-card')) + px(decls.get('--pad-card')))
       .toBe(px(decls.get('--inset-card')));
@@ -117,9 +117,10 @@ test('the card border and padding add up to the heading inset', () => {
     expect(rule(source, '.kpi.outline')).toContain('border: 1px solid var(--line)');
     expect(rule(source, '.kpi.outline')).toContain('border-radius: var(--radius-card)');
     expect(rule(source, '.kpi.outline')).toContain('padding: calc(var(--inset-card) - 1px)');
-    expect(rule(source, 'main > section > h2, aside > section > h3')).toContain('padding-left: var(--inset-card)');
+    expect(source).not.toContain('main > section > h2, aside > section > h3');
     expect(rule(source, 'h2')).not.toContain('padding-left');
     expect(rule(source, 'h3')).not.toContain('padding-left');
+    expect(rule(source, '.measure')).not.toContain('padding-left');
   }
   const card = rule(theme, '.plan-card');
   expect(card).toContain('border: 0');
