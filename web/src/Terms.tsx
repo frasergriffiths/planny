@@ -76,8 +76,8 @@ export function Terms() {
         <Section title="Limits and address data">
           <p>
             The service has a 4 MiB plan limit, plan lifetimes, monthly read and upload limits, and per-address rate
-            limits. We may pause uploads or new views when a guard is reached; deletes, author takedowns and admin
-            resets keep working.
+            limits. We may pause uploads or new views when a guard is reached; deletions and operator takedowns keep
+            working.
           </p>
           <p>
             We use a keyed hash of the request address to enforce rate limits and pauses. The plan record stores that

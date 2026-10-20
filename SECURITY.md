@@ -51,6 +51,6 @@ We will not pursue legal action for good-faith security research that stays with
 
 ## Plan content and the terms
 
-The plan HTML is deleted at expiry, author deletion or operator takedown. The service keeps a record with the plan name, status, creation/expiry/deletion/takedown dates and related identifiers. The record currently has no automatic expiry and is kept indefinitely; the terms say so rather than promising a retention period that the code does not implement. See `docs/terms-of-use.md`.
+The plan HTML is deleted at expiry, author deletion or operator takedown. The service keeps a record with the plan name, status, creation/expiry/deletion/takedown dates and related identifiers. The record currently has no automatic expiry and is kept indefinitely; the terms say the record is kept indefinitely. See `docs/terms-of-use.md`.
 
 Plans are public by link. Do not put secrets or personal data in a plan. The sample in `public/sample/` is fictional.

@@ -7,9 +7,6 @@ we collect when you publish or read a plan, why we use it, and what rights you h
 It covers the hosted service at `planny-pink.vercel.app`. If you self-host planny,
 you are the controller for your instance and this notice does not apply to it.
 
-This is a plain-English notice, not legal advice. Have it reviewed before relying on
-it for a commercial launch.
-
 ## What we collect
 
 | Data | When | Why |
@@ -26,8 +23,9 @@ plan content or address data.
 
 ## Public links
 
-A plan link is public to anyone who has it. We do not publish an index of plans, but
-we cannot stop someone sharing a link, and a search engine may index a plan if it
+A plan link is public to anyone who has it. We do not list plans or publish an index,
+and robots.txt asks search engines not to crawl plan links, but we cannot stop
+someone sharing a link and a search engine may still index a plan if it
 finds the link. Do not put secrets, passwords, private keys, personal data or
 confidential information in a plan.
 
