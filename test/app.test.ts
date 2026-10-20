@@ -381,9 +381,13 @@ test('upload validation and method handling cover the remaining cases', async ()
     expect(tooLong.status).toBe(400);
     expect(((await tooLong.json()) as { error: { code: string } }).error.code).toBe('name_too_long');
 
-    // NOTE: an unknown query key is intentionally not asserted here. The zod object
-    // schema strips unknown keys, so the invalid_query branch cannot be reached that
-    // way; see the report that accompanies this branch.
+    // NOTE: an unknown query key is asserted below: querySchema is .strict(), so any
+    // extra key is rejected with invalid_query per the documented contract.
+    const unknown = await t.app.fetch(new Request(`${ORIGIN}/plans?name=A&duration=1h&x=1`, {
+      method: 'POST', headers: { 'content-type': 'text/html' }, body: PLAN,
+    }), { address: ADDRESS });
+    expect(unknown.status).toBe(400);
+    expect(((await unknown.json()) as { error: { code: string } }).error.code).toBe('invalid_query');
 
     const getPlans = await t.app.fetch(new Request(`${ORIGIN}/plans`), { address: ADDRESS });
     expect(getPlans.status).toBe(405);

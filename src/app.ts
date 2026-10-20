@@ -62,10 +62,13 @@ const nameSchema = z.string().max(10_000).transform((value) => value
   .refine((value) => value.length > 0, 'empty')
   .refine((value) => [...value].length <= 120, 'long');
 
-const querySchema = z.object({
-  name: z.string().optional(),
-  duration: z.string().optional(),
-});
+// Strict: any other query key is rejected, matching the "Use ?name= and ?duration= only" copy.
+const querySchema = z
+  .object({
+    name: z.string().optional(),
+    duration: z.string().optional(),
+  })
+  .strict();
 
 const uuidSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 
