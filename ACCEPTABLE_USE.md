@@ -17,8 +17,8 @@ the terms of use, the law or the security of the service. We are not obliged to
 monitor every plan.
 
 To report a plan, email `frasergriffithsisme@icloud.com` with the plan URL, what is
-wrong and enough information to verify the request. Do not send security
-vulnerability reports to that inbox; use the private route in `SECURITY.md`.
+wrong and enough information to verify the request. For a security vulnerability, put
+`planny security` in the subject; see `SECURITY.md`.
 
 The hosted service is operated by Fraser Griffiths. If you self-host planny, you set
 and enforce the acceptable-use rules for your own instance.

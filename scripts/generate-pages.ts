@@ -13,6 +13,14 @@ const pages = {
   terms: read('terms.html'),
   sample: readFileSync(join(root, 'public', 'sample', 'index.html'), 'utf8'),
   og: readFileSync(join(root, 'public', 'og.png'), 'base64'),
+  icons: {
+    faviconSvg: readFileSync(join(root, 'public', 'favicon.svg'), 'utf8'),
+    faviconIco: readFileSync(join(root, 'public', 'favicon.ico'), 'base64'),
+    appleTouchIcon: readFileSync(join(root, 'public', 'apple-touch-icon.png'), 'base64'),
+    icon192: readFileSync(join(root, 'public', 'icon-192.png'), 'base64'),
+    icon512: readFileSync(join(root, 'public', 'icon-512.png'), 'base64'),
+    manifest: readFileSync(join(root, 'public', 'site.webmanifest'), 'utf8'),
+  },
   robots: readFileSync(join(root, 'public', 'robots.txt'), 'utf8'),
   sitemap: readFileSync(join(root, 'public', 'sitemap.xml'), 'utf8'),
 };

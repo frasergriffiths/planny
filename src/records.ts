@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { CLAIM, FINISH, PUBLISH, RATE, RESERVE, UPLOAD_GATE, UPLOAD_RECORD, VIEW } from './lua.js';
-
-export interface RedisLike {
-  eval(script: string, keys: string[], argv: string[]): Promise<unknown>;
-  hgetall(key: string): Promise<Record<string, string> | null>;
-  zrangebyscore(key: string, max: number, limit: number): Promise<string[]>;
-}
+import type { RedisLike } from './stores/local.js';
 
 export interface PlanRecord {
   readonly id: string;
@@ -326,7 +321,6 @@ export function createRecords(redis: RedisLike) {
       return [];
     };
     const readNumber = async (key: string): Promise<number> => Number(await redis.eval("return redis.call('GET', KEYS[1]) or '0'", [key], []));
-    const counterKeys = ['reads', 'bytes', 'uploads'];
     const before = {
       reads: await readNumber(keysFor('reads')[0] ?? ''),
       bytes: await readNumber(keysFor('bytes')[0] ?? ''),

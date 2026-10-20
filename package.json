@@ -25,7 +25,6 @@
     "test": "tsc --noEmit && bun run scripts/generate-tokens.ts --check && bun run scripts/generate-sample.ts --check && bun test --concurrency=1 && bun run scripts/generate-skill-errors.ts --check",
     "dev": "bun run local/server.ts",
     "start": "bun run local/server.ts",
-    "parity": "bun run scripts/parity.ts",
     "admin": "bun run scripts/admin.ts",
     "local:install": "bun run local/service.ts install",
     "local:uninstall": "bun run local/service.ts uninstall",
@@ -33,7 +32,6 @@
     "build": "bun run scripts/generate-tokens.ts && bun run scripts/generate-sample.ts && vite build --config web/vite.config.ts && bun run scripts/generate-pages.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.5",
     "@vercel/blob": "^2.8.2",
     "@vercel/functions": "^3.10.1",
     "fengari": "^0.1.5",
@@ -51,7 +49,6 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "bun-types": "^1.4.3",
-    "geist": "1.8.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",

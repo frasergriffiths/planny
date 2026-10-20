@@ -27,7 +27,7 @@ All notable changes to planny are recorded here. The format follows
 
 ### Security
 
-- The launch checklist treats a public Blob store and the exposed Blob token as
-  release blockers. Do not publish the repository until both are resolved.
+- The security documentation describes the Blob token's full-store access and
+  recommends a private store, or a state HMAC, when the store is public.
 - The plan CSP, sanitiser allowlists, hashed delete keys and keyed address hash are
   unchanged.

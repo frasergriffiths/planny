@@ -4,15 +4,13 @@ planny stores and serves untrusted HTML. The important boundaries are the plan s
 
 ## Reporting a vulnerability
 
-planny accepts vulnerability reports by email only while the repository is private: GitHub's private vulnerability reporting and the `security/policy` link are not available yet, so they are not listed as contacts. Report by email: `frasergriffithsisme@icloud.com` with `planny security` in the subject. When GitHub private reporting is enabled, it becomes the preferred route and `/.well-known/security.txt` will be updated.
-
-**Fallback while the repository is private:** email `frasergriffithsisme@icloud.com` with `planny security` in the subject. Include the route or file, the smallest reproduction you can make, and whether the issue exposes a plan, a token or the store. Do not open a public issue with a working exploit, a leaked token or a plan that contains personal data. If you are unsure whether something is a vulnerability, report it privately anyway.
+Email `frasergriffithsisme@icloud.com` with `planny security` in the subject. Include the route or file, the smallest reproduction you can make, and whether the issue exposes a plan, a token or the store. Do not open a public issue with a working exploit, a leaked token or a plan that contains personal data. If you are unsure whether something is a vulnerability, report it privately anyway.
 
 We will acknowledge the report as soon as we can, agree a disclosure timeline with you, and credit you if you want. Our target is to acknowledge within 72 hours and give an initial assessment within 7 days. Please give us a reasonable chance to fix the issue before publishing it. There is no bug bounty. A machine-readable contact is at `/.well-known/security.txt`.
 
 ## Takedowns
 
-For a takedown request, email `frasergriffithsisme@icloud.com`. Include the plan URL, what is wrong, and a way to verify the request. This inbox is also the vulnerability fallback while the repository is private; mark security reports `planny security` in the subject. Once private reporting is enabled, use GitHub for vulnerabilities and this inbox for takedowns.
+For a takedown request, email `frasergriffithsisme@icloud.com`. Include the plan URL, what is wrong, and a way to verify the request. Mark security reports `planny security` in the subject.
 
 The operator may remove a plan at any time. The plan HTML is removed from the store; the record with the plan name, status and dates remains as the terms describe. A takedown is not a promise that every edge cache has already expired; the cache tag is purged and the TTL is the fallback.
 
@@ -45,7 +43,7 @@ The address key is stable: rotating it changes every derived address and resets 
 
 `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata. Do not paste them into a plan or a public issue.
 
-A public Vercel Blob store exposes every object at its Blob URL. The plan HMAC protects plan HTML names; it does not protect `state.json` or `config/kill.json`. Use a private store, or add the state HMAC before enabling a public store. This is a launch gate.
+A public Vercel Blob store exposes every object at its Blob URL. The plan HMAC protects plan HTML names; it does not protect `state.json` or `config/kill.json`. Use a private store, or add the state HMAC before enabling a public store.
 
 ## Safe harbour
 

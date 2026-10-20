@@ -154,7 +154,7 @@ export function Terms() {
           </p>
           <p>
             For takedowns, legal notices and terms questions, use the contact above. For security vulnerabilities,
-            use the reporting route in SECURITY.md.
+            email {CONTACT} with &quot;planny security&quot; in the subject.
           </p>
           <p>
             These terms are governed by the laws of England and Wales, and the courts of England and Wales have

@@ -14,11 +14,6 @@ export interface MonthlyLimits {
   readBytes: number;
 }
 
-export interface SiteMonthlyLimits {
-  reads: number;
-  readBytes: number;
-}
-
 export interface PlanReadAlert {
   perPlanHourly: number;
   monthlyWarningFraction: number;

@@ -2,8 +2,6 @@
 
 Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only read key; there are no accounts and no list of plans.
 
-> **Status:** pre-launch open-source project. The local app, tests and build work. The hosted service still has launch gates; see [Before launch](#before-launch). Treat the current demo store as disposable, not production.
-
 Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [operator runbook](docs/runbook.md).
 
 ## How it works
@@ -46,10 +44,8 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
-| `POST /admin/plans/:uuid/remove` | Operator takedown. Needs `PLANNY_ADMIN_TOKEN`. |
-| `POST /admin/reset` | Reset a monthly counter: `{"counter":"reads"|"bytes"|"uploads"|"all"}`. Needs the same token. |
 | `GET /health` | Uncached build, runtime and configuration-presence flags. |
-| `GET /terms-of-use` | Terms of use. The takedown contact still needs to be a monitored inbox. |
+| `GET /terms-of-use` | Terms of use. |
 
 API errors are JSON: `{"error":{"code":"...","message":"..."}}`. Unknown, malformed and expired links get 404 and 410 pages, not JSON.
 
@@ -97,12 +93,11 @@ Core production settings:
 | `BLOB_ACCESS` | `private` (recommended) or `public`. A public store exposes every object at its Blob URL. |
 | `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Required only for a public store; rotating it breaks existing links. |
 | `PLANNY_ADDRESS_KEY` | Stable keyed hash of client addresses for rates and pauses. Rotating it resets every derived address and every rate limit. |
-| `PLANNY_ADMIN_TOKEN` | Operator token for takedown and reset. Treat it as a secret. |
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. |
 
-The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config.
+The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
-The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD`, `PLANNY_SHA` and `PLANNY_URL` are platform/runtime values.
+The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.ts`, `delete.ts`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
 
 ## Blob-only trade-offs
 
@@ -111,7 +106,7 @@ There is one production store: Vercel Blob.
 - `state.json` is one JSON blob holding records, counters, rate windows and the small amount of control state. Each plan's HTML is a separate blob. `config/kill.json` is the upload switch.
 - State changes are serialised by a create-only `state.lock` blob, with a 15-second stale-lock recovery. Each instance keeps the last state it wrote, with a monotonic sequence, so a read that lags a write does not lose the latest record.
 - Blob reads can lag across instances. Do not delete a plan immediately after publishing another one and assume every instance sees the new state; re-read the state or wait for the read to settle.
-- A single state blob means read-modify-write contention and a growth limit. It is simple and cheap for the current single-user/prototype shape, not for high write concurrency. The next shape is one record per plan plus a separate index.
+- A single state blob means read-modify-write contention and a growth limit. It is simple and cheap for a small service, not for high write concurrency. The next shape is one record per plan plus a separate index.
 - There is no multi-object transaction. A plan HTML blob and its state record can diverge if a process dies between writes. The pending record and the sweep handle orphans; a delete also removes the plan blob before marking the record.
 - The Blob token is a large blast radius. A read-write token can read and write every plan and the state. Keep it in Vercel, rotate it if it is exposed, and never put it in a plan, a log or a screenshot.
 - A public Blob store publishes every object at its Blob URL. The plan HMAC makes plan HTML paths unguessable; it does not protect `state.json` or `config/kill.json`. Use a private store, or add the state HMAC before enabling a public store.
@@ -124,9 +119,9 @@ See [`docs/architecture.md`](docs/architecture.md) for the request flow, the rec
 
 - Plans are untrusted. The sanitiser and the sandboxed plan CSP are the boundary, not a cleanup step.
 - The link is public to anyone who has it. There is no account, no session and no confidentiality promise. Do not put secrets or personal data in a plan.
-- The delete key is returned once; only its hash is stored. The operator can take a plan down with `PLANNY_ADMIN_TOKEN`.
+- The delete key is returned once; only its hash is stored. The operator can take a plan down.
 - Client addresses are used only through a keyed hash for rate limits and pauses. The raw address is not stored in the plan record.
-- The Vercel Blob token and the admin token are secrets. The Blob token can read and write the whole store; a public store token also exposes objects directly.
+- The Vercel Blob token is a secret. It can read and write the whole store; a public store token also exposes objects directly.
 - The deploy guard refuses to publish unless the Vercel project is Pro, and the production branch should stay `main`. Previews must not accept uploads.
 
 For vulnerability reporting and the takedown route, see [`SECURITY.md`](SECURITY.md). The terms of use are at [`docs/terms-of-use.md`](docs/terms-of-use.md) and at `/terms-of-use`.
@@ -137,8 +132,8 @@ The repo is the Vercel project root. `vercel.json` sets the LHR1 region and rout
 
 Needed in the project:
 
-1. A Blob store in LHR1. A private store is the safe default; a public store needs the state HMAC/private-state check before launch.
-2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY`, `PLANNY_ADMIN_TOKEN` and `PLANNY_PUBLIC_ORIGIN`.
+1. A Blob store in LHR1. A private store is the safe default; a public store exposes every object at its Blob URL.
+2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY` and `PLANNY_PUBLIC_ORIGIN`. The operator token required for takedown and reset is documented in the [self-hosting guide](docs/self-hosting.md).
 
 Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro. `GET /health` is uncached and reports the build, runtime and which settings are present.
 
@@ -162,7 +157,7 @@ bun test            # the test suite alone
 
 The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy guard, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
-The CI workflow runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build` and `bun run test`. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
+CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test` (expecting the 5 Live Blob skips), then `bun run scripts/generate-tokens.ts --check` and `bun run scripts/generate-sample.ts --check`. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 
 ## Project layout
 
@@ -172,29 +167,16 @@ src/            Hono app, stores, sanitiser, records, pages, limits
 web/            React home, 404/410/503 pages and the Vite build
 public/sample/  Sample body and generated sample
 skills/planny/  The agent skill, plan template and component reference
-scripts/        Generators, deploy, admin, load and parity helpers
+scripts/        Generators, deploy and admin helpers
 local/          Local SQLite server and LaunchAgent
 test/           Unit and integration tests
 docs/           Architecture and terms copy
 tokens.json     Card and chart token source
-reference/      Frozen JavaScript build used for parity only; not deployed
 ```
-
-## Before launch
-
-The code is not publish-ready while these are open:
-
-- The production Blob store is still public. Move it to a private store, or add the state HMAC, before the repository is public.
-- Rotate the Blob token that was pasted into chat; assign the store firewall; confirm the Vercel project is Pro.
-- Implement the tombstone/record TTL, or keep the terms' honest indefinite-retention wording. The terms currently say the record is kept indefinitely.
-- Verify `/sample`, 404/410/purge and the 320px layout on the deployed build.
-- Have the launch limits reviewed and accepted.
 
 ## Open source
 
 MIT licensed. See [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`ACCEPTABLE_USE.md`](ACCEPTABLE_USE.md), [`docs/architecture.md`](docs/architecture.md) and [`docs/terms-of-use.md`](docs/terms-of-use.md).
-
-The repository is still private until the Blob store and token gates pass. The hosted service should not be treated as production until the launch checks above pass.
 
 ## Design system
 
