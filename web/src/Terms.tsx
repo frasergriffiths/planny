@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-// Replace this with the monitored takedown inbox before launch.
 const CONTACT = 'frasergriffithsisme@icloud.com';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -155,7 +154,7 @@ export function Terms() {
           </p>
           <p>
             For takedowns, legal notices and terms questions, use the contact above. For security vulnerabilities,
-            use GitHub&apos;s private vulnerability reporting as described in SECURITY.md, not the takedown contact.
+            use the reporting route in SECURITY.md.
           </p>
           <p>
             These terms are governed by the laws of England and Wales, and the courts of England and Wales have

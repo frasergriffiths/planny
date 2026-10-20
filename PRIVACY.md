@@ -59,6 +59,9 @@ Our lawful bases are:
 - **Professional advisers, auditors or authorities** where the law requires it or
   where needed to establish or defend a legal claim.
 
+**Hosted service.** The service uses Vercel Blob only. Plan HTML, plan records and
+rate-limit data are stored in Vercel Blob.
+
 We do not sell personal data. Some providers may process data outside the UK; where
 they do, we rely on their contractual safeguards and UK adequacy or transfer
 mechanisms.
@@ -96,7 +99,7 @@ The link is the only read key, so treat it as public. Delete keys are returned o
 and only a hash is stored. The operator can remove a plan. We use a keyed address
 hash for limits, a restrictive content security policy for plans, and a sanitiser that
 removes scripts, links, forms, frames and remote resources. No service is completely
-secure; report a vulnerability through the private route in `SECURITY.md`.
+secure; report a vulnerability through the reporting route in `SECURITY.md`.
 
 ## Changes
 
@@ -107,5 +110,5 @@ service, with the effective date. If a change is material, we will make that cle
 
 Privacy questions and requests: `frasergriffithsisme@icloud.com`.
 
-Takedowns and legal notices: the same address. Security vulnerabilities: use GitHub's
-private vulnerability reporting as described in `SECURITY.md`, not this inbox.
+Takedowns and legal notices: the same address. Security vulnerabilities: use the
+reporting route in `SECURITY.md`.

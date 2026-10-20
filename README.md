@@ -106,7 +106,7 @@ The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Verce
 
 ## Blob-only trade-offs
 
-There is one production store: Vercel Blob. There is no Upstash, Redis, Global Config or separate API folder.
+There is one production store: Vercel Blob.
 
 - `state.json` is one JSON blob holding records, counters, rate windows and the small amount of control state. Each plan's HTML is a separate blob. `config/kill.json` is the upload switch.
 - State changes are serialised by a create-only `state.lock` blob, with a 15-second stale-lock recovery. Each instance keeps the last state it wrote, with a monotonic sequence, so a read that lags a write does not lose the latest record.
@@ -138,7 +138,7 @@ The repo is the Vercel project root. `vercel.json` sets the LHR1 region and rout
 Needed in the project:
 
 1. A Blob store in LHR1. A private store is the safe default; a public store needs the state HMAC/private-state check before launch.
-2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY`, `PLANNY_ADMIN_TOKEN` and `PLANNY_PUBLIC_ORIGIN`. No Upstash or Global Config.
+2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY`, `PLANNY_ADMIN_TOKEN` and `PLANNY_PUBLIC_ORIGIN`.
 
 Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro. `GET /health` is uncached and reports the build, runtime and which settings are present.
 

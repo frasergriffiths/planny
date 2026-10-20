@@ -91,6 +91,6 @@ If any provision is found unenforceable, the rest remains in force. These terms 
 
 For takedowns, legal notices and terms questions: `frasergriffithsisme@icloud.com`.
 
-For security vulnerabilities, please use GitHub's private vulnerability reporting as described in `SECURITY.md`, not the takedown contact.
+For security vulnerabilities, please use the reporting route in `SECURITY.md`.
 
 These terms are governed by the laws of England and Wales, and the courts of England and Wales have exclusive jurisdiction, except where consumer law gives you a different right.

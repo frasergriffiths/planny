@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { assertProPlan, planFromInspect } from '../src/deploy-guard.js';
+import { assertMainBranch, assertProPlan, planFromInspect } from '../src/deploy-guard.js';
 
 test('the deploy guard passes only a Pro plan', () => {
   expect(planFromInspect({ plan: 'pro' })).toBe('pro');
@@ -11,6 +11,13 @@ test('the deploy guard passes only a Pro plan', () => {
   expect(() => assertProPlan({ plan: 'hobby' })).toThrow(/not pro/);
   expect(() => assertProPlan({})).toThrow(/not pro/);
   expect(() => assertProPlan({ plan: 'pro' })).not.toThrow();
+});
+
+test('the deploy guard refuses a non-main branch', () => {
+  expect(() => assertMainBranch('main')).not.toThrow();
+  expect(() => assertMainBranch('main\n')).not.toThrow();
+  expect(() => assertMainBranch('oss-readiness')).toThrow(/not main/);
+  expect(() => assertMainBranch('')).toThrow(/not main/);
 });
 
 test('the health route is uncached and names the build', async () => {

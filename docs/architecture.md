@@ -1,6 +1,6 @@
 # Architecture
 
-planny is a single TypeScript service. It accepts one HTML file, sanitises it, stores it in Vercel Blob, and serves it at an unguessable link until it expires or is deleted. Bun runs the local server and the tests; Vercel runs the production function.
+planny is a single TypeScript service. It accepts one HTML file, sanitises it, stores it in Vercel Blob, and serves it at an unguessable link until it expires or is deleted. Bun runs the local server and the tests; the production function runs on Vercel, and `/health` reports the runtime actually in use.
 
 This document describes the current design and its trade-offs. The launch gates are listed at the end and in the README.
 
@@ -41,7 +41,7 @@ There is one production store: Vercel Blob. It holds:
 - `state.json`: records, counters, rate windows and control state.
 - `config/kill.json`: the upload switch.
 
-`src/stores/blob.ts` adapts the Blob API to the small Redis-like interface used by the app. The state is one JSON blob. The simple shape is a deliberate trade-off: no second service to run, at the cost of read-modify-write contention, a growth limit and cross-instance read lag.
+`src/stores/blob.ts` adapts the Blob API to the small key-value interface used by the app. The state is one JSON blob. The simple shape is a deliberate trade-off: no second service to run, at the cost of read-modify-write contention, a growth limit and cross-instance read lag.
 
 State writes take a create-only `state.lock` blob. The lock is considered stale after 15 seconds and is recovered. Each instance keeps the last state it wrote, with a monotonic sequence, so a read that lags a write does not lose the latest record. The long-term shape is one record per plan plus a separate index; that removes the single-state write window.
 
@@ -125,8 +125,5 @@ The real Blob calls and cache purges need a deployed smoke test; they are not un
 
 - State HMAC/private-state for a public Blob store, or keep the production store private.
 - Rotate the exposed Blob token; assign the store firewall; confirm the project is Pro.
-- Confirm `/health` reports Bun.
 - Implement the tombstone/record TTL or keep the terms' honest indefinite wording.
-- Rewrite the history for the iCloud author and local paths; remove the `js-reference` and `review-snapshot` tags; check PR refs.
 - Verify `/sample`, 404/410/purge and the 320px layout on the deployed build.
-- Fill the single takedown-contact placeholder in the terms copy.

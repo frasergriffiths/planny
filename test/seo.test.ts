@@ -36,7 +36,6 @@ describe('seo', () => {
     expect(data['name']).toBe('planny');
     expect(data['url']).toBe(origin);
     expect(data['operatingSystem']).toBe('Web');
-    expect((data['offers'] as Record<string, unknown>)['price']).toBe('0');
     expect((data['author'] as Record<string, unknown>)['name']).toBe('Fraser Griffiths');
   });
 

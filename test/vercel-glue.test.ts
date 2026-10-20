@@ -174,3 +174,74 @@ test('a purge refused for rate limits is retried, and a missing blob does not bl
   });
   await missing.blobs.remove('00000000-0000-4000-8000-000000000000');
 });
+
+function fakeBlobOnly() {
+  const files = new Map<string, string>();
+  return {
+    files,
+    async put(pathname: string, body: string | Uint8Array | Blob, options: Record<string, unknown>) {
+      expect(options.access).toBe('private');
+      const bytes = typeof body === 'string' ? body
+        : body instanceof Uint8Array ? Buffer.from(body).toString()
+        : Buffer.from(await (body as Blob).arrayBuffer()).toString();
+      files.set(pathname, bytes);
+    },
+    async get(pathname: string, options: Record<string, unknown>) {
+      expect(options.access).toBe('private');
+      const file = files.get(pathname);
+      if (!file) return null;
+      return { statusCode: 200, stream: new Blob([file]).stream() as unknown as ReadableStream<Uint8Array> };
+    },
+    async head(pathname: string) {
+      if (!files.has(pathname)) throw new Error('BlobNotFoundError');
+      return { uploadedAt: new Date().toISOString() };
+    },
+    async del(pathname: string | string[]) {
+      for (const name of Array.isArray(pathname) ? pathname : [pathname]) files.delete(name);
+    },
+  };
+}
+
+test('on a Blob-only Vercel build the App exposes the upload switch', async () => {
+  const blob = fakeBlobOnly();
+  const app = createVercelApp({
+    env: {
+      BLOB_READ_WRITE_TOKEN: 'fake-token',
+      BLOB_ACCESS: 'private',
+      PLANNY_UPLOAD_SPACING_SECONDS: '0',
+    },
+    blobClient: blob,
+    now: () => Date.UTC(2026, 9, 19, 12),
+    log: { error: () => {}, alert: () => {} },
+  });
+  expect(await app.uploadsEnabled()).toBe(true);
+  await app.setUploadsEnabled(false);
+  expect(await app.uploadsEnabled()).toBe(false);
+  const paused = await upload(app);
+  expect(paused.status).toBe(503);
+  expect(((await paused.json()) as { error: { code: string } }).error.code).toBe('uploads_paused');
+  await app.setUploadsEnabled(true);
+  expect((await upload(app)).status).toBe(201);
+});
+
+test('an unknown BLOB_ACCESS fails closed', () => {
+  const blob = fakeBlobOnly();
+  expect(() => createVercelApp({
+    env: { BLOB_READ_WRITE_TOKEN: 'fake-token', BLOB_ACCESS: 'Public ' },
+    blobClient: blob,
+    log: { error: () => {}, alert: () => {} },
+  })).toThrow(/BLOB_ACCESS/);
+});
+
+test('an unset BLOB_ACCESS defaults to private', async () => {
+  const blob = fakeBlobOnly();
+  const app = createVercelApp({
+    env: { BLOB_READ_WRITE_TOKEN: 'fake-token', PLANNY_UPLOAD_SPACING_SECONDS: '0' },
+    blobClient: blob,
+    now: () => Date.UTC(2026, 9, 19, 12),
+    log: { error: () => {}, alert: () => {} },
+  });
+  expect((await upload(app)).status).toBe(201);
+  // A private store keeps plan HTML behind the app; no Blob-side hmac key is needed.
+  expect(blob.files.has('state.json')).toBe(true);
+});

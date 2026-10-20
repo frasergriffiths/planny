@@ -18,6 +18,7 @@ export function createVercelApp({
   waitUntil,
   now,
   log = defaultLog,
+  blobClient,
   ...storeDeps
 }: {
   env?: Record<string, string | undefined>;
@@ -26,6 +27,7 @@ export function createVercelApp({
   log?: Logger;
   client?: Parameters<typeof createVercelStore>[0] extends infer D ? (D extends { client?: infer C } ? C : never) : never;
   blob?: Parameters<typeof createVercelStore>[0] extends infer D ? (D extends { blob?: infer B } ? B : never) : never;
+  blobClient?: import('./stores/blob.js').BlobApiClient;
   readConfig?: (key: string) => Promise<unknown>;
   purge?: (tag: string) => Promise<void>;
 }): App & { handle(request: Request, options?: { address?: string }): Promise<Response> } {
@@ -36,11 +38,19 @@ export function createVercelApp({
   const blobOnly = Boolean(env.BLOB_READ_WRITE_TOKEN) && !env.UPSTASH_REDIS_REST_URL && !env.KV_REST_API_URL;
   if (blobOnly && !env.BLOB_READ_WRITE_TOKEN) throw new Error('planny needs BLOB_READ_WRITE_TOKEN.');
   const blobKey = env.PLANNY_BLOB_KEY_1 ?? env.BLOB_READ_WRITE_TOKEN;
+  // Fail closed: an unset BLOB_ACCESS defaults to private, and an unknown value
+  // refuses to start rather than guessing. The env value does not prove the store's
+  // real ACL; verify the store itself in the Vercel dashboard.
+  const accessEnv = env.BLOB_ACCESS ?? 'private';
+  if (accessEnv !== 'private' && accessEnv !== 'public') {
+    throw new Error(`planny: BLOB_ACCESS must be 'private' or 'public', got '${accessEnv}'.`);
+  }
   const store = blobOnly
     ? createBlobStore({
       token: env.BLOB_READ_WRITE_TOKEN ?? '',
-      access: env.BLOB_ACCESS === 'private' ? 'private' : 'public',
+      access: accessEnv,
       ...(blobKey ? { pathKey: blobKey } : {}),
+      ...(blobClient ? { client: blobClient } : {}),
     })
     : createVercelStore({ env, ...storeDeps });
   const app = createApp({

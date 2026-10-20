@@ -55,7 +55,8 @@ objects directly. Do not create one.
    PLANNY_BUILD=vercel bun run admin reset all
    ```
 
-5. To stop uploads without stopping reads:
+5. To stop uploads without stopping reads (the switch is written to
+   `config/kill.json`):
 
    ```sh
    PLANNY_BUILD=vercel bun run admin uploads off
@@ -65,8 +66,9 @@ objects directly. Do not create one.
 
 ## Suspected vulnerability
 
-1. Move the report to GitHub's private vulnerability reporting. Do not discuss a
-   working exploit in a public issue.
+1. Move the report to GitHub's private vulnerability reporting when it is enabled.
+   While the repository is private, keep it in the security inbox and do not discuss
+   a working exploit in a public issue.
 2. Acknowledge within 72 hours. Agree a disclosure timeline; credit the reporter if
    they want it.
 3. Reproduce in a local instance. Treat the sanitiser, the plan CSP, the delete path,
@@ -87,7 +89,8 @@ takedown.
 
 Weekly:
 
-- `/health` is 200, `configured: true`, `purge: ok`, `access: private`.
+- `/health` is 200, `configured: true`, `purge: ok`, `access: private`, `accessConfigured: true`.
+- The Blob store is still private in the Vercel dashboard (`/health` echoes the env value only).
 - No new secret scanning alert, Dependabot alert or failed deployment.
 - The takedown inbox and security advisories have no unanswered report.
 - Storage and read usage are inside the limits in the README.

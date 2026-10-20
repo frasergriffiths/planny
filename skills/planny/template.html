@@ -383,7 +383,7 @@
         <h2>Next steps</h2>
         <ul class="check">
           <li><span><strong>Replace the public store.</strong> Delete it, create the private store in LHR1, and rotate the burned token.</span></li>
-          <li><span><strong>Set the environment.</strong> Address key, admin token, Blob token, Upstash URL and token, Global Config.</span></li>
+          <li><span><strong>Set the environment.</strong> Address key, admin token and Blob token.</span></li>
           <li><span><strong>Prove the pause matrix.</strong> One read, then a 503 with the guard name, reset date and no-store.</span></li>
           <li><span><strong>Prove the region.</strong> /health returns 200 ok, and the raw x-vercel-id has an lhr1 function segment.</span></li>
           <li><span><strong>Install the skill.</strong> Publish, view, delete and 410 from the command line, then from an agent session.</span></li>
@@ -407,7 +407,7 @@
       <section class="box outline">
         <div class="eyebrow">Open questions</div>
         <ul class="aside-list">
-          <li>Does the preview need its own Upstash database, or is the prefix enough?</li>
+          <li>Does the preview need its own Blob store, or is the prefix enough?</li>
           <li>Is 4 MiB enough for a plan with embedded screenshots?</li>
           <li>Who reads the abuse inbox after launch?</li>
         </ul>

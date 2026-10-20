@@ -11,7 +11,6 @@ All notable changes to planny are recorded here. The format follows
 - Privacy notice, acceptable-use policy and Contributor Covenant code of conduct.
 - Issue templates, a pull-request template and a security contact route.
 - Dependabot configuration for Bun and GitHub Actions.
-- CodeQL analysis on `main` and pull requests.
 - `security.txt` for vulnerability reports.
 - Self-hosting guide and operator runbook.
 - Package metadata: MIT licence, repository, homepage and issue tracker.

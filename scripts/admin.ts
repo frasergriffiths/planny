@@ -26,22 +26,16 @@ const log: Logger = {
 };
 
 async function main(): Promise<void> {
-  if (command === 'uploads' && vercel) {
-    console.error('Change the upload switch with the Vercel CLI: vercel global-config update --patch.');
-    process.exitCode = 2;
-    return;
-  }
   if (command === 'uploads' && !['on', 'off', 'status'].includes(argument ?? '')) {
     console.error(usage);
     process.exitCode = 2;
     return;
   }
-  const store = vercel ? null : createLocalStore({ dataDir });
   const app = vercel
     ? createVercelApp({ env: process.env, log })
     : createApp({
       build: 'local',
-      store: store!,
+      store: createLocalStore({ dataDir }),
       config: loadConfig(),
       secret: loadOrCreateSecret(join(dataDir, 'address.key')),
       origin: `http://127.0.0.1:${port}`,
@@ -52,9 +46,9 @@ async function main(): Promise<void> {
   } else if (command === 'sweep') {
     console.log(JSON.stringify(await app.sweep({ limit: 50 })));
   } else if (command === 'uploads' && argument === 'status') {
-    console.log((await store!.control.uploadsEnabled()) ? 'Uploads on.' : 'Uploads off.');
+    console.log((await app.uploadsEnabled()) ? 'Uploads on.' : 'Uploads off.');
   } else if (command === 'uploads') {
-    await store!.control.setUploadsEnabled(argument === 'on');
+    await app.setUploadsEnabled(argument === 'on');
     console.log(`Uploads ${argument}.`);
   } else if (command === 'reset' && ['reads', 'bytes', 'uploads', 'all'].includes(argument ?? '')) {
     console.log(JSON.stringify({ reset: argument, before: await app.resetMonth(argument as 'reads' | 'bytes' | 'uploads' | 'all') }));

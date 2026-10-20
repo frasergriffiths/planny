@@ -123,3 +123,19 @@ test('the owner reset needs the hashed address', async () => {
     t.cleanup();
   }
 });
+
+test('the upload switch is reachable through the App interface locally', async () => {
+  const t = setup();
+  try {
+    expect(await t.app.uploadsEnabled()).toBe(true);
+    await t.app.setUploadsEnabled(false);
+    expect(await t.app.uploadsEnabled()).toBe(false);
+    const paused = await upload(t.app);
+    expect(paused.status).toBe(503);
+    expect(((await paused.json()) as { error: { code: string } }).error.code).toBe('uploads_paused');
+    await t.app.setUploadsEnabled(true);
+    expect((await upload(t.app)).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});

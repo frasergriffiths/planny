@@ -19,3 +19,10 @@ export function assertProPlan(value: unknown): void {
     throw new Error(`Refusing to deploy: the Vercel project plan is ${plan}, not pro. A Hobby project can't run lhr1 functions or carry public traffic.`);
   }
 }
+
+// The manual deploy script targets production, so it must run from main.
+export function assertMainBranch(branch: string): void {
+  if (branch.trim() !== 'main') {
+    throw new Error(`Refusing to deploy: the checked-out branch is ${branch.trim() || 'unknown'}, not main. Production deploys come from main only.`);
+  }
+}

@@ -89,7 +89,9 @@ curl -s https://your-origin.example/health
 Pass conditions:
 
 - `ok` is `true` and `configured` is `true`;
-- `access` is `private`;
+- `access` is `private` and `accessConfigured` is `true` (this echoes the
+  `BLOB_ACCESS` environment value only — it does not read the store's real ACL. Confirm
+  in the Vercel dashboard that the Blob store itself is private);
 - `runtime` matches the function runtime you expect (Node 24 on Vercel today);
 - `purge` is `ok`;
 - `blobToken`, `addressKey` and `adminToken` are `true`.
@@ -115,8 +117,9 @@ show `MISS`.
 
 - **`/health` says `configured: false`** — one required setting is missing. The
   `error` field names the first missing setting; it never prints a value.
-- **`/health` says `access: public`** — stop and move the store to private. Do not
-  publish plans on a public store.
+- **`/health` says `access: public`** — `BLOB_ACCESS` is set to `public`. Stop and set
+  it to `private` (or move the store to private), then verify the store is private in the
+  Vercel dashboard: the health value follows the env var, not the store.
 - **A deploy is refused** — the Vercel project is not Pro, or the CLI is not signed
   in. The deploy guard fails closed on purpose.
 - **A plan returns 503** — the store is unavailable or a guard is paused. The page

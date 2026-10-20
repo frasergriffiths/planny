@@ -49,9 +49,14 @@ test('20 processes cannot overspend the shared budget', async () => {
     const results = await Promise.allSettled(
       Array.from({ length: 20 }, () => run(process.execPath, ['run', script], { env })),
     );
-    const outcomes = results.map((result) =>
-      result.status === 'fulfilled' ? result.value.stdout.trim() : 'busy',
-    );
+    const busyMessage = /The plan store is busy\. Try again in a few seconds\.|state file is busy/;
+    const outcomes = results.map((result) => {
+      if (result.status === 'fulfilled') return result.value.stdout.trim();
+      const stderr = String(result.reason?.stderr ?? '') + '\n' + String(result.reason?.message ?? '');
+      // Only a known lock error is busy; anything else is a crash and must fail the test.
+      if (busyMessage.test(stderr)) return 'busy';
+      throw new Error(`lock-test child crashed instead of reporting busy: ${stderr.trim()}`);
+    });
     const accepted = outcomes.filter((outcome) => outcome === 'ok').length;
     // A busy process is allowed to fail; it must never push the total over the budget.
     expect(accepted).toBeLessThanOrEqual(10);
