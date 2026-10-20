@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // Delete one plan. The only delete path: the key stays in its 0600 file and is never printed.
-//   bun delete.ts <plan-id-or-url> [--base https://planny-pink.vercel.app]
+//   bun delete.ts <plan-id-or-url> [--base https://use-planny.vercel.app]
 import { readFileSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -39,9 +39,9 @@ try {
 }
 const chosen = option('base') ?? process.env.PLANNY_URL ?? process.env.PLANNY_BASE;
 if (!chosen && storedOrigin && /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(storedOrigin)) {
-  fail('That key belongs to the retired local build. Local links no longer work; publish the plan to https://planny-pink.vercel.app.');
+  fail('That key belongs to the retired local build. Local links no longer work; publish the plan to https://use-planny.vercel.app.');
 }
-const base = (chosen ?? storedOrigin ?? 'https://planny-pink.vercel.app').replace(/\/$/, '');
+const base = (chosen ?? storedOrigin ?? 'https://use-planny.vercel.app').replace(/\/$/, '');
 const response = await fetch(`${base}/p/${id}`, {
   method: 'DELETE',
   headers: { authorization: `Bearer ${record.deleteKey}` },

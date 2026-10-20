@@ -16,7 +16,7 @@ mock.module('@vercel/functions', () => ({
   },
 }));
 
-const ORIGIN = 'https://planny-pink.vercel.app';
+const ORIGIN = 'https://use-planny.vercel.app';
 const PLAN = '<!doctype html><html><head><title>Plan</title></head><body><p onclick="x()">Hi</p></body></html>';
 
 // Vercel Blob is the only storage on Vercel, so these tests drive the Blob-only

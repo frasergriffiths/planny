@@ -81,7 +81,7 @@ export function home({ build, config }: { build: Build; origin: string; config: 
 <section class="upload">
 <h2>Upload a plan</h2>
 <p>Send the HTML as the raw request body. Put the name and the time the plan stays up in the query string.</p>
-<pre><code>curl -X POST "https://planny-pink.vercel.app/plans?name=Q4%20rollout&amp;duration=90d" \\
+<pre><code>curl -X POST "https://use-planny.vercel.app/plans?name=Q4%20rollout&amp;duration=90d" \\
   -H "Content-Type: text/html" \\
   --data-binary @plan.html</code></pre>
 <p>The reply is JSON with the link, the expiry time and a delete key. planny shows the delete key once, so keep it.</p>

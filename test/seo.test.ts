@@ -31,7 +31,7 @@ async function seoApp(): Promise<SeoFixture> {
 }
 
 const root = join(import.meta.dir, '..');
-const origin = 'https://planny-pink.vercel.app/';
+const origin = 'https://use-planny.vercel.app/';
 
 // The embedded pages come from the Vite build via scripts/generate-pages.ts,
 // so these assertions cover the built home page, not just the source.
@@ -49,8 +49,8 @@ describe('seo', () => {
 
   test('home page has Open Graph and Twitter tags', () => {
     expect(home).toContain('property="og:type" content="website"');
-    expect(home).toContain('property="og:url" content="https://planny-pink.vercel.app/"');
-    expect(home).toContain('property="og:image" content="https://planny-pink.vercel.app/og.png"');
+    expect(home).toContain('property="og:url" content="https://use-planny.vercel.app/"');
+    expect(home).toContain('property="og:image" content="https://use-planny.vercel.app/og.png"');
     expect(home).toContain('name="twitter:card" content="summary_large_image"');
     expect(home).toContain('name="twitter:image"');
   });

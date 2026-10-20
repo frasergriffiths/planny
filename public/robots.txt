@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /p/
 
-Sitemap: https://planny-pink.vercel.app/sitemap.xml
+Sitemap: https://use-planny.vercel.app/sitemap.xml

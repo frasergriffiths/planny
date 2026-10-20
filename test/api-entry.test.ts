@@ -55,7 +55,7 @@ mock.module('@vercel/functions', () => ({
   },
 }));
 
-const ORIGIN = 'https://planny-pink.vercel.app';
+const ORIGIN = 'https://use-planny.vercel.app';
 const UUID_A = '00000000-0000-4000-8000-000000000001';
 const UUID_B = '00000000-0000-4000-8000-000000000002';
 const PLAN = '<!doctype html><html><head><title>Entry</title></head><body><p>Hi</p></body></html>';

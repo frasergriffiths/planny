@@ -40,7 +40,7 @@ export default {
       });
     }
     if (url.pathname === '/' && !app) {
-      const body = home({ build: 'vercel', origin: 'https://planny-pink.vercel.app', config: loadConfig() });
+      const body = home({ build: 'vercel', origin: 'https://use-planny.vercel.app', config: loadConfig() });
       return new Response(body, {
         status: 200,
         headers: {
