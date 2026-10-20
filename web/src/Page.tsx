@@ -1,4 +1,34 @@
+import { useState } from 'react';
+
 export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
+
+const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
+
+function InstallCommand() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(INSTALL_COMMAND);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <code className="plan-card-outline block overflow-x-auto font-mono text-sm text-white">{INSTALL_COMMAND}</code>
+      <button
+        type="button"
+        onClick={copy}
+        aria-live="polite"
+        className="rounded-bar border border-line px-4 py-2 font-mono text-xs text-zinc-300 no-underline hover:border-zinc-600"
+      >
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
 
 const copy: Record<PageKind, { kicker: string; title: string; body: string; code?: string }> = {
   home: {
@@ -33,6 +63,7 @@ export function Page({ kind }: { kind: PageKind }) {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <a href="/" className="font-mono text-sm font-semibold tracking-tight text-white no-underline">● planny</a>
         <a href="/sample" className="font-mono text-xs tracking-wide text-zinc-400 no-underline hover:text-white">Sample plan</a>
+        <a href="#install" className="font-mono text-xs tracking-wide text-zinc-400 no-underline hover:text-white">Install skill</a>
       </header>
 
       <main className="mx-auto max-w-6xl px-6">
@@ -45,6 +76,7 @@ export function Page({ kind }: { kind: PageKind }) {
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">{page.body}</p>
                 <div className="mt-9 flex flex-wrap gap-3">
                   <a href="/sample" className="rounded-bar bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
+                  <a href="#install" className="rounded-bar border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">Install the skill</a>
                 </div>
               </div>
             </section>
@@ -60,6 +92,27 @@ export function Page({ kind }: { kind: PageKind }) {
                   <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
                 </div>
               ))}
+            </section>
+
+            <section id="install" className="border-t border-line py-14">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Agent skill</p>
+              <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Install the skill. Ask for a plan.</h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
+                One command installs the skill into Claude Code, Cursor, Codex, OpenCode, Copilot and other agents. It writes the HTML, uploads it, and keeps the delete key private.
+              </p>
+              <div className="mt-6">
+                <InstallCommand />
+              </div>
+              <p className="mt-4 max-w-xl font-mono text-xs text-zinc-500">
+                Add -g to install globally. Bun users can run <code className="text-zinc-400">bunx skills add frasergriffiths/planny --skill planny</code>. Runs on Node 22+ or Bun.
+              </p>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-400">
+                After install, ask your agent: <span className="text-white">“Publish this plan with Planny.”</span>
+              </p>
+              <p className="mt-6 flex flex-wrap gap-4 font-mono text-xs">
+                <a href="https://www.skills.sh/frasergriffiths/planny/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">skills.sh page</a>
+                <a href="https://github.com/frasergriffiths/planny/tree/main/skills/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">Skill source</a>
+              </p>
             </section>
 
             <section className="border-t border-line py-14">

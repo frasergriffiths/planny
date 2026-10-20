@@ -6,7 +6,7 @@
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 chmod 700 "$here/scripts"
-chmod 700 "$here/scripts"/*.ts
+chmod 700 "$here/scripts"/*.mjs
 
 skills_dir="${SKILLS_DIR:-$HOME/.agents/skills}"
 mkdir -p "$skills_dir"
@@ -20,5 +20,5 @@ cp "$here/commands/planny.md" "$commands_dir/planny.md"
 
 echo "Skill:   $target -> $here   (Settings > Skills)"
 echo "Command: $commands_dir/planny.md   (Settings > Commands, not Skills)"
-echo "Publish: bun $here/scripts/publish.ts plan.html --name \"...\" --duration 90d"
-echo "Delete:  bun $here/scripts/delete.ts <plan-id>"
+echo "Publish: node $here/scripts/publish.mjs plan.html --name \"...\" --duration 90d"
+echo "Delete:  node $here/scripts/delete.mjs <plan-id>"

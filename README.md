@@ -1,10 +1,20 @@
 # planny
 
+[![skills.sh](https://skills.sh/b/frasergriffiths/planny)](https://www.skills.sh/frasergriffiths/planny)
+
 Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only read key; there are no accounts and no list of plans.
 
 Try it at https://use-planny.vercel.app.
 
 Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [operator runbook](docs/runbook.md).
+
+## Install the agent skill
+
+```
+npx skills add frasergriffiths/planny --skill planny
+```
+
+The one command installs the skill into Claude Code, Cursor, Codex, OpenCode, Copilot and other skill agents. Runs on Node 22+ or Bun (`bunx skills add frasergriffiths/planny --skill planny`). See the [skills.sh page](https://www.skills.sh/frasergriffiths/planny/planny) and the [skill source](https://github.com/frasergriffiths/planny/tree/main/skills/planny).
 
 ## How it works
 
@@ -100,7 +110,7 @@ Core production settings:
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
-The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.ts`, `delete.ts`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
+The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.mjs`, `delete.mjs`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
 
 ## Blob-only trade-offs
 

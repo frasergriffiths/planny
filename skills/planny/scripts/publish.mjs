@@ -1,22 +1,22 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 // Publish one plan. The only publish path: it checks the file, posts it, and stores the delete
 // key in a 0600 file under ~/.planny. It never prints the key.
-//   bun publish.ts plan.html --name "Q4 rollout" [--duration 90d] [--base https://use-planny.vercel.app]
-import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+//   node publish.mjs plan.html --name "Q4 rollout" [--duration 90d] [--base https://use-planny.vercel.app]
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 
 const MAX_BYTES = 4_194_304;
 const args = process.argv.slice(2);
 const file = args[0];
-if (!file) fail('Usage: bun publish.ts <plan.html> --name "..." [--duration 90d] [--base URL]');
+if (!file) fail('Usage: node publish.mjs <plan.html> --name "..." [--duration 90d] [--base URL]');
 
-function fail(message: string): never {
+function fail(message) {
   console.error(message);
   process.exit(1);
 }
 
-function option(name: string): string | undefined {
+function option(name) {
   const index = args.indexOf(`--${name}`);
   return index >= 0 ? args[index + 1] : undefined;
 }
@@ -28,21 +28,21 @@ const duration = option('duration') ?? '30d';
 if (!/^\d{1,6}[hdwmy]$/i.test(duration)) fail('Duration must look like 12h, 30d, 2w, 3m or 5y.');
 const base = (option('base') ?? process.env.PLANNY_URL ?? process.env.PLANNY_BASE ?? 'https://use-planny.vercel.app').replace(/\/$/, '');
 
-let bytes: Buffer;
+let bytes;
 try {
   bytes = readFileSync(resolve(file));
 } catch {
   fail(`Cannot read ${file}.`);
 }
 if (bytes.byteLength > MAX_BYTES) fail(`The plan is ${bytes.byteLength} bytes; the cap is ${MAX_BYTES}.`);
-let html: string;
+let html;
 try {
   html = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 } catch {
   fail('The file is not valid UTF-8.');
 }
 
-const stripped: Array<[RegExp, string]> = [
+const stripped = [
   [/<script\b/i, 'script tags'],
   [/<a\s[^>]*href|<area\s[^>]*href/i, 'links (their text stays)'],
   [/<form\b|<input\b|<button\b/i, 'forms and controls'],
@@ -56,7 +56,7 @@ for (const [pattern, label] of stripped) {
 }
 
 const url = `${base}/plans?${new URLSearchParams({ name, duration })}`;
-async function send(): Promise<Response> {
+async function send() {
   return fetch(url, { method: 'POST', headers: { 'content-type': 'text/html' }, body: bytes });
 }
 let response = await send();
@@ -67,14 +67,14 @@ if (response.status === 429 || (response.status === 503 && response.headers.get(
   response = await send();
 }
 const text = await response.text();
-let body: Record<string, unknown>;
+let body;
 try {
-  body = JSON.parse(text) as Record<string, unknown>;
+  body = JSON.parse(text);
 } catch {
   fail(`Upload failed: ${response.status} ${text.slice(0, 200)}`);
 }
 if (response.status !== 201) {
-  const error = body.error as { code?: string; message?: string } | undefined;
+  const error = body.error;
   fail(`Upload failed: ${response.status} ${error?.code ?? ''} ${error?.message ?? ''}`.trim());
 }
 
@@ -94,7 +94,7 @@ try {
   fail(`The plan was published but its key file could not be created: ${error instanceof Error ? error.message : error}`);
 }
 
-const removed = (body.removed ?? {}) as Record<string, number>;
+const removed = body.removed ?? {};
 console.log(`Published ${basename(file)} (${bytes.byteLength} bytes).`);
 console.log(`Link:    ${String(body.url)}`);
 console.log(`Expires: ${String(body.expiresAt)}`);
