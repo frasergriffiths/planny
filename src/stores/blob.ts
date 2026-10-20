@@ -98,7 +98,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
           addRandomSuffix: false,
           contentType: 'application/json',
           cacheControlMaxAge: 60,
-          ...(etag ? { ifMatch: etag } : { allowOverwrite: true }),
+          ...(etag && attempt < 3 ? { ifMatch: etag } : { allowOverwrite: true }),
         });
         return result;
       } catch (error) {
