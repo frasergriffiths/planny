@@ -83,6 +83,8 @@ export interface App extends Hono<AppEnv> {
   sweep(options?: { limit?: number }): Promise<Array<{ id: string; reason: string; outcome: string }>>;
   takedown(id: string): Promise<{ outcome: string; purged: boolean }>;
   resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all'): Promise<{ reads: number; bytes: number; uploads: number }>;
+  uploadsEnabled(): Promise<boolean>;
+  setUploadsEnabled(enabled: boolean): Promise<void>;
 }
 
 function injectPlanFooter(html: string): string {
@@ -556,13 +558,25 @@ export function createApp(deps: AppDeps): App {
 
   app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
   app.get('/terms-of-use', () => page(200, PAGES.terms));
+  app.get('/robots.txt', (c) => c.text(PAGES.robots, 200, {
+    'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
+  }));
+  app.get('/sitemap.xml', (c) => c.text(PAGES.sitemap, 200, {
+    'content-type': 'application/xml; charset=utf-8',
+    'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
+  }));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
+  // access echoes the configured BLOB_ACCESS value; it is not a store ACL check. Verify
+  // the store itself in the Vercel dashboard (docs/self-hosting.md).
+  const accessRaw = process.env.BLOB_ACCESS ?? null;
   app.get('/health', () => json(200, {
     ok: true,
     build,
     sha: process.env.PLANNY_SHA ?? 'unknown',
     runtime: `bun ${Bun.version}`,
+    access: accessRaw,
+    accessConfigured: accessRaw === 'private' || accessRaw === 'public',
   }));
 
   app.post('/plans', async (c) => upload(c.req.raw, c.get('address')) as Promise<Response>);
@@ -615,5 +629,8 @@ export function createApp(deps: AppDeps): App {
   });
   app.notFound(() => page(404, build === 'vercel' ? PAGES.notFound : pages.unknownPath({ build })));
 
-  return Object.assign(app, { sweep, takedown, resetMonth, records });
+  return Object.assign(app, { sweep, takedown, resetMonth, records,
+    uploadsEnabled: () => store.control.uploadsEnabled(),
+    setUploadsEnabled: (enabled: boolean) => store.control.setUploadsEnabled(enabled),
+  });
 }

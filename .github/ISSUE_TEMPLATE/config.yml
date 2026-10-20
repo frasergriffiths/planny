@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/frasergriffiths/planny/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue with an exploit or a token.
+  - name: Takedown or legal request
+    url: mailto:frasergriffithsisme@icloud.com
+    about: Report a plan that should be removed. Include the plan URL and why.

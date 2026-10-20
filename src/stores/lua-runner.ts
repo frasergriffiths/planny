@@ -6,8 +6,8 @@ const { lua, lauxlib, lualib, to_luastring: luastring } = fengari;
 type LuaState = Parameters<typeof lua.lua_gettop>[0];
 type Call = (name: string, args: readonly string[]) => CommandResult;
 
-// Runs Redis-style Lua with fengari, a Lua 5.3 VM written in JavaScript. redis.call goes to
-// the store's commands, so the script text is the same one Upstash runs.
+// Runs Redis-style Lua with fengari, a Lua 5.3 VM written in JavaScript. redis.call routes to
+// the store's in-process command handler, so the script and the runtime agree on every step.
 export function createLuaRunner() {
   const state = lauxlib.luaL_newstate();
   lualib.luaL_openlibs(state);

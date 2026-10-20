@@ -3,7 +3,9 @@
 
 **Effective 20 October 2026. Last updated 20 October 2026.**
 
-planny is operated by Fraser Griffiths ("we", "us", "our"). The service lets you publish an HTML plan and gives you a link. By uploading a plan or using the service, you agree to these terms. If you do not agree, do not use the service.
+planny is operated by Fraser Griffiths ("we", "us", "our"). The service lets you publish an HTML plan and gives you a link. By uploading a plan or using the service, you agree to these terms. If you do not agree, do not use the service. If you self-host planny, the person or organisation running that instance is the operator, not us.
+
+For how we handle personal data, see [`PRIVACY.md`](../PRIVACY.md). For what you may publish, see [`ACCEPTABLE_USE.md`](../ACCEPTABLE_USE.md).
 
 ## 1. The service
 
@@ -27,7 +29,7 @@ You confirm that you have the rights and consents needed to publish the plan and
 
 Anyone with the link can read the plan. We do not list plans or publish an index, but we cannot stop someone sharing a link, and a search engine may index a plan if it finds the link. Do not put secrets, passwords, private keys, personal data or confidential information in a plan.
 
-The delete key is returned when you publish. Keep it secret. Only a hash of the delete key is stored; we cannot recover the key for you. Anyone with the delete key can delete the plan. The operator can remove a plan with the admin token.
+The delete key is returned when you publish. Keep it secret. Only a hash of the delete key is stored; we cannot recover the key for you. Anyone with the delete key can delete the plan.
 
 ## 4. Limits and availability
 
@@ -87,8 +89,8 @@ If any provision is found unenforceable, the rest remains in force. These terms 
 <a id="contact"></a>
 ## 12. Contact
 
-For takedowns, legal notices and terms questions: `takedown@planny.run`.
+For takedowns, legal notices and terms questions: `frasergriffithsisme@icloud.com`.
 
-For security vulnerabilities, please use GitHub's private vulnerability reporting as described in `SECURITY.md`, not the takedown contact.
+For security vulnerabilities, please use the reporting route in `SECURITY.md`.
 
 These terms are governed by the laws of England and Wales, and the courts of England and Wales have exclusive jurisdiction, except where consumer law gives you a different right.

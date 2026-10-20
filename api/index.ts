@@ -4,7 +4,8 @@ import { createVercelApp } from '../src/vercel.js';
 import { loadConfig } from '../src/config.js';
 import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
 
-// Vercel's Bun runtime runs this file as the function behind the rewrite in vercel.json.
+// This file is the function entry behind the rewrite in vercel.json. The runtime depends
+// on the Vercel project setting; /health reports the runtime that is actually running.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
 let app: ReturnType<typeof createVercelApp> | null = null;
 let failure: string | null = null;
@@ -63,6 +64,7 @@ export default {
       const env = {
         blobToken: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
         access: process.env.BLOB_ACCESS ?? null,
+        accessConfigured: process.env.BLOB_ACCESS === 'private' || process.env.BLOB_ACCESS === 'public',
         addressKey: Boolean(process.env.PLANNY_ADDRESS_KEY),
         adminToken: Boolean(process.env.PLANNY_ADMIN_TOKEN),
         origin: process.env.PLANNY_PUBLIC_ORIGIN ?? null,

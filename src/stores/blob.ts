@@ -16,7 +16,16 @@ export class StoreUnavailableError extends Error {
   }
 }
 
+// Signature subset of @vercel/blob used here, so tests can inject a fake store.
+export interface BlobApiClient {
+  put(pathname: string, body: string | Uint8Array | Blob, options: Record<string, unknown>): Promise<unknown>;
+  get(pathname: string, options: Record<string, unknown>): Promise<{ statusCode: number; stream: ReadableStream<Uint8Array> } | null>;
+  head(pathname: string, options: Record<string, unknown>): Promise<{ uploadedAt: string }>;
+  del(pathname: string | string[], options?: Record<string, unknown>): Promise<unknown>;
+}
+
 interface BlobClientOptions {
+  readonly client?: BlobApiClient;
   readonly token: string;
   readonly access: 'public' | 'private';
   readonly pathKey?: string;
@@ -38,7 +47,9 @@ export function blobPlanPath(id: string, key: string | undefined): string {
 
 // Blob-only store: one JSON state blob holds records, counters and rate windows, and each plan's
 // HTML is a separate blob. A create-only lock serialises the read-modify-write across instances.
-export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobClientOptions) {
+export function createBlobStore({ token, access, pathKey, prefix = '', client }: BlobClientOptions) {
+  // An injected client stands in for @vercel/blob in tests.
+  const api = client ?? { put, get, head, del };
   const runner = createLuaRunner();
   // Blob reads can lag a write by a moment. Keep the last state this instance wrote, with a
   // monotonic sequence, and prefer it when the store returns an older copy.
@@ -48,7 +59,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   async function acquire(): Promise<void> {
     for (let attempt = 0; attempt < 200; attempt += 1) {
       try {
-        await put(store(LOCK), String(Date.now()), {
+        await api.put(store(LOCK), String(Date.now()), {
           access,
           token,
           addRandomSuffix: false,
@@ -59,9 +70,9 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
         return;
       } catch {
         try {
-          const current = await head(store(LOCK), { token });
+          const current = await api.head(store(LOCK), { token });
           if (Date.now() - new Date(current.uploadedAt).getTime() > LOCK_STALE_MS) {
-            await del(store(LOCK), { token });
+            await api.del(store(LOCK), { token });
             continue;
           }
         } catch {
@@ -76,9 +87,12 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   async function withState<T>(work: (file: string) => Promise<T>): Promise<T> {
     await acquire();
     try {
-      let existing: Awaited<ReturnType<typeof get>> = null;
+      let existing: { statusCode: number; stream: ReadableStream<Uint8Array> } | null = null;
       try {
-        existing = await get(store(STATE), { access, token, useCache: false });
+        const result = await api.get(store(STATE), { access, token, useCache: false });
+        if (result && result.statusCode === 200 && 'stream' in result && result.stream) {
+          existing = { statusCode: result.statusCode, stream: result.stream as ReadableStream<Uint8Array> };
+        }
       } catch (error) {
         if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
       }
@@ -113,7 +127,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
         }
       })();
       writeFileSync(file, next);
-      await put(store(STATE), Buffer.from(next), {
+      await api.put(store(STATE), Buffer.from(next), {
         access,
         token,
         addRandomSuffix: false,
@@ -127,7 +141,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
       if (error instanceof StoreUnavailableError) throw error;
       throw new StoreUnavailableError(error instanceof Error ? error.message : undefined);
     } finally {
-      await del(store(LOCK), { token }).catch(() => {});
+      await api.del(store(LOCK), { token }).catch(() => {});
     }
   }
 
@@ -148,7 +162,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
 
   const blobs = {
     async put(id: string, bytes: Uint8Array): Promise<void> {
-      await put(blobPlanPath(id, access === 'public' ? pathKey : undefined), Buffer.from(bytes), {
+      await api.put(blobPlanPath(id, access === 'public' ? pathKey : undefined), Buffer.from(bytes), {
         access,
         token,
         addRandomSuffix: false,
@@ -158,13 +172,13 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
       });
     },
     async get(id: string): Promise<Uint8Array | null> {
-      const result = await get(blobPlanPath(id, access === 'public' ? pathKey : undefined), { access, token });
+      const result = await api.get(blobPlanPath(id, access === 'public' ? pathKey : undefined), { access, token });
       if (!result || result.statusCode !== 200) return null;
       return new Uint8Array(await new Response(result.stream).arrayBuffer());
     },
     async remove(id: string): Promise<void> {
       try {
-        await del(blobPlanPath(id, access === 'public' ? pathKey : undefined), { token });
+        await api.del(blobPlanPath(id, access === 'public' ? pathKey : undefined), { token });
       } catch (error) {
         if (!(error instanceof Error && /not.?found/i.test(error.message))) throw error;
       }
@@ -174,10 +188,10 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
   const control = {
     async uploadsEnabled(): Promise<boolean> {
       try {
-        const result = await get(store('config/kill.json'), { access, token, useCache: false });
+        const result = await api.get(store('config/kill.json'), { access, token, useCache: false });
         if (!result || result.statusCode !== 200) {
           // A fresh store has no kill blob. Create it enabled, once.
-          await put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: true }), {
+          await api.put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: true }), {
             access,
             token,
             addRandomSuffix: false,
@@ -195,7 +209,7 @@ export function createBlobStore({ token, access, pathKey, prefix = '' }: BlobCli
       }
     },
     async setUploadsEnabled(enabled: boolean): Promise<void> {
-      await put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: enabled }), {
+      await api.put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: enabled }), {
         access,
         token,
         addRandomSuffix: false,

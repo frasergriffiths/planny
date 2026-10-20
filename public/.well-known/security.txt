@@ -1,0 +1,5 @@
+# Use the email contact below while the repository is private.
+Contact: mailto:frasergriffithsisme@icloud.com
+Expires: 2027-10-20T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://planny-pink.vercel.app/.well-known/security.txt

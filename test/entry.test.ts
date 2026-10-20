@@ -66,8 +66,6 @@ test('the Vercel entry runs the Vercel app, not the local one, with a fake env',
   const server = await start({
     VERCEL: '1',
     PLANNY_ADDRESS_KEY: 'test-address-key-that-is-long-enough-1234',
-    UPSTASH_REDIS_REST_URL: 'https://fake.upstash.io',
-    UPSTASH_REDIS_REST_TOKEN: 'fake-token',
     BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_fake_fake',
     PLANNY_PUBLIC_ORIGIN: 'https://preview.example',
   });
@@ -75,7 +73,7 @@ test('the Vercel entry runs the Vercel app, not the local one, with a fake env',
     const home = await fetch(server.base);
     expect(home.status).toBe(200);
     expect(home.headers.get('x-planny-build')).toBe('vercel');
-    expect(await home.text()).toContain('Plans that live at a link');
+    expect(await home.text()).toContain('Share an HTML plan as a link');
   } finally {
     server.child.kill('SIGTERM');
   }

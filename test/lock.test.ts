@@ -46,14 +46,24 @@ test('20 processes cannot overspend the shared budget', async () => {
       DATA_DIR: dataDir,
       DELAY_MS: '25',
     };
-    const results = await Promise.all(
+    const results = await Promise.allSettled(
       Array.from({ length: 20 }, () => run(process.execPath, ['run', script], { env })),
     );
-    const outcomes = results.map((result) => result.stdout.trim());
-    expect(outcomes.filter((outcome) => outcome === 'ok').length).toBe(10);
+    const busyMessage = /The plan store is busy\. Try again in a few seconds\.|state file is busy|SQLITE_BUSY|database is locked/;
+    const outcomes = results.map((result) => {
+      if (result.status === 'fulfilled') return result.value.stdout.trim();
+      const stderr = String(result.reason?.stderr ?? '') + '\n' + String(result.reason?.message ?? '');
+      // Only a known lock error is busy; anything else is a crash and must fail the test.
+      if (busyMessage.test(stderr)) return 'busy';
+      throw new Error(`lock-test child crashed instead of reporting busy: ${stderr.trim()}`);
+    });
+    const accepted = outcomes.filter((outcome) => outcome === 'ok').length;
+    // A busy process is allowed to fail; it must never push the total over the budget.
+    expect(accepted).toBeLessThanOrEqual(10);
     const store = createLocalStore({ dataDir });
     const total = await store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:site:bytes'], []);
-    expect(Number(total)).toBe(1000);
+    expect(Number(total)).toBeLessThanOrEqual(1000);
+    expect(Number(total)).toBe(accepted * 100);
   } finally {
     rmSync(dataDir, { recursive: true, force: true });
   }

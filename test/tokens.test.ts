@@ -204,7 +204,7 @@ test('the React pages use both card variants', () => {
 test('/terms-of-use is routed, linked and carries the retention licence', async () => {
   const { PAGES } = await import('../src/generated-pages.js');
   expect(PAGES.terms).toContain('data-page="terms"');
-  expect(PAGES.terms).toContain('takedown@planny.run');
+  expect(PAGES.terms).toContain('frasergriffithsisme@icloud.com');
   expect(PAGES.terms).toContain('kept indefinitely');
   const page = read('web/src/Page.tsx');
   expect(page).toContain('href="/terms-of-use"');

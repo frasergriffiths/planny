@@ -45,7 +45,7 @@ ${rows.map((row) => `| ${row} |`).join('\n')}
 
 ## Configuration
 
-The Blob-only build reads six values in Production: \`BLOB_READ_WRITE_TOKEN\`, \`BLOB_ACCESS=public\`, \`PLANNY_BLOB_KEY_1\`, \`PLANNY_ADDRESS_KEY\`, \`PLANNY_ADMIN_TOKEN\` and \`PLANNY_PUBLIC_ORIGIN\`. \`BLOB_STORE_ID\` and \`BLOB_WEBHOOK_PUBLIC_KEY\` are connection metadata, not app config. There is no Upstash or Global Config. A missing value returns \`planny_not_configured\` on store routes; the server log names the variable and the page does not.
+The Blob-only build reads six values in Production: \`BLOB_READ_WRITE_TOKEN\`, \`BLOB_ACCESS=private\`, \`PLANNY_BLOB_KEY_1\`, \`PLANNY_ADDRESS_KEY\`, \`PLANNY_ADMIN_TOKEN\` and \`PLANNY_PUBLIC_ORIGIN\`. \`BLOB_STORE_ID\` and \`BLOB_WEBHOOK_PUBLIC_KEY\` are connection metadata, not app config. Vercel Blob is the only production store. A missing value returns \`planny_not_configured\` on store routes; the server log names the variable and the page does not.
 
 ## Reading the table
 
