@@ -82,8 +82,12 @@ export function Page({ kind }: { kind: PageKind }) {
         )}
       </main>
 
-      <footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-line px-6 py-6 font-mono text-xs text-zinc-600">
-        <span>planny, plans for agents · <a href="/terms-of-use" className="text-zinc-500 no-underline hover:text-white">Terms</a></span>
+      <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-6 py-6 font-mono text-xs text-zinc-600">
+        <span>
+          planny, plans for agents · <a href="/terms-of-use" className="text-zinc-500 no-underline hover:text-white">Terms</a> ·{" "}
+          <a href="https://github.com/frasergriffiths/planny/blob/main/PRIVACY.md" className="text-zinc-500 no-underline hover:text-white">Privacy</a> ·{" "}
+          <a href="https://github.com/frasergriffiths/planny/blob/main/ACCEPTABLE_USE.md" className="text-zinc-500 no-underline hover:text-white">Acceptable use</a>
+        </span>
         <span>One link. One key.</span>
       </footer>
     </div>
