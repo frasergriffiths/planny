@@ -6,7 +6,7 @@ import { createBlobStore } from './stores/blob.js';
 import type { BlobApiClient } from './stores/blob.js';
 import type { Logger } from './app.js';
 
-const DEFAULT_ORIGIN = 'https://planny-pink.vercel.app';
+const DEFAULT_ORIGIN = 'https://use-planny.vercel.app';
 
 const defaultLog: Logger = {
   error: (...args) => console.error(...args),

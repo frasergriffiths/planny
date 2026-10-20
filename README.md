@@ -2,7 +2,7 @@
 
 Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only read key; there are no accounts and no list of plans.
 
-Try it at https://planny-pink.vercel.app.
+Try it at https://use-planny.vercel.app.
 
 Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [operator runbook](docs/runbook.md).
 

@@ -4,7 +4,7 @@
 
 planny is operated by Fraser Griffiths ("we", "us", "our"). This notice explains what
 we collect when you publish or read a plan, why we use it, and what rights you have.
-It covers the hosted service at `planny-pink.vercel.app`. If you self-host planny,
+It covers the hosted service at `use-planny.vercel.app`. If you self-host planny,
 you are the controller for your instance and this notice does not apply to it.
 
 ## What we collect

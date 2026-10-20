@@ -29,11 +29,11 @@ async function tokensServed(): Promise<Served> {
     store: createLocalStore({ dataDir }),
     config: loadConfig({}),
     secret: 'test-secret',
-    origin: 'https://planny-pink.vercel.app',
+    origin: 'https://use-planny.vercel.app',
     log: { error: () => {}, alert: () => {} },
   });
   return {
-    fetchPage: (path) => Promise.resolve(app.fetch(new Request(`https://planny-pink.vercel.app${path}`), { address: '198.51.100.9' })),
+    fetchPage: (path) => Promise.resolve(app.fetch(new Request(`https://use-planny.vercel.app${path}`), { address: '198.51.100.9' })),
     cleanup: () => rmSync(dataDir, { recursive: true, force: true }),
   };
 }
