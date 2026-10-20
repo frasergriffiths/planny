@@ -58,6 +58,15 @@ test('stretchable SVG charts carry no SVG text; the fixed-size donut keeps it', 
   expect(sample).toContain('plan versus pay-as-you-go');
 });
 
+test('line labels sit in one row under the plot; the mobile Gantt stacks without clipping', () => {
+  for (const source of [template, sample]) {
+    expect(rule(source, '.x-labels')).toContain('grid-template-columns: repeat(9, minmax(0, 1fr))');
+    expect(source).toContain('.gantt-head { display: none; }');
+    expect(source).toContain('.gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }');
+    expect(source).toContain('repeating-linear-gradient');
+  }
+});
+
 test('charts are accessible with one complete description per chart', () => {
   expect(rule(sample, '.chart-legend')).toContain('font-size: 12px');
   const charts = sample.match(/role="img" aria-label="[^"]+"/g) ?? [];

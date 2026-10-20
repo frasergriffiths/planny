@@ -306,11 +306,19 @@ Wrap the Gantt in `.gantt-wrap` and give the inner `.gantt` a `min-width` (650px
 <style>
   .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
   @media (max-width: 700px) {
-    .gantt { min-width: 560px; }
-    .gantt-row, .gantt-head { grid-template-columns: 100px repeat(8, minmax(0, 1fr)); }
+    .gantt { min-width: 0; }
+    .gantt-head { display: none; }
+    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
+    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .track {
+      grid-column: 1 / -1;
+      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
+    }
   }
 </style>
 ```
+
+Under 700px the Gantt stacks: the label sits above a full-width track with subtle week dividers, so nothing scrolls or clips. Desktop keeps the scrollable wrapper for plans with more weeks.
 
 ## Decision matrix
 

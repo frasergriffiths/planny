@@ -281,7 +281,7 @@
     font-size: 12px;
     white-space: nowrap;
   }
-  .x-labels { display: grid; margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .x-labels { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
   .x-labels span { padding-top: 8px; text-align: center; white-space: nowrap; }
   .x-labels span:first-child { text-align: left; }
   .x-labels span:last-child { text-align: right; }
@@ -318,14 +318,20 @@
   }
   @media (max-width: 700px) {
     .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .gantt { min-width: 560px; }
-    .gantt-head, .gantt-row { grid-template-columns: 100px repeat(8, minmax(0, 1fr)); }
     .hbar { grid-template-columns: minmax(76px, 96px) minmax(0, 1fr) 48px; }
     .line-plot, .x-labels { margin-left: 34px; }
     .line-plot { height: 180px; }
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
+    .gantt { min-width: 0; }
+    .gantt-head { display: none; }
+    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
+    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .track {
+      grid-column: 1 / -1;
+      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
+    }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -408,11 +414,11 @@
         <div class="gantt-wrap">
           <div class="gantt" role="img" aria-label="Eight week plan with five workstreams">
             <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Store + upload</div><div class="bar-track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
-            <div class="gantt-row"><div class="label">View + cache</div><div class="bar-track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
-            <div class="gantt-row"><div class="label">Safety + limits</div><div class="bar-track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
-            <div class="gantt-row"><div class="label">Preview + deploy</div><div class="bar-track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
-            <div class="gantt-row"><div class="label">Skill + docs</div><div class="bar-track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
+            <div class="gantt-row"><div class="label">Store + upload</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
+            <div class="gantt-row"><div class="label">View + cache</div><div class="track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
+            <div class="gantt-row"><div class="label">Safety + limits</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
+            <div class="gantt-row"><div class="label">Preview + deploy</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
+            <div class="gantt-row"><div class="label">Skill + docs</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
           </div>
         </div>
       </section>

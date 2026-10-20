@@ -24,11 +24,11 @@ const PLAN_CSP = "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const SAMPLE_CSP = PLAN_CSP.replace('sandbox;', "sandbox allow-top-navigation-by-user-activation;");
-const SAMPLE_CTA = '<div style="position:fixed;right:20px;bottom:20px;z-index:10;font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;">'
+const SAMPLE_CTA = '<div style="margin:32px 0 8px;padding:0 clamp(20px,4vw,52px);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;">'
   + '<a href="/" style="display:inline-block;padding:10px 14px;border:1px solid #3f3f3f;border-radius:4px;background:#0a0a0a;color:#f5f5f5;text-decoration:none;">Make your own plan</a></div>';
 
 function samplePage(): string {
-  return PAGES.sample.replace('</body>', `${SAMPLE_CTA}\n</body>`);
+  return PAGES.sample.replace('</div>\n</body>', `${SAMPLE_CTA}\n</div>\n</body>`);
 }
 
 export interface Logger {
