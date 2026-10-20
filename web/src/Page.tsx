@@ -44,7 +44,7 @@ function InstallCommand() {
         type="button"
         onClick={copy}
         aria-label="Copy install command"
-        className="flex h-7 w-7 flex-none items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
+        className="flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
       >
         {copied ? (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -107,8 +107,8 @@ export function Page({ kind }: { kind: PageKind }) {
                 <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.05em] text-white md:text-7xl">{page.title}</h1>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">{page.body}</p>
                 <div className="mt-9 flex flex-wrap gap-3">
-                  <a href="/sample" className="rounded-bar bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
-                  <a href="#install" className="rounded-bar border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">Install the skill</a>
+                  <a href="/sample" className="rounded-full bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
+                  <a href="#install" className="rounded-full border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">Install the skill</a>
                 </div>
               </div>
             </section>
@@ -141,10 +141,10 @@ export function Page({ kind }: { kind: PageKind }) {
                 ['Share', 'Anyone with the link reads the plan until its time runs out.', stepIcon.share],
               ].map(([title, body, icon]) => (
                 <div key={title} className="plan-card-outline">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-bar border border-line text-zinc-300" aria-hidden="true">
-                    {icon}
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-zinc-300" aria-hidden="true">{icon}</span>
+                    <h2 className="text-base font-semibold text-white">{title}</h2>
                   </div>
-                  <h2 className="mt-4 text-base font-semibold text-white">{title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
                 </div>
               ))}
