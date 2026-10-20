@@ -552,6 +552,10 @@ export function createApp(deps: AppDeps): App {
     'content-type': 'application/xml; charset=utf-8',
     'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
   }));
+  app.get('/.well-known/security.txt', (c) => c.text(PAGES.security, 200, {
+    'content-type': 'text/plain; charset=utf-8',
+    'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
+  }));
   app.get('/og.png', (c) => {
     if (!PAGES.og) return c.text('og image missing', 404);
     return c.body(Uint8Array.from(atob(PAGES.og), (ch) => ch.charCodeAt(0)), 200, {

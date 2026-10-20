@@ -46,6 +46,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
 | `GET /health` | Uncached build, runtime and configuration-presence flags. |
 | `GET /terms-of-use` | Terms of use. |
+| `GET /.well-known/security.txt` | Machine-readable security contact. |
 
 API errors are JSON: `{"error":{"code":"...","message":"..."}}`. Unknown, malformed and expired links get 404 and 410 pages, not JSON.
 
@@ -90,7 +91,7 @@ Core production settings:
 | Variable | Purpose |
 | --- | --- |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read-write token. Required. It can read and write the whole store. |
-| `BLOB_ACCESS` | `private` (recommended) or `public`. A public store exposes every object at its Blob URL. |
+| `BLOB_ACCESS` | `private` or `public`. Production requires `private`: a public store exposes every object at its Blob URL, including `state.json` and `config/kill.json`. |
 | `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Required only for a public store; rotating it breaks existing links. |
 | `PLANNY_ADDRESS_KEY` | Stable keyed hash of client addresses for rates and pauses. Rotating it resets every derived address and every rate limit. |
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. |
@@ -157,7 +158,7 @@ bun test            # the test suite alone
 
 The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy guard, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
-CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test` (expecting the 5 Live Blob skips), then `bun run scripts/generate-tokens.ts --check` and `bun run scripts/generate-sample.ts --check`. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
+CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 
 ## Project layout
 
@@ -176,7 +177,7 @@ tokens.json     Card and chart token source
 
 ## Open source
 
-MIT licensed. See [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`ACCEPTABLE_USE.md`](ACCEPTABLE_USE.md), [`docs/architecture.md`](docs/architecture.md) and [`docs/terms-of-use.md`](docs/terms-of-use.md).
+The code is MIT licensed. The Geist fonts in [`public/fonts`](public/fonts) are under the SIL Open Font License; see [`public/fonts/OFL-geist.txt`](public/fonts/OFL-geist.txt). Also see [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`ACCEPTABLE_USE.md`](ACCEPTABLE_USE.md), [`docs/architecture.md`](docs/architecture.md) and [`docs/terms-of-use.md`](docs/terms-of-use.md).
 
 ## Design system
 

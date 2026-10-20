@@ -16,5 +16,6 @@ export const PAGES = {
     "manifest": "{\n  \"name\": \"planny\",\n  \"short_name\": \"planny\",\n  \"start_url\": \"/\",\n  \"display\": \"standalone\",\n  \"background_color\": \"#000000\",\n  \"theme_color\": \"#000000\",\n  \"icons\": [\n    {\n      \"src\": \"/icon-192.png\",\n      \"sizes\": \"192x192\",\n      \"type\": \"image/png\"\n    },\n    {\n      \"src\": \"/icon-512.png\",\n      \"sizes\": \"512x512\",\n      \"type\": \"image/png\"\n    }\n  ]\n}\n"
   },
   "robots": "User-agent: *\nAllow: /\nDisallow: /p/\n\nSitemap: https://planny-pink.vercel.app/sitemap.xml\n",
-  "sitemap": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url><loc>https://planny-pink.vercel.app/</loc></url>\n  <url><loc>https://planny-pink.vercel.app/sample</loc></url>\n  <url><loc>https://planny-pink.vercel.app/terms-of-use</loc></url>\n</urlset>\n"
+  "sitemap": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url><loc>https://planny-pink.vercel.app/</loc></url>\n  <url><loc>https://planny-pink.vercel.app/sample</loc></url>\n  <url><loc>https://planny-pink.vercel.app/terms-of-use</loc></url>\n</urlset>\n",
+  "security": "# Security reports and takedown requests.\nContact: mailto:frasergriffithsisme@icloud.com\nExpires: 2027-10-20T00:00:00.000Z\nPreferred-Languages: en\nCanonical: https://planny-pink.vercel.app/.well-known/security.txt\n"
 } as const;
