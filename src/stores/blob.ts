@@ -49,7 +49,8 @@ export function blobPlanPath(id: string, key: string | undefined): string {
 // HTML is a separate blob. A create-only lock serialises the read-modify-write across instances.
 export function createBlobStore({ token, access, pathKey, prefix = '', client }: BlobClientOptions) {
   // An injected client stands in for @vercel/blob in tests.
-  const api = client ?? { put, get, head, del };
+  // The SDK's get() is a wider union (304 has no stream); this store only reads 200s.
+  const api: BlobApiClient = client ?? ({ put, get, head, del } as unknown as BlobApiClient);
   const runner = createLuaRunner();
   // Blob reads can lag a write by a moment. Keep the last state this instance wrote, with a
   // monotonic sequence, and prefer it when the store returns an older copy.
@@ -185,27 +186,44 @@ export function createBlobStore({ token, access, pathKey, prefix = '', client }:
     },
   };
 
+  async function readKill(): Promise<Awaited<ReturnType<BlobApiClient['get']>>> {
+    try {
+      return await api.get(store('config/kill.json'), { access, token, useCache: false });
+    } catch (error) {
+      if (error instanceof Error && /not.?found/i.test(error.message)) return null;
+      throw error;
+    }
+  }
+
   const control = {
     async uploadsEnabled(): Promise<boolean> {
       try {
-        const result = await api.get(store('config/kill.json'), { access, token, useCache: false });
+        let result = await readKill();
         if (!result || result.statusCode !== 200) {
           // A fresh store has no kill blob. Create it enabled, once.
-          await api.put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: true }), {
-            access,
-            token,
-            addRandomSuffix: false,
-            allowOverwrite: false,
-            contentType: 'application/json',
-            cacheControlMaxAge: 60,
-          }).catch(() => {});
-          return true;
+          try {
+            await api.put(store('config/kill.json'), JSON.stringify({ uploadsEnabled: true }), {
+              access,
+              token,
+              addRandomSuffix: false,
+              allowOverwrite: false,
+              contentType: 'application/json',
+              cacheControlMaxAge: 60,
+            });
+            return true;
+          } catch {
+            // Another instance may have created it first; re-read before failing closed.
+            result = await readKill();
+            if (!result || result.statusCode !== 200) {
+              throw new StoreUnavailableError('The upload switch could not be created.');
+            }
+          }
         }
         const value = JSON.parse(await new Response(result.stream).text()) as { uploadsEnabled?: unknown };
         return value.uploadsEnabled === true;
       } catch (error) {
         if (error instanceof StoreUnavailableError) throw error;
-        return true;
+        throw new StoreUnavailableError(error instanceof Error ? error.message : undefined);
       }
     },
     async setUploadsEnabled(enabled: boolean): Promise<void> {

@@ -59,6 +59,7 @@ test('20 processes cannot overspend the shared budget', async () => {
     });
     const accepted = outcomes.filter((outcome) => outcome === 'ok').length;
     // A busy process is allowed to fail; it must never push the total over the budget.
+    expect(accepted).toBeGreaterThanOrEqual(1);
     expect(accepted).toBeLessThanOrEqual(10);
     const store = createLocalStore({ dataDir });
     const total = await store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:site:bytes'], []);
