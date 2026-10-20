@@ -153,3 +153,23 @@ test('reset clears the month', async () => {
   const after = await f.store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:month:1970-01:uploads'], []);
   expect(Number(after)).toBe(0);
 });
+
+test('the upload gate reports daily and monthly caps without counting', async () => {
+  const f = fixture();
+  const owner = 'owner-gated';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const limits = { spacingSeconds: 0, perDay: 0, perMonth: 500 };
+  const daily = await f.records.uploadGate(owner, now, limits);
+  expect(daily.ok).toBe(false);
+  expect(daily.code).toBe('address_upload_daily_limit');
+  expect(daily.retryAfter).toBeGreaterThan(0);
+  expect(daily.retryAfter).toBeLessThanOrEqual(24 * 60 * 60);
+
+  // The gate is read-only: nothing was counted for the address or the day.
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(0);
+
+  const monthly = await f.records.uploadGate(owner, now, { spacingSeconds: 0, perDay: 50, perMonth: 0 });
+  expect(monthly.ok).toBe(false);
+  expect(monthly.code).toBe('address_upload_monthly_limit');
+  expect(monthly.retryAfter).toBeGreaterThan(0);
+});

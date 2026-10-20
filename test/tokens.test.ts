@@ -11,6 +11,33 @@ function read(path: string): string {
   return readFileSync(join(root, path), 'utf8');
 }
 
+interface Served {
+  fetchPage(path: string): Promise<Response>;
+  cleanup(): void;
+}
+
+// A local build sharing the production handlers, used for real route requests.
+async function tokensServed(): Promise<Served> {
+  const { createApp } = await import('../src/app.js');
+  const { createLocalStore } = await import('../src/stores/local.js');
+  const { loadConfig } = await import('../src/config.js');
+  const { mkdtempSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const dataDir = mkdtempSync(join(tmpdir(), 'planny-tokens-app-'));
+  const app = createApp({
+    build: 'vercel',
+    store: createLocalStore({ dataDir }),
+    config: loadConfig({}),
+    secret: 'test-secret',
+    origin: 'https://planny-pink.vercel.app',
+    log: { error: () => {}, alert: () => {} },
+  });
+  return {
+    fetchPage: (path) => Promise.resolve(app.fetch(new Request(`https://planny-pink.vercel.app${path}`), { address: '198.51.100.9' })),
+    cleanup: () => rmSync(dataDir, { recursive: true, force: true }),
+  };
+}
+
 function between(source: string, start: string, end: string): string {
   const from = source.indexOf(start);
   expect(from).toBeGreaterThanOrEqual(0);
@@ -201,24 +228,43 @@ test('the React pages use both card variants', () => {
   expect(theme).not.toContain('.plan-card::before');
 });
 
-test('/terms-of-use is routed, linked and carries the retention licence', async () => {
+test('/terms-of-use serves the retention licence page', async () => {
   const { PAGES } = await import('../src/generated-pages.js');
   expect(PAGES.terms).toContain('data-page="terms"');
   expect(PAGES.terms).toContain('frasergriffithsisme@icloud.com');
   expect(PAGES.terms).toContain('kept indefinitely');
-  const page = read('web/src/Page.tsx');
-  expect(page).toContain('href="/terms-of-use"');
-  const app = read('src/app.ts');
-  expect(app).toContain("app.get('/terms-of-use'");
+
+  const app = await tokensServed();
+  try {
+    const response = await app.fetchPage('/terms-of-use');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
+    const body = await response.text();
+    expect(body).toContain('data-page="terms"');
+    expect(body).toContain('frasergriffithsisme@icloud.com');
+  } finally {
+    app.cleanup();
+  }
 });
 
 test('/sample is served with the plan CSP and a CTA', async () => {
   const { PAGES } = await import('../src/generated-pages.js');
   expect(PAGES.sample).toContain('<title>Harbor Coffee Roasters');
   expect(PAGES.sample).toContain('<h2>Timeline</h2>');
-  const appSource = read('src/app.ts');
-  expect(appSource).toContain("app.get('/sample'");
-  expect(appSource).toContain('PAGES.sample');
-  expect(appSource).toContain('SAMPLE_CSP');
-  expect(appSource).toContain('Make your own plan');
+
+  const app = await tokensServed();
+  try {
+    const response = await app.fetchPage('/sample');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("sandbox allow-top-navigation-by-user-activation");
+    const body = await response.text();
+    expect(body).toContain('Harbor Coffee Roasters');
+    expect(body).toContain('Make your own plan');
+  } finally {
+    app.cleanup();
+  }
 });

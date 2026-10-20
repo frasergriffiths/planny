@@ -1,5 +1,20 @@
-import { expect, test } from 'bun:test';
+import { expect, mock, test } from 'bun:test';
 import { createVercelApp } from '../src/vercel.js';
+
+// store.purge calls @vercel/functions dangerouslyDeleteByTag with retries on 429. The mock
+// below keeps the success behaviour of the real client for existing tests and lets the new
+// tests inject 429 failures per tag.
+const purge429 = new Map<string, number>();
+mock.module('@vercel/functions', () => ({
+  waitUntil: (promise: unknown) => Promise.resolve(promise),
+  dangerouslyDeleteByTag: async (tag: string) => {
+    const failures = purge429.get(tag) ?? 0;
+    if (failures > 0) {
+      purge429.set(tag, failures - 1);
+      throw Object.assign(new Error('429 rate limited'), { status: 429 });
+    }
+  },
+}));
 
 const ORIGIN = 'https://planny-pink.vercel.app';
 const PLAN = '<!doctype html><html><head><title>Plan</title></head><body><p onclick="x()">Hi</p></body></html>';
@@ -160,4 +175,52 @@ test('an unset BLOB_ACCESS defaults to private', async () => {
   expect((await upload(t.app)).status).toBe(201);
   // A private store keeps plan HTML behind the app; no Blob-side hmac key is needed.
   expect(t.blob.files.has('state.json')).toBe(true);
+});
+
+test('a purge retries through 429s and still finishes the takedown', async () => {
+  const t = setup();
+  const json = (await (await upload(t.app)).json()) as { id: string; url: string };
+  // Two rate-limited attempts, then success (the third attempt runs after 1.5s of backoff).
+  purge429.set(`plan-${json.id}`, 2);
+  expect(await t.app.takedown(json.id)).toEqual({ outcome: 'ok', purged: true });
+  expect(t.blob.files.has(`plans/${json.id}.html`)).toBe(false);
+}, 20_000);
+
+test('a purge that stays rate limited reports purged:false but the plan is still gone', async () => {
+  const t = setup();
+  const json = (await (await upload(t.app)).json()) as { id: string; url: string };
+  // The retry loop gives up after four attempts, so keep every attempt rate limited.
+  purge429.set(`plan-${json.id}`, 5);
+  const result = await t.app.takedown(json.id);
+  expect(result.outcome).toBe('ok');
+  expect(result.purged).toBe(false);
+  expect(t.blob.files.has(`plans/${json.id}.html`)).toBe(false);
+  const page = await view(t.app, json.url);
+  expect(page.status).toBe(410);
+}, 20_000);
+
+test('the Vercel build throws without a Blob token, even with an address key', () => {
+  expect(() => createVercelApp({
+    env: { BLOB_ACCESS: 'private' },
+    blobClient: fakeBlobOnly(),
+    log: { error: () => {}, alert: () => {} },
+  })).toThrow(/BLOB_READ_WRITE_TOKEN/);
+  expect(() => createVercelApp({
+    env: { PLANNY_ADDRESS_KEY: 'addr-key', BLOB_ACCESS: 'private' },
+    blobClient: fakeBlobOnly(),
+    log: { error: () => {}, alert: () => {} },
+  })).toThrow(/BLOB_READ_WRITE_TOKEN/);
+});
+
+test('the Vercel build falls back to the Blob token as the address key and closes admin', async () => {
+  const t = setup(); // no PLANNY_ADDRESS_KEY, no PLANNY_ADMIN_TOKEN
+  expect((await upload(t.app)).status).toBe(201);
+
+  // With no admin token the takedown endpoint is closed even for the right shape.
+  const json = (await (await upload(t.app)).json()) as { id: string; url: string };
+  const closed = await t.app.fetch(new Request(`${ORIGIN}/admin/plans/${json.id}/remove`, {
+    method: 'POST', headers: { authorization: 'Bearer guess' },
+  }), { address: '198.51.100.9' });
+  expect(closed.status).toBe(401);
+  expect(((await closed.json()) as { error: { code: string } }).error.code).toBe('unauthorized');
 });

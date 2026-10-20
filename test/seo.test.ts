@@ -1,8 +1,34 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { PAGES } from '../src/generated-pages.js';
+
+interface SeoFixture {
+  fetchPage(path: string): Promise<Response>;
+  cleanup(): void;
+}
+
+// Each page-serving test builds a throwaway app and removes its data dir afterwards.
+async function seoApp(): Promise<SeoFixture> {
+  const { createApp } = await import('../src/app.js');
+  const { createLocalStore } = await import('../src/stores/local.js');
+  const { loadConfig } = await import('../src/config.js');
+  const dataDir = mkdtempSync(join(tmpdir(), 'planny-seo-app-'));
+  const app = createApp({
+    build: 'vercel',
+    store: createLocalStore({ dataDir }),
+    config: loadConfig({}),
+    secret: 'test-secret',
+    origin: origin.slice(0, -1),
+    log: { error: () => {}, alert: () => {} },
+  });
+  const fixture: SeoFixture = {
+    fetchPage: (path) => Promise.resolve(app.fetch(new Request(`${origin.slice(0, -1)}${path}`), { address: '198.51.100.9' })),
+    cleanup: () => rmSync(dataDir, { recursive: true, force: true }),
+  };
+  return fixture;
+}
 
 const root = join(import.meta.dir, '..');
 const origin = 'https://planny-pink.vercel.app/';
@@ -77,61 +103,82 @@ describe('seo', () => {
   });
 
   test('/og.png serves the embedded PNG with a long cache', async () => {
-    const { createApp } = await import('../src/app.js');
-    const { createLocalStore } = await import('../src/stores/local.js');
-    const { loadConfig } = await import('../src/config.js');
-    const app = createApp({
-      build: 'vercel',
-      store: createLocalStore({ dataDir: join(tmpdir(), `planny-seo-og-${Date.now()}`) }),
-      config: loadConfig({}),
-      secret: 'test-secret',
-      origin: origin.slice(0, -1),
-      log: { error: () => {}, alert: () => {} },
-    });
-    const response = await app.fetch(new Request(`${origin.slice(0, -1)}/og.png`), { address: '198.51.100.9' });
-    expect(response.status).toBe(200);
-    expect(response.headers.get('content-type')).toBe('image/png');
-    const body = new Uint8Array(await response.arrayBuffer());
-    expect(body.length).toBeGreaterThan(1000);
-    expect(body[0]).toBe(0x89);
+    const t = await seoApp();
+    try {
+      const response = await t.fetchPage('/og.png');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('image/png');
+      const body = new Uint8Array(await response.arrayBuffer());
+      expect(body.length).toBeGreaterThan(1000);
+      expect(body[0]).toBe(0x89);
+    } finally {
+      t.cleanup();
+    }
   });
 
   test('every icon route serves the right type with a long cache', async () => {
-    const { createApp } = await import('../src/app.js');
-    const { createLocalStore } = await import('../src/stores/local.js');
-    const { loadConfig } = await import('../src/config.js');
-    const app = createApp({
-      build: 'vercel',
-      store: createLocalStore({ dataDir: join(tmpdir(), `planny-seo-icons-${Date.now()}`) }),
-      config: loadConfig({}),
-      secret: 'test-secret',
-      origin: origin.slice(0, -1),
-      log: { error: () => {}, alert: () => {} },
-    });
-    // Binary bodies are compared against their base64 source in PAGES.
-    const cases: Array<[string, string, () => string]> = [
-      ['/favicon.svg', 'image/svg+xml', () => PAGES.icons.faviconSvg],
-      ['/favicon.ico', 'image/x-icon', () => PAGES.icons.faviconIco],
-      ['/apple-touch-icon.png', 'image/png', () => PAGES.icons.appleTouchIcon],
-      ['/icon-192.png', 'image/png', () => PAGES.icons.icon192],
-      ['/icon-512.png', 'image/png', () => PAGES.icons.icon512],
-      ['/site.webmanifest', 'application/manifest+json', () => PAGES.icons.manifest],
-    ];
-    for (const [path, type, source] of cases) {
-      const response = await app.fetch(new Request(`${origin.slice(0, -1)}${path}`), { address: '198.51.100.9' });
-      expect(response.status, path).toBe(200);
-      expect(response.headers.get('content-type'), path).toBe(type);
-      expect(response.headers.get('cache-control'), path).toContain('immutable');
-      const body = await response.arrayBuffer();
-      const expected = source();
-      let raw = '';
-      const bytes = new Uint8Array(body);
-      for (let i = 0; i < bytes.length; i += 0x8000) raw += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-      if (type === 'image/png' || type === 'image/x-icon') {
-        expect(btoa(raw), path).toBe(expected);
-      } else {
-        expect(new TextDecoder().decode(body), path).toBe(expected);
+    const t = await seoApp();
+    try {
+      // Binary bodies are compared against their base64 source in PAGES.
+      const cases: Array<[string, string, () => string]> = [
+        ['/favicon.svg', 'image/svg+xml', () => PAGES.icons.faviconSvg],
+        ['/favicon.ico', 'image/x-icon', () => PAGES.icons.faviconIco],
+        ['/apple-touch-icon.png', 'image/png', () => PAGES.icons.appleTouchIcon],
+        ['/icon-192.png', 'image/png', () => PAGES.icons.icon192],
+        ['/icon-512.png', 'image/png', () => PAGES.icons.icon512],
+        ['/site.webmanifest', 'application/manifest+json', () => PAGES.icons.manifest],
+      ];
+      for (const [path, type, source] of cases) {
+        const response = await t.fetchPage(path);
+        expect(response.status, path).toBe(200);
+        expect(response.headers.get('content-type'), path).toBe(type);
+        expect(response.headers.get('cache-control'), path).toContain('immutable');
+        const body = await response.arrayBuffer();
+        const expected = source();
+        let raw = '';
+        const bytes = new Uint8Array(body);
+        for (let i = 0; i < bytes.length; i += 0x8000) raw += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        if (type === 'image/png' || type === 'image/x-icon') {
+          expect(btoa(raw), path).toBe(expected);
+        } else {
+          expect(new TextDecoder().decode(body), path).toBe(expected);
+        }
       }
+    } finally {
+      t.cleanup();
+    }
+  });
+
+  test('GET /robots.txt serves the file with the sitemap link', async () => {
+    const t = await seoApp();
+    try {
+      const response = await t.fetchPage('/robots.txt');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain('text/plain');
+      expect(response.headers.get('cache-control')).toContain('s-maxage');
+      const body = await response.text();
+      expect(body).toContain('User-agent: *');
+      expect(body).toContain(`${origin}sitemap.xml`);
+      expect(body).toContain('Disallow');
+    } finally {
+      t.cleanup();
+    }
+  });
+
+  test('GET /sitemap.xml serves the file with the public pages', async () => {
+    const t = await seoApp();
+    try {
+      const response = await t.fetchPage('/sitemap.xml');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain('application/xml');
+      expect(response.headers.get('cache-control')).toContain('s-maxage');
+      const body = await response.text();
+      expect(body).toContain('<?xml');
+      expect(body).toContain('<urlset');
+      expect(body).toContain(`${origin}</loc>`);
+      expect(body).toContain(`${origin}terms-of-use</loc>`);
+    } finally {
+      t.cleanup();
     }
   });
 

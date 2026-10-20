@@ -68,7 +68,7 @@ test('admin calls are audited, the token never is, and wrong tokens are rate lim
     expect(t.alerts.some((alert) => alert.fields.action === 'reset' && alert.fields.outcome === 'unauthorized')).toBe(true);
 
     // The limit applies before the token check: ten calls had already passed (one takedown, one
-    // reset attempt, and eight more here), so the twelfth is refused with 429 even with no token.
+    // reset attempt, and eight more here), so the eleventh is refused with 429 even with no token.
     for (let index = 0; index < 9; index += 1) {
       await admin(t.app, '/admin/reset', { counter: 'reads' }, 'wrong-token');
     }
@@ -135,6 +135,70 @@ test('the upload switch is reachable through the App interface locally', async (
     expect(((await paused.json()) as { error: { code: string } }).error.code).toBe('uploads_paused');
     await t.app.setUploadsEnabled(true);
     expect((await upload(t.app)).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('without an admin token the takedown and reset endpoints close with 401', async () => {
+  const t = setup();
+  try {
+    const json = (await (await upload(t.app)).json()) as { id: string };
+    const guard = t.app.fetch(new Request(`${ORIGIN}/admin/plans/${json.id}/remove`, {
+      method: 'POST', headers: { authorization: 'Bearer anything' },
+    }), { address: ADDRESS });
+    const takedown = await guard;
+    expect(takedown.status).toBe(401);
+    expect(((await takedown.json()) as { error: { code: string } }).error.code).toBe('unauthorized');
+
+    const reset = await t.app.fetch(new Request(`${ORIGIN}/admin/reset`, {
+      method: 'POST', headers: { authorization: 'Bearer anything', 'content-type': 'application/json' }, body: '{"counter":"all"}',
+    }), { address: ADDRESS });
+    expect(reset.status).toBe(401);
+    expect(((await reset.json()) as { error: { code: string } }).error.code).toBe('unauthorized');
+    expect(t.alerts.filter((alert) => alert.fields.outcome === 'unauthorized')).toHaveLength(2);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('a malformed plan id is audited as invalid_id and answered with 404', async () => {
+  const t = setup();
+  try {
+    const response = await admin(t.app, '/admin/plans/not-a-uuid/remove', {});
+    expect(response.status).toBe(404);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('no_plan');
+    expect(t.alerts.some((alert) => alert.fields.action === 'takedown' && alert.fields.plan === 'not-a-uuid' && alert.fields.outcome === 'invalid_id')).toBe(true);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('a malformed reset body is invalid_reset and every counter resets', async () => {
+  const t = setup();
+  try {
+    const malformed = await t.app.fetch(new Request(`${ORIGIN}/admin/reset`, {
+      method: 'POST', headers: { authorization: 'Bearer admin-secret', 'content-type': 'application/json' }, body: '{"counter"',
+    }), { address: ADDRESS });
+    expect(malformed.status).toBe(400);
+    expect(((await malformed.json()) as { error: { code: string } }).error.code).toBe('invalid_reset');
+
+    // Count something into each counter, then reset all of them at once.
+    const json = (await (await upload(t.app)).json()) as { id: string; url: string };
+    await view(t.app, json.url);
+    const reset = await admin(t.app, '/admin/reset', { counter: 'all' });
+    expect(reset.status).toBe(200);
+    const before = ((await reset.json()) as { before: { reads: number; bytes: number; uploads: number } }).before;
+    expect(before.uploads).toBe(1);
+    expect(before.reads).toBe(1);
+    expect(before.bytes).toBeGreaterThan(0);
+
+    const repeat = await admin(t.app, '/admin/reset', { counter: 'uploads' });
+    const repeatBefore = ((await repeat.json()) as { before: { uploads: number } }).before;
+    // "all" deliberately leaves the site uploads key explicit; a targeted reset clears it.
+    expect(repeatBefore.uploads).toBe(1);
+    const third = await admin(t.app, '/admin/reset', { counter: 'uploads' });
+    expect(((await third.json()) as { before: { uploads: number } }).before.uploads).toBe(0);
   } finally {
     t.cleanup();
   }

@@ -212,3 +212,12 @@ test('the CSS parser keeps motion and media rules and strips imports, remote URL
     expect(Object.keys(bad.removed).length).toBeGreaterThan(0);
   }
 });
+
+test('hostile markup never eats the surrounding content', () => {
+  for (const payload of HOSTILE) {
+    const wrapped = `<p>keep-me</p>${payload}`;
+    const output = sanitize(wrapped).html;
+    assertClean(output);
+    expect(output, payload).toContain('keep-me');
+  }
+});

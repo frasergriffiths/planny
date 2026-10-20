@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
@@ -8,6 +8,7 @@ import { expect, test } from 'bun:test';
 import { createRecords } from '../src/records.js';
 import { createLocalStore } from '../src/stores/local.js';
 import { newClaimId, newPlanId, sha256Hex } from '../src/util.js';
+import { withLock } from '../src/stores/lock.js';
 
 const run = promisify(execFile);
 
@@ -91,5 +92,36 @@ test('two stores over one SQLite file see each other', async () => {
     expect((await b.get(id))?.name).toBe('Two stores');
   } finally {
     rmSync(dataDir, { recursive: true, force: true });
+  }
+});
+
+test('a stale lock is recovered, a fresh lock times out, and a throwing worker releases', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'planny-lock-'));
+  const lockDir = join(dir, 'state.lock');
+  try {
+    // A lock directory older than staleMs is treated as dead and taken over.
+    mkdirSync(lockDir, { mode: 0o700 });
+    const old = new Date(Date.now() - 60_000);
+    utimesSync(lockDir, old, old);
+    let ran = false;
+    await withLock(lockDir, () => { ran = true; }, { staleMs: 1000, waitMs: 100 });
+    expect(ran).toBe(true);
+    expect(existsSync(lockDir)).toBe(false);
+
+    // A fresh lock from another owner is not stolen: waiting gives up with "busy".
+    mkdirSync(lockDir, { mode: 0o700 });
+    await expect(withLock(lockDir, () => {}, { staleMs: 60_000, waitMs: 60 }))
+      .rejects.toThrow('state file is busy');
+    rmSync(lockDir, { recursive: true, force: true });
+
+    // A worker that throws still releases the lock for the next caller.
+    await expect(withLock(lockDir, () => { throw new Error('worker failed'); }, { staleMs: 1000, waitMs: 100 }))
+      .rejects.toThrow('worker failed');
+    expect(existsSync(lockDir)).toBe(false);
+    let second = false;
+    await withLock(lockDir, () => { second = true; }, { staleMs: 1000, waitMs: 100 });
+    expect(second).toBe(true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 });
