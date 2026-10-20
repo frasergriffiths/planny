@@ -565,6 +565,13 @@ export function createApp(deps: AppDeps): App {
     'content-type': 'application/xml; charset=utf-8',
     'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,
   }));
+  app.get('/og.png', (c) => {
+    if (!PAGES.og) return c.text('og image missing', 404);
+    return c.body(Uint8Array.from(atob(PAGES.og), (ch) => ch.charCodeAt(0)), 200, {
+      'content-type': 'image/png',
+      'cache-control': `public, max-age=${60 * 60 * 24 * 30}, immutable`,
+    });
+  });
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   // access echoes the configured BLOB_ACCESS value; it is not a store ACL check. Verify

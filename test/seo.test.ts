@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { PAGES } from '../src/generated-pages.js';
 
 const root = join(import.meta.dir, '..');
@@ -52,5 +53,25 @@ describe('seo', () => {
       expect(sitemap).toContain(`<loc>${origin.slice(0, -1)}${path}</loc>`);
     }
     expect(PAGES.sitemap as string).toBe(sitemap);
+  });
+
+  test('/og.png serves the embedded PNG with a long cache', async () => {
+    const { createApp } = await import('../src/app.js');
+    const { createLocalStore } = await import('../src/stores/local.js');
+    const { loadConfig } = await import('../src/config.js');
+    const app = createApp({
+      build: 'vercel',
+      store: createLocalStore({ dataDir: join(tmpdir(), `planny-seo-og-${Date.now()}`) }),
+      config: loadConfig({}),
+      secret: 'test-secret',
+      origin: origin.slice(0, -1),
+      log: { error: () => {}, alert: () => {} },
+    });
+    const response = await app.fetch(new Request(`${origin.slice(0, -1)}/og.png`), { address: '198.51.100.9' });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('image/png');
+    const body = new Uint8Array(await response.arrayBuffer());
+    expect(body.length).toBeGreaterThan(1000);
+    expect(body[0]).toBe(0x89);
   });
 });
