@@ -20,7 +20,7 @@ interface Setup {
   cleanup(): void;
 }
 
-function setup(env: Record<string, string> = {}, start = Date.UTC(2027, 1, 2, 8), share?: number): Setup {
+function setup(env: Record<string, string> = {}, start = Date.UTC(2027, 1, 2, 8), share?: number, options: { adminToken?: string | undefined } = {}): Setup {
   const dataDir = mkdtempSync(join(tmpdir(), 'planny-admin-'));
   const clock = { t: start };
   const alerts: Array<{ message: string; fields: Record<string, string | number> }> = [];
@@ -28,13 +28,18 @@ function setup(env: Record<string, string> = {}, start = Date.UTC(2027, 1, 2, 8)
   const log: Logger = { error: () => {}, alert: (message, fields) => alerts.push({ message, fields }) };
   const config = loadConfig(env);
   if (share !== undefined) config.ownerMonthlyReadBytes = share;
-  const app = createApp({
+  const app: App = createApp({
     build: 'local',
     store,
     config,
     secret: 'test-secret',
     origin: ORIGIN,
-    adminToken: 'admin-secret',
+    // Leaving adminToken out of deps closes the admin endpoints entirely.
+    ...(options.adminToken === undefined
+      ? { adminToken: 'admin-secret' }
+      : options.adminToken === ''
+        ? {}
+        : { adminToken: options.adminToken }),
     now: () => clock.t,
     log,
   });
@@ -141,7 +146,7 @@ test('the upload switch is reachable through the App interface locally', async (
 });
 
 test('without an admin token the takedown and reset endpoints close with 401', async () => {
-  const t = setup();
+  const t = setup({}, undefined, undefined, { adminToken: '' });
   try {
     const json = (await (await upload(t.app)).json()) as { id: string };
     const guard = t.app.fetch(new Request(`${ORIGIN}/admin/plans/${json.id}/remove`, {

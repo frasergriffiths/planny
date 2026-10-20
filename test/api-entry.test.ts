@@ -130,6 +130,32 @@ test('an unconfigured deployment fails closed, serves pages, and fails a startup
   expect(method.headers.get('allow')).toBe('POST');
   expect((await errorOf(method)).error.code).toBe('method_not_allowed');
 
+  // The unconfigured home fallback and the unknown-path 404 are served as pages.
+  const home = await entry(new Request(ORIGIN));
+  expect(home.status).toBe(200);
+  expect(home.headers.get('content-type')).toBe('text/html; charset=utf-8');
+  expect(home.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600, must-revalidate');
+  expect(home.headers.get('x-planny-build')).toBe('vercel');
+  expect(await home.text()).toContain('planny');
+
+  const unknown = await entry(new Request(`${ORIGIN}/nowhere`));
+  expect(unknown.status).toBe(404);
+  expect(unknown.headers.get('cache-control')).toBe('no-store');
+  expect(await unknown.text()).toContain('404');
+
+  const del = await entry(new Request(`${ORIGIN}/p/${UUID_A}`, { method: 'DELETE' }));
+  expect(del.status).toBe(503);
+  expect((await errorOf(del)).error.code).toBe('planny_not_configured');
+
+  const put = await entry(new Request(`${ORIGIN}/p/${UUID_A}`, { method: 'PUT' }));
+  expect(put.status).toBe(405);
+  expect(put.headers.get('allow')).toBe('GET, HEAD');
+
+  const headPlan = await entry(new Request(`${ORIGIN}/p/${UUID_A}`, { method: 'HEAD' }));
+  expect(headPlan.status).toBe(503);
+  // Bodies on HEAD are stripped by the edge runtime, so only the status is asserted here;
+  // the app-level HEAD body test covers the bodyless contract.
+
   const health = await entry(new Request(`${ORIGIN}/health`));
   expect(health.status).toBe(200);
   expect(health.headers.get('cache-control')).toBe('no-store');
@@ -161,6 +187,7 @@ test('an unconfigured deployment fails closed, serves pages, and fails a startup
   const failed = await entry(new Request(`${ORIGIN}/health`));
   const failedStatus = (await failed.json()) as { configured: boolean; purge: string; error: string | null; flags: { blobToken: boolean; addressKey: boolean } };
   expect(failedStatus.configured).toBe(false);
+  expect(failedStatus.purge).toBe('failed');
   expect(failedStatus.error).toBe('planny needs BLOB_READ_WRITE_TOKEN or PLANNY_ADDRESS_KEY.');
   expect(failedStatus.flags.blobToken).toBe(true);
   expect(failedStatus.flags.addressKey).toBe(false);

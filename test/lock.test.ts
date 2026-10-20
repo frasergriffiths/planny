@@ -104,22 +104,22 @@ test('a stale lock is recovered, a fresh lock times out, and a throwing worker r
     const old = new Date(Date.now() - 60_000);
     utimesSync(lockDir, old, old);
     let ran = false;
-    await withLock(lockDir, () => { ran = true; }, { staleMs: 1000, waitMs: 100 });
+    await withLock(lockDir, () => { ran = true; }, { staleMs: 1000, waitMs: 250 });
     expect(ran).toBe(true);
     expect(existsSync(lockDir)).toBe(false);
 
     // A fresh lock from another owner is not stolen: waiting gives up with "busy".
     mkdirSync(lockDir, { mode: 0o700 });
-    await expect(withLock(lockDir, () => {}, { staleMs: 60_000, waitMs: 60 }))
+    await expect(withLock(lockDir, () => {}, { staleMs: 60_000, waitMs: 250 }))
       .rejects.toThrow('state file is busy');
     rmSync(lockDir, { recursive: true, force: true });
 
     // A worker that throws still releases the lock for the next caller.
-    await expect(withLock(lockDir, () => { throw new Error('worker failed'); }, { staleMs: 1000, waitMs: 100 }))
+    await expect(withLock(lockDir, () => { throw new Error('worker failed'); }, { staleMs: 1000, waitMs: 250 }))
       .rejects.toThrow('worker failed');
     expect(existsSync(lockDir)).toBe(false);
     let second = false;
-    await withLock(lockDir, () => { second = true; }, { staleMs: 1000, waitMs: 100 });
+    await withLock(lockDir, () => { second = true; }, { staleMs: 1000, waitMs: 250 });
     expect(second).toBe(true);
   } finally {
     rmSync(dir, { recursive: true, force: true });

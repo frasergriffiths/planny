@@ -318,8 +318,13 @@ test('a failed blob put rolls the reservation back so uploads keep working', asy
     expect(((await failed.json()) as { error: { code: string } }).error.code).toBe('upload_failed');
     expect(t.logs.some((args) => args[0] === 'planny: could not store the plan file')).toBe(true);
 
-    // The reservation was released: a normal upload succeeds again.
+    // The reservation was released: no pending record and site bytes are back to 0.
     t.store.blobs.put = realPut;
+    const counter = await t.store.redis.eval("return redis.call('GET', KEYS[1]) or '0'", ['planny:site:bytes'], []);
+    expect(Number(counter)).toBe(0);
+    const pending = await (t.app as unknown as { records: { staleIds(staleBefore: number, limit: number): Promise<unknown[]> } }).records.staleIds(t.clock.t - 60_000, 20);
+    expect(pending).toEqual([]);
+
     const next = await upload(t);
     expect(next.status).toBe(201);
 
