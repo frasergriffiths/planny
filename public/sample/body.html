@@ -37,72 +37,63 @@
       </section>
 
       <section>
-        <h2>Traction</h2>
-        <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
-        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Subscribers by month: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
-          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-            <line x1="64" y1="30" x2="64" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="202" x2="690" y2="202" stroke="#1f1f1f"></line>
-            <line x1="64" y1="145" x2="690" y2="145" stroke="#1f1f1f"></line>
-            <line x1="64" y1="88" x2="690" y2="88" stroke="#1f1f1f"></line>
-            <text x="54" y="264" text-anchor="end">0</text>
-            <text x="54" y="206" text-anchor="end">300</text>
-            <text x="54" y="149" text-anchor="end">600</text>
-            <text x="54" y="92" text-anchor="end">900</text>
-            <text x="54" y="35" text-anchor="end">1,200</text>
-            <polygon points="64,260 64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30 690,260" fill="#0b1b33"></polygon>
-            <polyline class="chart-line" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            <circle cx="64" cy="226" r="4" fill="#3291FF"><title>January: 180 subscribers</title></circle>
-            <circle cx="142" cy="210" r="4" fill="#3291FF"><title>February: 260 subscribers</title></circle>
-            <circle cx="221" cy="191" r="4" fill="#3291FF"><title>March: 360 subscribers</title></circle>
-            <circle cx="299" cy="168" r="4" fill="#3291FF"><title>April: 480 subscribers</title></circle>
-            <circle cx="377" cy="141" r="4" fill="#3291FF"><title>May: 620 subscribers</title></circle>
-            <circle cx="455" cy="114" r="4" fill="#3291FF"><title>June: 760 subscribers</title></circle>
-            <circle cx="534" cy="88" r="4" fill="#3291FF"><title>July: 900 subscribers</title></circle>
-            <circle cx="612" cy="57" r="4" fill="#3291FF"><title>August: 1,060 subscribers</title></circle>
-            <circle cx="690" cy="30" r="4" fill="#3291FF"><title>September: 1,200 subscribers</title></circle>
-            <text x="64" y="286" text-anchor="middle">Jan</text>
-            <text x="142" y="286" text-anchor="middle">Feb</text>
-            <text x="221" y="286" text-anchor="middle">Mar</text>
-            <text x="299" y="286" text-anchor="middle">Apr</text>
-            <text x="377" y="286" text-anchor="middle">May</text>
-            <text x="455" y="286" text-anchor="middle">Jun</text>
-            <text x="534" y="286" text-anchor="middle">Jul</text>
-            <text x="612" y="286" text-anchor="middle">Aug</text>
-            <text x="690" y="286" text-anchor="middle">Sep</text>
-          </g>
-        </svg>
-        <p class="chart-caption">Fictional plan data. Subscribers, January to September.</p>
+        <h2>Where the next 1,200 come from</h2>
+        <p class="measure">Referral is the largest source because the bag club already has a relationship with every customer. Paid social is a test, not the plan.</p>
+        <div class="chart-card">
+          <p class="chart-title">New subscribers by channel, first ten months</p>
+          <div class="hbars" role="img" aria-label="New subscribers by channel: referral 320, bag club upsell 260, farmers market 180, wholesale 140, digital ads 120, foot traffic 90, gift bundles 70, local cafes 60, events 50, app referrals 30">
+            <div class="hbar"><span>Referral</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">320</span></div>
+            <div class="hbar"><span>Bag club up</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:81%"></div></div><span class="val">260</span></div>
+            <div class="hbar"><span>Market</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:56%"></div></div><span class="val">180</span></div>
+            <div class="hbar"><span>Wholesale</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:44%"></div></div><span class="val">140</span></div>
+            <div class="hbar"><span>Digital ads</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:38%"></div></div><span class="val">120</span></div>
+            <div class="hbar"><span>Foot traffic</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:28%"></div></div><span class="val">90</span></div>
+            <div class="hbar"><span>Gift bundles</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:22%"></div></div><span class="val">70</span></div>
+            <div class="hbar"><span>Local cafes</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:19%"></div></div><span class="val">60</span></div>
+            <div class="hbar"><span>Events</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:16%"></div></div><span class="val">50</span></div>
+            <div class="hbar"><span>App adds</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:9%"></div></div><span class="val">30</span></div>
+          </div>
+          <p class="chart-caption">Fictional plan data. Ten channels in one CSS chart; vertical rows, so labels never collide at any width.</p>
+        </div>
       </section>
 
       <section>
-        <h2>Where the next 1,200 come from</h2>
-        <p class="measure">Referral is the largest source because the bag club already has a relationship with every customer. Paid social is a test, not the plan.</p>
-        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="New subscribers by channel: referral 420, Instagram 300, farmers market 260, wholesale 220">
-          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-            <line x1="64" y1="50" x2="64" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="155" x2="690" y2="155" stroke="#1f1f1f"></line>
-            <line x1="64" y1="50" x2="690" y2="50" stroke="#1f1f1f"></line>
-            <text x="54" y="264" text-anchor="end">0</text>
-            <text x="54" y="159" text-anchor="end">250</text>
-            <text x="54" y="54" text-anchor="end">500</text>
-            <rect class="chart-bar" x="130" y="84" width="90" height="176" fill="#3291FF"><title>Referral: 420 new subscribers</title></rect>
-            <rect class="chart-bar" x="280" y="134" width="90" height="126" fill="#3291FF"><title>Instagram: 300 new subscribers</title></rect>
-            <rect class="chart-bar" x="430" y="151" width="90" height="109" fill="#3291FF"><title>Farmers market: 260 new subscribers</title></rect>
-            <rect class="chart-bar" x="580" y="168" width="90" height="92" fill="#3291FF"><title>Wholesale: 220 new subscribers</title></rect>
-            <text x="175" y="76" text-anchor="middle" fill="#f5f5f5" font-weight="700">420</text>
-            <text x="325" y="126" text-anchor="middle" fill="#f5f5f5" font-weight="700">300</text>
-            <text x="475" y="143" text-anchor="middle" fill="#f5f5f5" font-weight="700">260</text>
-            <text x="625" y="160" text-anchor="middle" fill="#f5f5f5" font-weight="700">220</text>
-            <text x="175" y="282" text-anchor="middle">Referral</text>
-            <text x="325" y="282" text-anchor="middle">Instagram</text>
-            <text x="475" y="282" text-anchor="middle">Market</text>
-            <text x="625" y="282" text-anchor="middle">Wholesale</text>
-          </g>
-        </svg>
-        <p class="chart-caption">Fictional plan data. New subscribers by channel.</p>
+        <h2>Subscription cost, plan versus counter</h2>
+        <div class="chart-card">
+          <p class="chart-title">Monthly roast spend: four-week plan vs pay-as-you-go bags</p>
+          <div class="hbars" role="img" aria-label="Monthly roast spend, four-week plan versus pay-as-you-go: April $760 versus $940, May $820 versus $1,060, June $900 versus $1,180, July $970 versus $1,310">
+            <div class="hbar"><span>April</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:58%"></span><span class="fill slim alt" style="width:72%"></span></div><span class="val">−19%</span></div>
+            <div class="hbar"><span>May</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:63%"></span><span class="fill slim alt" style="width:81%"></span></div><span class="val">−23%</span></div>
+            <div class="hbar"><span>June</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:69%"></span><span class="fill slim alt" style="width:90%"></span></div><span class="val">−24%</span></div>
+            <div class="hbar"><span>July</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:74%"></span><span class="fill slim alt" style="width:100%"></span></div><span class="val">−26%</span></div>
+          </div>
+          <div class="chart-legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Four-week plan</span><span><i style="background:var(--line-strong)"></i>Pay-as-you-go</span></div>
+          <p class="chart-caption">Fictional plan data. Grouped rows keep the two series on the same scale; values stay 12px in both columns.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Traction</h2>
+        <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
+        <div class="chart-card">
+          <p class="chart-title">Subscribers, January to September</p>
+          <div class="line-chart" role="img" aria-label="Subscribers by month, January to September: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
+            <div class="line-plot" aria-hidden="true">
+              <div class="gridline" style="top:0"><span class="y-label">1,200</span></div>
+              <div class="gridline dim" style="top:25%"><span class="y-label">900</span></div>
+              <div class="gridline dim" style="top:50%"><span class="y-label">600</span></div>
+              <div class="gridline dim" style="top:75%"><span class="y-label">300</span></div>
+              <div class="gridline" style="top:100%"><span class="y-label">0</span></div>
+              <svg viewBox="0 0 800 200" preserveAspectRatio="none" fill="none">
+                <polygon vector-effect="non-scaling-stroke" points="0,170 100,163 200,150 300,133 400,110 500,87 600,65 700,42 800,25 800,200 0,200" fill="#0b1b33"></polygon>
+                <polyline class="chart-line" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="0,170 100,163 200,150 300,133 400,110 500,87 600,65 700,42 800,25" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              </svg>
+            </div>
+            <div class="x-labels" aria-hidden="true"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div>
+          </div>
+          <div class="chart-legend"><span><i style="background:var(--accent)"></i>Subscribers</span></div>
+          <p class="chart-caption">Fictional plan data. The SVG carries the shape only; every label is HTML in CSS pixels, so 11–12px on a phone and on a desktop alike. Every second month label hides under 700px.</p>
+        </div>
       </section>
 
       <section>
@@ -112,54 +103,62 @@
           <span><span class="swatch alt"></span>Checkpoint</span>
           <span><span class="swatch soft"></span>Buffer</span>
         </div>
-        <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
-          <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
-          <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
-          <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
-          <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
-          <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
-          <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
+        <div class="gantt-wrap">
+          <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
+            <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
+            <div class="gantt-row"><div class="label">Source + roast</div><div class="bar-track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
+            <div class="gantt-row"><div class="label">Packaging</div><div class="bar-track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
+            <div class="gantt-row"><div class="label">Beta</div><div class="bar-track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
+            <div class="gantt-row"><div class="label">Launch</div><div class="bar-track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
+            <div class="gantt-row"><div class="label">Retention</div><div class="bar-track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
+          </div>
         </div>
       </section>
 
       <section>
         <h2>Milestones</h2>
-        <table>
-          <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-          <tbody>
-            <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
         <h2>Decisions</h2>
-        <table>
-          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
-          <tbody>
-            <tr><td>Subscription model</td><td>Weekend bag / four-week subscription</td><td>Four-week</td><td>Keeps the same roast and adds a second bag without a second roastery.</td></tr>
-            <tr><td>Price</td><td>$32 / $38 / $42 per four weeks</td><td>$38</td><td>Covers the second roaster at 1,200 subscribers.</td></tr>
-            <tr><td>Beta size</td><td>100 / 200 / 400 customers</td><td>200</td><td>Enough signal on churn without buying capacity first.</td></tr>
-            <tr><td>Delivery</td><td>Flat $4 / free over $60</td><td>Flat $4</td><td>Simple to explain; local pickup stays free.</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+            <tbody>
+              <tr><td>Subscription model</td><td>Weekend bag / four-week subscription</td><td>Four-week</td><td>Keeps the same roast and adds a second bag without a second roastery.</td></tr>
+              <tr><td>Price</td><td>$32 / $38 / $42 per four weeks</td><td>$38</td><td>Covers the second roaster at 1,200 subscribers.</td></tr>
+              <tr><td>Beta size</td><td>100 / 200 / 400 customers</td><td>200</td><td>Enough signal on churn without buying capacity first.</td></tr>
+              <tr><td>Delivery</td><td>Flat $4 / free over $60</td><td>Flat $4</td><td>Simple to explain; local pickup stays free.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
         <h2>Risks</h2>
-        <table>
-          <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
-          <tbody>
-            <tr><td>Green coffee price rises 15%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Six-month contract and a 10% buffer.</td><td>Harbor</td></tr>
-            <tr><td>Churn above 5%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>90-day check. Pause ads and call the first 50 customers.</td><td>Harbor</td></tr>
-            <tr><td>Roaster capacity</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap beta at 200. Second roaster only after 1,000 subscribers.</td><td>Harbor</td></tr>
-            <tr><td>Delivery cost per bag</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Flat $4 delivery and local pickup.</td><td>Harbor</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+            <tbody>
+              <tr><td>Green coffee price rises 15%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Six-month contract and a 10% buffer.</td><td>Harbor</td></tr>
+              <tr><td>Churn above 5%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>90-day check. Pause ads and call the first 50 customers.</td><td>Harbor</td></tr>
+              <tr><td>Roaster capacity</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap beta at 200. Second roaster only after 1,000 subscribers.</td><td>Harbor</td></tr>
+              <tr><td>Delivery cost per bag</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Flat $4 delivery and local pickup.</td><td>Harbor</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>

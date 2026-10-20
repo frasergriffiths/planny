@@ -167,16 +167,18 @@ test('small bars and swatches use the token radii; base cards stay square', () =
   for (const source of [template, sample]) {
     expect(rule(source, '.bar')).toContain('border-radius: var(--radius-bar)');
     expect(rule(source, '.swatch')).toContain('border-radius: var(--radius-swatch)');
-    expect(rule(source, '.chart-bar')).toContain('rx: var(--radius-bar)');
+    expect(rule(source, '.fill')).toContain('border-radius: var(--radius-bar)');
     expect(rule(source, '.box')).toContain('border-radius: 0');
     expect(rule(source, '.kpi')).toContain('border-radius: 0');
     expect(rule(source, '.box.outline')).toContain('border-radius: var(--radius-card)');
     expect(rule(source, '.kpi.outline')).toContain('border-radius: var(--radius-card)');
     if (source === sample) {
       expect(rule(source, '.stacked')).toContain('border-radius: var(--radius-bar)');
-      expect(rule(source, '.chart')).toContain('border-left: var(--border-card) solid var(--accent)');
-      expect(rule(source, '.chart')).toContain('border-radius: 0');
-      expect(rule(source, '.chart')).not.toContain('border: 1px');
+      expect(rule(source, '.table-wrap')).toContain('overflow-x: auto');
+      expect(rule(source, '.gantt-wrap')).toContain('overflow-x: auto');
+      expect(rule(source, '.chart-card')).toContain('border: 1px solid var(--line)');
+      expect(rule(source, '.chart-card')).toContain('border-radius: var(--radius-card)');
+      expect(rule(source, '.chart-card')).not.toContain('border-left');
     }
   }
 });

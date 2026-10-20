@@ -10,9 +10,10 @@
 
   A fictional plan for the home CTA. It uses the dark planny template and is
   safe for planny:
-  no scripts, links, forms, frames or external files. Charts are inline
-  SVG or CSS. Fonts are the system stack. Images, if you add any, must be
-  data:image/png, jpeg, gif, webp or avif. Keep the file under 4 MiB.
+  no scripts, links, forms, frames or external files. Charts are HTML/CSS
+  or inline SVG (fixed size). Fonts are the system stack. Images, if you add
+  any, must be data:image/png, jpeg, gif, webp or avif. Keep the file under
+  4 MiB.
 
   The plan is public to anyone with the link. Do not put secrets in it.
 -->
@@ -50,14 +51,15 @@
     background: var(--paper);
     font-family: var(--sans);
     font-size: 16px;
-    line-height: 1.55;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   .page {
     width: 100%;
-    max-width: none;
-    padding: clamp(20px, 4vw, 64px);
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vw, 52px);
   }
   .eyebrow {
     font-family: var(--mono);
@@ -70,42 +72,42 @@
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
+    gap: 28px;
     align-items: end;
-    padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px);
+    padding: clamp(24px, 4vw, 48px) 0 clamp(20px, 3vw, 36px);
   }
   h1 {
-    margin: 12px 0 18px;
-    max-width: 15ch;
-    font-size: clamp(40px, 7vw, 92px);
-    line-height: .95;
-    letter-spacing: -.045em;
+    margin: 12px 0 16px;
+    max-width: 18ch;
+    font-size: clamp(34px, 5.5vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -.03em;
     font-weight: 750;
+    text-wrap: balance;
   }
   .lede {
     max-width: 62ch;
     margin: 0;
     color: var(--muted);
-    font-size: clamp(17px, 1.9vw, 23px);
-    line-height: 1.35;
+    font-size: clamp(16px, 1.6vw, 20px);
+    line-height: 1.55;
   }
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 26px;
-    margin-top: 24px;
+    gap: 8px 24px;
+    margin-top: 20px;
     font-family: var(--mono);
     font-size: 12px;
     color: var(--muted);
   }
   .layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-    gap: clamp(24px, 4vw, 64px);
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: clamp(24px, 3.5vw, 48px);
     align-items: start;
-    padding: clamp(24px, 4vw, 48px) 0;
-  }
-  .measure { max-width: 72ch; }
+    padding: clamp(16px, 2.5vw, 32px) 0;
+  }  .measure { max-width: 70ch; }
   .box {
     box-sizing: border-box;
     margin: 24px 0;
@@ -125,10 +127,11 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
-    margin: 24px 0 0;
+    margin: 20px 0 0;
   }
   .kpi {
     box-sizing: border-box;
+    height: 100%;
     padding: var(--pad-card);
     border: 0;
     border-left: var(--border-card) solid var(--accent);
@@ -142,24 +145,30 @@
   }
   .kpi strong {
     display: block;
-    margin: 6px 0 2px;
-    font-size: clamp(22px, 2.4vw, 30px);
+    margin: 6px 0 3px;
+    font-size: clamp(24px, 2.4vw, 30px);
     line-height: 1.1;
     letter-spacing: -.03em;
   }
-  .kpi span:last-child { font-size: 12px; color: var(--muted); }
+  .kpi span:last-child {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
   h2 {
-    margin: 40px 0 12px;
-    font-size: clamp(24px, 3vw, 36px);
-    line-height: 1.1;
-    letter-spacing: -.03em;
+    margin: 34px 0 12px;
+    font-size: clamp(22px, 2.8vw, 30px);
+    line-height: 1.15;
+    letter-spacing: -.02em;
   }
-  h3 { margin: 24px 0 8px; font-size: 18px; }
+  h3 { margin: 22px 0 8px; font-size: 17px; }
   p { margin: 0 0 14px; }
   ul, ol { margin: 0 0 16px; padding-left: 20px; }
   li { margin: 6px 0; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
-  th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .table-wrap { overflow-x: auto; margin: 12px 0 24px; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { width: 100%; min-width: 520px; margin: 0; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
   th {
     background: var(--panel);
     color: var(--muted);
@@ -170,10 +179,11 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt { margin: 16px 0 24px; font-size: 12px; }
+  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
+  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
   .gantt-head, .gantt-row {
     display: grid;
-    grid-template-columns: 180px repeat(8, minmax(0, 1fr));
+    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
     gap: 6px;
     align-items: center;
     margin-bottom: 6px;
@@ -192,7 +202,7 @@
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 6px;
-    min-height: 28px;
+    min-height: 26px;
   }
   .bar {
     grid-row: 1;
@@ -221,55 +231,78 @@
     display: grid;
     grid-template-columns: 22px minmax(0, 1fr);
     gap: 8px;
-    padding: 10px 0;
+    padding: 9px 0;
     border-bottom: 1px solid var(--line);
   }
-  .check li::before { content: "□"; color: var(--muted); font-size: 17px; line-height: 1.1; }
+  .check li::before { content: "□"; color: var(--muted); font-size: 16px; line-height: 1.2; }
   .donut { display: flex; align-items: center; gap: 16px; }
   .donut svg { flex: 0 0 auto; }
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
-  @media (max-width: 900px) {
-    .hero, .layout { grid-template-columns: 1fr; }
+
+  /* Charts: HTML/CSS bars and HTML-labelled lines are the default. SVG <text>
+     scales with the viewBox, so labels and values stay in HTML with fixed px. */
+  .chart-card {
+    margin: 16px 0 14px;
+    padding: calc(var(--inset-card) - 1px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: transparent;
   }
-  @media (max-width: 700px) {
-    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .gantt-head, .gantt-row { grid-template-columns: 112px repeat(8, minmax(18px, 1fr)); }
-    .bar { padding: 0 5px; font-size: 10px; }
-    th, td { padding: 10px 8px; }
+  .chart-title { margin: 0 0 12px; font-size: 13px; font-weight: 650; }
+  .hbars { display: grid; gap: 2px; }
+  .hbar {
+    display: grid;
+    grid-template-columns: minmax(84px, 116px) minmax(0, 1fr) 52px;
+    gap: 10px;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--ink);
   }
-  @media (max-width: 420px) {
-    .page { padding: 16px; }
-    .gantt-head, .gantt-row { grid-template-columns: 84px repeat(8, minmax(16px, 1fr)); gap: 3px; }
-    .bar { padding: 0 3px; font-size: 9px; }
-    .kpis { gap: 8px; }
-    .box { padding: var(--pad-card); }
-    .kpi { padding: var(--pad-card); }
-    th, td { padding: 8px 6px; }
-    table { font-size: 12px; }
+  .hbar .bar-track { display: flex; align-items: center; height: 20px; border-radius: var(--radius-bar); background: var(--panel); overflow: hidden; }
+  .hbar .bar-track.group { height: 44px; flex-direction: column; justify-content: center; gap: 3px; }
+  .hbar .fill { display: block; height: 100%; border-radius: var(--radius-bar); background: var(--accent); transform-origin: left; animation: bar-grow .7s ease-out both; }
+  .hbar .fill.slim { height: 9px; }
+  .hbar .fill.alt { background: var(--line-strong); }
+  .hbar .fill.soft { background: #8ab8ff; }
+  .hbar .val { color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+  .line-chart { position: relative; margin: 4px 0 0; }
+  .line-plot { position: relative; height: 200px; margin-left: 40px; }
+  .line-plot svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+  .gridline.dim { background: #1f1f1f; }
+  .y-label {
+    position: absolute;
+    right: 100%;
+    transform: translateY(-50%);
+    padding-right: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
   }
-  @media print {
-    .page { padding: 0; }
-    .box, tr, .kpi { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
-  }
+  .x-labels { display: grid; margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .x-labels span { padding-top: 8px; text-align: center; white-space: nowrap; }
+  .x-labels span:first-child { text-align: left; }
+  .x-labels span:last-child { text-align: right; }
+  .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-swatch); }
+
   .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
-  .chart-bar { rx: var(--radius-bar); transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
   .donut-seg { animation: draw-donut 1.1s ease-out both; }
   @keyframes draw { from { stroke-dashoffset: 1; } }
   @keyframes draw-donut { from { stroke-dashoffset: 1; } }
-  @keyframes grow { from { transform: scaleY(0); } }
+  @keyframes bar-grow { from { transform: scaleX(0); } }
+  @keyframes stack-grow { from { transform: scaleX(0); } }
   @media (prefers-reduced-motion: reduce) {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
   }
   @media print {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
   }
-  .chart { display:block; width:100%; height:auto; margin: 12px 0 6px; border: 0; border-left: var(--border-card) solid var(--accent); border-radius: 0; background: transparent; }
-  .chart-caption { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
-  .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
-  .donut-legend span { display:flex; align-items:center; gap:6px; }
-  .donut-legend i { display:inline-block; width:6px; height:6px; border-radius: var(--radius-swatch); }
   .budget-total { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
   .budget-total span { margin-left: 6px; color: var(--muted); font-family: var(--sans); font-size: 11px; }
   .stacked { display: flex; height: 10px; overflow: hidden; border-radius: var(--radius-bar); background: var(--line); gap: 2px; }
@@ -281,7 +314,36 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
-  @keyframes stack-grow { from { transform: scaleX(0); } }
+  @media (max-width: 900px) {
+    .hero, .layout { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gantt { min-width: 560px; }
+    .gantt-head, .gantt-row { grid-template-columns: 100px repeat(8, minmax(0, 1fr)); }
+    .hbar { grid-template-columns: minmax(76px, 96px) minmax(0, 1fr) 48px; }
+    .line-plot, .x-labels { margin-left: 34px; }
+    .line-plot { height: 180px; }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 9px 8px; }
+    .chart-caption { font-size: 12px; }
+  }
+  @media (max-width: 700px) {
+    .x-labels span:nth-child(2n) { visibility: hidden; }
+  }
+  @media (max-width: 420px) {
+    .page { padding: 16px; }
+    .kpis { gap: 8px; }
+    .box { padding: var(--pad-card); }
+    .kpi { padding: var(--pad-card); }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 8px 6px; }
+  }
+  @media print {
+    .page { padding: 0; }
+    .box, tr, .kpi, .chart-card { break-inside: avoid; }
+    .gantt { break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -324,72 +386,63 @@
       </section>
 
       <section>
-        <h2>Traction</h2>
-        <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
-        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Subscribers by month: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
-          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-            <line x1="64" y1="30" x2="64" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="202" x2="690" y2="202" stroke="#1f1f1f"></line>
-            <line x1="64" y1="145" x2="690" y2="145" stroke="#1f1f1f"></line>
-            <line x1="64" y1="88" x2="690" y2="88" stroke="#1f1f1f"></line>
-            <text x="54" y="264" text-anchor="end">0</text>
-            <text x="54" y="206" text-anchor="end">300</text>
-            <text x="54" y="149" text-anchor="end">600</text>
-            <text x="54" y="92" text-anchor="end">900</text>
-            <text x="54" y="35" text-anchor="end">1,200</text>
-            <polygon points="64,260 64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30 690,260" fill="#0b1b33"></polygon>
-            <polyline class="chart-line" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            <circle cx="64" cy="226" r="4" fill="#3291FF"><title>January: 180 subscribers</title></circle>
-            <circle cx="142" cy="210" r="4" fill="#3291FF"><title>February: 260 subscribers</title></circle>
-            <circle cx="221" cy="191" r="4" fill="#3291FF"><title>March: 360 subscribers</title></circle>
-            <circle cx="299" cy="168" r="4" fill="#3291FF"><title>April: 480 subscribers</title></circle>
-            <circle cx="377" cy="141" r="4" fill="#3291FF"><title>May: 620 subscribers</title></circle>
-            <circle cx="455" cy="114" r="4" fill="#3291FF"><title>June: 760 subscribers</title></circle>
-            <circle cx="534" cy="88" r="4" fill="#3291FF"><title>July: 900 subscribers</title></circle>
-            <circle cx="612" cy="57" r="4" fill="#3291FF"><title>August: 1,060 subscribers</title></circle>
-            <circle cx="690" cy="30" r="4" fill="#3291FF"><title>September: 1,200 subscribers</title></circle>
-            <text x="64" y="286" text-anchor="middle">Jan</text>
-            <text x="142" y="286" text-anchor="middle">Feb</text>
-            <text x="221" y="286" text-anchor="middle">Mar</text>
-            <text x="299" y="286" text-anchor="middle">Apr</text>
-            <text x="377" y="286" text-anchor="middle">May</text>
-            <text x="455" y="286" text-anchor="middle">Jun</text>
-            <text x="534" y="286" text-anchor="middle">Jul</text>
-            <text x="612" y="286" text-anchor="middle">Aug</text>
-            <text x="690" y="286" text-anchor="middle">Sep</text>
-          </g>
-        </svg>
-        <p class="chart-caption">Fictional plan data. Subscribers, January to September.</p>
+        <h2>Where the next 1,200 come from</h2>
+        <p class="measure">Referral is the largest source because the bag club already has a relationship with every customer. Paid social is a test, not the plan.</p>
+        <div class="chart-card">
+          <p class="chart-title">New subscribers by channel, first ten months</p>
+          <div class="hbars" role="img" aria-label="New subscribers by channel: referral 320, bag club upsell 260, farmers market 180, wholesale 140, digital ads 120, foot traffic 90, gift bundles 70, local cafes 60, events 50, app referrals 30">
+            <div class="hbar"><span>Referral</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">320</span></div>
+            <div class="hbar"><span>Bag club up</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:81%"></div></div><span class="val">260</span></div>
+            <div class="hbar"><span>Market</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:56%"></div></div><span class="val">180</span></div>
+            <div class="hbar"><span>Wholesale</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:44%"></div></div><span class="val">140</span></div>
+            <div class="hbar"><span>Digital ads</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:38%"></div></div><span class="val">120</span></div>
+            <div class="hbar"><span>Foot traffic</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:28%"></div></div><span class="val">90</span></div>
+            <div class="hbar"><span>Gift bundles</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:22%"></div></div><span class="val">70</span></div>
+            <div class="hbar"><span>Local cafes</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:19%"></div></div><span class="val">60</span></div>
+            <div class="hbar"><span>Events</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:16%"></div></div><span class="val">50</span></div>
+            <div class="hbar"><span>App adds</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:9%"></div></div><span class="val">30</span></div>
+          </div>
+          <p class="chart-caption">Fictional plan data. Ten channels in one CSS chart; vertical rows, so labels never collide at any width.</p>
+        </div>
       </section>
 
       <section>
-        <h2>Where the next 1,200 come from</h2>
-        <p class="measure">Referral is the largest source because the bag club already has a relationship with every customer. Paid social is a test, not the plan.</p>
-        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="New subscribers by channel: referral 420, Instagram 300, farmers market 260, wholesale 220">
-          <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-            <line x1="64" y1="50" x2="64" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
-            <line x1="64" y1="155" x2="690" y2="155" stroke="#1f1f1f"></line>
-            <line x1="64" y1="50" x2="690" y2="50" stroke="#1f1f1f"></line>
-            <text x="54" y="264" text-anchor="end">0</text>
-            <text x="54" y="159" text-anchor="end">250</text>
-            <text x="54" y="54" text-anchor="end">500</text>
-            <rect class="chart-bar" x="130" y="84" width="90" height="176" fill="#3291FF"><title>Referral: 420 new subscribers</title></rect>
-            <rect class="chart-bar" x="280" y="134" width="90" height="126" fill="#3291FF"><title>Instagram: 300 new subscribers</title></rect>
-            <rect class="chart-bar" x="430" y="151" width="90" height="109" fill="#3291FF"><title>Farmers market: 260 new subscribers</title></rect>
-            <rect class="chart-bar" x="580" y="168" width="90" height="92" fill="#3291FF"><title>Wholesale: 220 new subscribers</title></rect>
-            <text x="175" y="76" text-anchor="middle" fill="#f5f5f5" font-weight="700">420</text>
-            <text x="325" y="126" text-anchor="middle" fill="#f5f5f5" font-weight="700">300</text>
-            <text x="475" y="143" text-anchor="middle" fill="#f5f5f5" font-weight="700">260</text>
-            <text x="625" y="160" text-anchor="middle" fill="#f5f5f5" font-weight="700">220</text>
-            <text x="175" y="282" text-anchor="middle">Referral</text>
-            <text x="325" y="282" text-anchor="middle">Instagram</text>
-            <text x="475" y="282" text-anchor="middle">Market</text>
-            <text x="625" y="282" text-anchor="middle">Wholesale</text>
-          </g>
-        </svg>
-        <p class="chart-caption">Fictional plan data. New subscribers by channel.</p>
+        <h2>Subscription cost, plan versus counter</h2>
+        <div class="chart-card">
+          <p class="chart-title">Monthly roast spend: four-week plan vs pay-as-you-go bags</p>
+          <div class="hbars" role="img" aria-label="Monthly roast spend, four-week plan versus pay-as-you-go: April $760 versus $940, May $820 versus $1,060, June $900 versus $1,180, July $970 versus $1,310">
+            <div class="hbar"><span>April</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:58%"></span><span class="fill slim alt" style="width:72%"></span></div><span class="val">−19%</span></div>
+            <div class="hbar"><span>May</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:63%"></span><span class="fill slim alt" style="width:81%"></span></div><span class="val">−23%</span></div>
+            <div class="hbar"><span>June</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:69%"></span><span class="fill slim alt" style="width:90%"></span></div><span class="val">−24%</span></div>
+            <div class="hbar"><span>July</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:74%"></span><span class="fill slim alt" style="width:100%"></span></div><span class="val">−26%</span></div>
+          </div>
+          <div class="chart-legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Four-week plan</span><span><i style="background:var(--line-strong)"></i>Pay-as-you-go</span></div>
+          <p class="chart-caption">Fictional plan data. Grouped rows keep the two series on the same scale; values stay 12px in both columns.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Traction</h2>
+        <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
+        <div class="chart-card">
+          <p class="chart-title">Subscribers, January to September</p>
+          <div class="line-chart" role="img" aria-label="Subscribers by month, January to September: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
+            <div class="line-plot" aria-hidden="true">
+              <div class="gridline" style="top:0"><span class="y-label">1,200</span></div>
+              <div class="gridline dim" style="top:25%"><span class="y-label">900</span></div>
+              <div class="gridline dim" style="top:50%"><span class="y-label">600</span></div>
+              <div class="gridline dim" style="top:75%"><span class="y-label">300</span></div>
+              <div class="gridline" style="top:100%"><span class="y-label">0</span></div>
+              <svg viewBox="0 0 800 200" preserveAspectRatio="none" fill="none">
+                <polygon vector-effect="non-scaling-stroke" points="0,170 100,163 200,150 300,133 400,110 500,87 600,65 700,42 800,25 800,200 0,200" fill="#0b1b33"></polygon>
+                <polyline class="chart-line" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="0,170 100,163 200,150 300,133 400,110 500,87 600,65 700,42 800,25" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              </svg>
+            </div>
+            <div class="x-labels" aria-hidden="true"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div>
+          </div>
+          <div class="chart-legend"><span><i style="background:var(--accent)"></i>Subscribers</span></div>
+          <p class="chart-caption">Fictional plan data. The SVG carries the shape only; every label is HTML in CSS pixels, so 11–12px on a phone and on a desktop alike. Every second month label hides under 700px.</p>
+        </div>
       </section>
 
       <section>
@@ -399,54 +452,62 @@
           <span><span class="swatch alt"></span>Checkpoint</span>
           <span><span class="swatch soft"></span>Buffer</span>
         </div>
-        <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
-          <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
-          <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
-          <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
-          <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
-          <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
-          <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
+        <div class="gantt-wrap">
+          <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
+            <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
+            <div class="gantt-row"><div class="label">Source + roast</div><div class="bar-track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
+            <div class="gantt-row"><div class="label">Packaging</div><div class="bar-track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
+            <div class="gantt-row"><div class="label">Beta</div><div class="bar-track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
+            <div class="gantt-row"><div class="label">Launch</div><div class="bar-track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
+            <div class="gantt-row"><div class="label">Retention</div><div class="bar-track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
+          </div>
         </div>
       </section>
 
       <section>
         <h2>Milestones</h2>
-        <table>
-          <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-          <tbody>
-            <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-            <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
+              <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
         <h2>Decisions</h2>
-        <table>
-          <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
-          <tbody>
-            <tr><td>Subscription model</td><td>Weekend bag / four-week subscription</td><td>Four-week</td><td>Keeps the same roast and adds a second bag without a second roastery.</td></tr>
-            <tr><td>Price</td><td>$32 / $38 / $42 per four weeks</td><td>$38</td><td>Covers the second roaster at 1,200 subscribers.</td></tr>
-            <tr><td>Beta size</td><td>100 / 200 / 400 customers</td><td>200</td><td>Enough signal on churn without buying capacity first.</td></tr>
-            <tr><td>Delivery</td><td>Flat $4 / free over $60</td><td>Flat $4</td><td>Simple to explain; local pickup stays free.</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+            <tbody>
+              <tr><td>Subscription model</td><td>Weekend bag / four-week subscription</td><td>Four-week</td><td>Keeps the same roast and adds a second bag without a second roastery.</td></tr>
+              <tr><td>Price</td><td>$32 / $38 / $42 per four weeks</td><td>$38</td><td>Covers the second roaster at 1,200 subscribers.</td></tr>
+              <tr><td>Beta size</td><td>100 / 200 / 400 customers</td><td>200</td><td>Enough signal on churn without buying capacity first.</td></tr>
+              <tr><td>Delivery</td><td>Flat $4 / free over $60</td><td>Flat $4</td><td>Simple to explain; local pickup stays free.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
         <h2>Risks</h2>
-        <table>
-          <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
-          <tbody>
-            <tr><td>Green coffee price rises 15%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Six-month contract and a 10% buffer.</td><td>Harbor</td></tr>
-            <tr><td>Churn above 5%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>90-day check. Pause ads and call the first 50 customers.</td><td>Harbor</td></tr>
-            <tr><td>Roaster capacity</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap beta at 200. Second roaster only after 1,000 subscribers.</td><td>Harbor</td></tr>
-            <tr><td>Delivery cost per bag</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Flat $4 delivery and local pickup.</td><td>Harbor</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+            <tbody>
+              <tr><td>Green coffee price rises 15%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Six-month contract and a 10% buffer.</td><td>Harbor</td></tr>
+              <tr><td>Churn above 5%</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>90-day check. Pause ads and call the first 50 customers.</td><td>Harbor</td></tr>
+              <tr><td>Roaster capacity</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap beta at 200. Second roaster only after 1,000 subscribers.</td><td>Harbor</td></tr>
+              <tr><td>Delivery cost per bag</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Flat $4 delivery and local pickup.</td><td>Harbor</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>

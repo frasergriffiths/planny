@@ -1,6 +1,8 @@
 # Planny plan components
 
-Copy these into a plan HTML file. They are built for planny's viewer: no scripts, no links, no forms, no frames and no external files. Charts are inline SVG or CSS. Images, if you use them, must be `data:image/png`, `jpeg`, `gif`, `webp` or `avif`. Keep the whole file under 4 MiB (4,194,304 bytes).
+Copy these into a plan HTML file. They are built for planny's viewer: no scripts, no links, no forms, no frames and no external files. Charts are HTML/CSS, or inline SVG when the graphic is fixed size. Images, if you use them, must be `data:image/png`, `jpeg`, `gif`, `webp` or `avif`. Keep the whole file under 4 MiB (4,194,304 bytes).
+
+Never put SVG `<text>` in a chart that stretches: SVG text scales with the viewBox and goes unreadable at one end. Bar charts are CSS rows, line charts are a stretched SVG shape with HTML labels, and only the fixed-size donut keeps SVG text.
 
 The server sanitises every plan anyway. These components are written to survive that pass unchanged, so what you preview is what readers get.
 
@@ -43,9 +45,11 @@ Put this once in the plan's `<style>` block. Adjust the accent, keep the contras
     font-size: 16px;
     line-height: 1.55;
   }
-  .page { width: 100%; max-width: none; padding: clamp(20px, 4vw, 64px); }
-  .measure { max-width: 72ch; }
+  .page { width: 100%; max-width: 1240px; margin: 0 auto; padding: clamp(20px, 4vw, 52px); }
+  .measure { max-width: 70ch; }
   .eyebrow { font-family: var(--mono); font-size: 11px; line-height: 1.3; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1 { max-width: 18ch; font-size: clamp(34px, 5.5vw, 64px); line-height: 1.05; letter-spacing: -.03em; text-wrap: balance; }
+  h2 { font-size: clamp(22px, 2.8vw, 30px); }
 </style>
 ```
 
@@ -149,69 +153,99 @@ Use one bar for a small budget split. The total is quiet text above, not a card.
 </div>
 ```
 
-## Inline SVG bar chart
+## CSS bar chart
 
-No JavaScript. Replace the values and labels.
-
-```html
-<svg viewBox="0 0 640 260" role="img" aria-label="Monthly uploads, January to June" style="display:block;width:100%;height:auto;border:0;border-left:var(--border-card) solid var(--accent);border-radius:0;background:transparent;">
-  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-    <line x1="64" y1="20" x2="64" y2="210" stroke="#262626"></line>
-    <line x1="64" y1="210" x2="610" y2="210" stroke="#262626"></line>
-    <text x="18" y="214">0</text>
-    <text x="18" y="164">500</text>
-    <text x="18" y="114">1,000</text>
-    <text x="18" y="64">1,500</text>
-    <rect class="chart-bar" x="96" y="150" width="54" height="60" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="180" y="120" width="54" height="90" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="264" y="90" width="54" height="120" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="348" y="70" width="54" height="140" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="432" y="110" width="54" height="100" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="516" y="40" width="54" height="170" fill="#3291FF"></rect>
-    <text x="123" y="228" text-anchor="middle">Jan</text>
-    <text x="207" y="228" text-anchor="middle">Feb</text>
-    <text x="291" y="228" text-anchor="middle">Mar</text>
-    <text x="375" y="228" text-anchor="middle">Apr</text>
-    <text x="459" y="228" text-anchor="middle">May</text>
-    <text x="543" y="228" text-anchor="middle">Jun</text>
-  </g>
-</svg>
-```
-
-## Inline SVG line chart
+CSS bars with HTML labels: 12px text in CSS pixels at every width. Replace the series, values and percentages. A single series is one `.fill` per row; a grouped comparison stacks two `.fill.slim` bars in a `.track.group`.
 
 ```html
-<svg viewBox="0 0 640 260" role="img" aria-label="Origin reads per week" style="display:block;width:100%;height:auto;border:0;border-left:var(--border-card) solid var(--accent);border-radius:0;background:transparent;">
-  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
-    <line x1="56" y1="20" x2="56" y2="208" stroke="#262626"></line>
-    <line x1="56" y1="208" x2="612" y2="208" stroke="#262626"></line>
-    <line x1="56" y1="158" x2="612" y2="158" stroke="#1a1a1a"></line>
-    <line x1="56" y1="108" x2="612" y2="108" stroke="#1a1a1a"></line>
-    <line x1="56" y1="58" x2="612" y2="58" stroke="#1a1a1a"></line>
-    <polyline class="chart-line" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="56,184 138,170 220,150 302,158 384,120 466,96 548,64 612,52" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-    <circle cx="56" cy="184" r="4" fill="#3291FF"></circle>
-    <circle cx="138" cy="170" r="4" fill="#3291FF"></circle>
-    <circle cx="220" cy="150" r="4" fill="#3291FF"></circle>
-    <circle cx="302" cy="158" r="4" fill="#3291FF"></circle>
-    <circle cx="384" cy="120" r="4" fill="#3291FF"></circle>
-    <circle cx="466" cy="96" r="4" fill="#3291FF"></circle>
-    <circle cx="548" cy="64" r="4" fill="#3291FF"></circle>
-    <circle cx="612" cy="52" r="4" fill="#3291FF"></circle>
-    <text x="56" y="228" text-anchor="middle">W1</text>
-    <text x="138" y="228" text-anchor="middle">W2</text>
-    <text x="220" y="228" text-anchor="middle">W3</text>
-    <text x="302" y="228" text-anchor="middle">W4</text>
-    <text x="384" y="228" text-anchor="middle">W5</text>
-    <text x="466" y="228" text-anchor="middle">W6</text>
-    <text x="548" y="228" text-anchor="middle">W7</text>
-    <text x="612" y="228" text-anchor="middle">W8</text>
-  </g>
-</svg>
+<div class="chart-card">
+  <p class="chart-title">New subscribers by channel</p>
+  <div class="hbars" role="img" aria-label="New subscribers by channel: referral 320, bag club 260, market 180, wholesale 140">
+    <div class="hbar"><span>Referral</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">320</span></div>
+    <div class="hbar"><span>Bag club up</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:81%"></div></div><span class="val">260</span></div>
+    <div class="hbar"><span>Market</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:56%"></div></div><span class="val">180</span></div>
+    <div class="hbar"><span>Wholesale</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:44%"></div></div><span class="val">140</span></div>
+  </div>
+  <p class="chart-caption">Fictional plan data. Ten channels fit as rows without label collisions.</p>
+</div>
+<style>
+  .chart-card { margin: 16px 0 14px; padding: calc(var(--inset-card) - 1px); border: 1px solid var(--line); border-radius: var(--radius-card); background: transparent; }
+  .chart-title { margin: 0 0 12px; font-size: 13px; font-weight: 650; }
+  .hbars { display: grid; gap: 2px; }
+  .hbar { display: grid; grid-template-columns: minmax(84px, 116px) minmax(0, 1fr) 52px; gap: 10px; align-items: center; padding: 4px 0; font-size: 12px; color: var(--ink); }
+  .hbar .bar-track { display: flex; align-items: center; height: 20px; border-radius: var(--radius-bar); background: var(--panel); overflow: hidden; }
+  .hbar .bar-track.group { height: 44px; flex-direction: column; justify-content: center; gap: 3px; }
+  .hbar .fill { display: block; height: 100%; border-radius: var(--radius-bar); background: var(--accent); transform-origin: left; animation: bar-grow .7s ease-out both; }
+  .hbar .fill.slim { height: 9px; }
+  .hbar .fill.alt { background: var(--line-strong); }
+  .hbar .val { color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+  .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-swatch); }
+  @keyframes bar-grow { from { transform: scaleX(0); } }
+  @media (prefers-reduced-motion: reduce) { .fill { animation: none; } }
+  @media print { .fill { animation: none; } }
+  @media (max-width: 700px) {
+    .hbar { grid-template-columns: minmax(76px, 96px) minmax(0, 1fr) 48px; }
+    .chart-caption { font-size: 12px; }
+  }
+</style>
 ```
+
+Keep the widths on a 0-to-max scale of the largest value (largest value = 100%). For a grouped row, put the plan in `.fill.slim` and the comparison in `.fill.slim.alt`, and put a short delta such as `−19%` in `.val`.
+
+## Line chart with HTML labels
+
+The SVG carries the shape only and stretches with the chart; `vector-effect="non-scaling-stroke"` keeps the stroke at 3px. Every label and value is HTML in fixed CSS pixels, so text never scales with the viewBox. Nine to twelve categories read fine: every second x label hides under 700px.
+
+```html
+<div class="chart-card">
+  <p class="chart-title">Subscribers, January to September</p>
+  <div class="line-chart" role="img" aria-label="Subscribers by month: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
+    <div class="line-plot" aria-hidden="true">
+      <div class="gridline" style="top:0"><span class="y-label">1,200</span></div>
+      <div class="gridline dim" style="top:25%"><span class="y-label">900</span></div>
+      <div class="gridline dim" style="top:50%"><span class="y-label">600</span></div>
+      <div class="gridline dim" style="top:75%"><span class="y-label">300</span></div>
+      <div class="gridline" style="top:100%"><span class="y-label">0</span></div>
+      <svg viewBox="0 0 800 200" preserveAspectRatio="none" fill="none">
+        <polyline class="chart-line" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="0,170 100,163 200,150 300,133 400,110 500,87 600,65 700,42 800,25" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      </svg>
+    </div>
+    <div class="x-labels" aria-hidden="true"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div>
+  </div>
+  <div class="chart-legend"><span><i style="background:var(--accent)"></i>Subscribers</span></div>
+  <p class="chart-caption">Fictional plan data. Labels are HTML, so they stay 11-12px at every width.</p>
+</div>
+<style>
+  .line-chart { position: relative; margin: 4px 0 0; }
+  .line-plot { position: relative; height: 200px; margin-left: 40px; }
+  .line-plot svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+  .gridline.dim { background: #1f1f1f; }
+  .y-label { position: absolute; right: 100%; transform: translateY(-50%); padding-right: 8px; color: var(--muted); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+  .x-labels { display: grid; margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .x-labels span { padding-top: 8px; text-align: center; white-space: nowrap; }
+  .x-labels span:first-child { text-align: left; }
+  .x-labels span:last-child { text-align: right; }
+  .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  @media (prefers-reduced-motion: reduce) { .chart-line { animation: none; } }
+  @media print { .chart-line { animation: none; } }
+  @media (max-width: 700px) {
+    .x-labels span:nth-child(2n) { visibility: hidden; }
+    .line-plot, .x-labels { margin-left: 34px; }
+    .line-plot { height: 180px; }
+  }
+</style>
+```
+
+Turn each point into an x fraction (`0` to `800`) and a y fraction on the 0-to-max scale: y = `200 - (value / max) × 200`, so a 1,200 value at top scale sits on y 0, and 0 sits on y 200. The first sample row shows the arithmetic. Give the `.line-chart` wrapper `role="img"` and the full `aria-label`; the plot and labels are decorative.
 
 ## Inline SVG donut
 
-`pathLength="1"` turns the ring into a 0 to 1 scale. For 78 percent use `stroke-dasharray=".78 1"` and `stroke-dashoffset="0"`.
+`pathLength="1"` turns the ring into a 0 to 1 scale. For 78 percent use `stroke-dasharray=".78 1"` and `stroke-dashoffset="0"`. The donut is fixed size, so its SVG `<text>` stays legible; donut only — never put SVG `<text>` in charts that stretch.
 
 ```html
 <div style="display:flex;align-items:center;gap:16px;">
@@ -226,60 +260,61 @@ No JavaScript. Replace the values and labels.
 
 ## Motion and accessibility
 
-Keep the final state in the markup and animate with CSS only. The line and donut use `pathLength="1"`, so the dash values are fractions. Bars grow from the baseline. Print and reduced motion show the final state.
+Keep the final state in the markup and animate with CSS only. The line and donut use `pathLength="1"`, so the dash values are fractions. CSS bars grow from the left. Print and reduced motion show the final state.
 
-Add `class="chart-line"` to the line, `class="chart-bar"` to each bar, and `class="donut-seg"` to the donut arc. Put `<title>` inside each bar, point and segment. Give each chart `role="img"` and an `aria-label` that includes the figures.
+Add `class="chart-line"` to the SVG line, `class="fill"` to each CSS bar, and `class="donut-seg"` to the donut arc. Put the role, an `aria-label` that includes the figures, on the chart wrapper, and `aria-hidden="true"` on the plot, so screen readers hear one complete description.
 
 ```html
 <style>
   .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
-  .chart-bar { rx: var(--radius-bar); transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
-  .donut-seg { animation: draw-donut 1.1s ease-out both; }
+  .fill { transform-origin: left; animation: bar-grow .7s ease-out both; }
   @keyframes draw { from { stroke-dashoffset: 1; } }
-  @keyframes draw-donut { from { stroke-dashoffset: 1; } }
-  @keyframes grow { from { transform: scaleY(0); } }
+  @keyframes bar-grow { from { transform: scaleX(0); } }
   @media (prefers-reduced-motion: reduce) {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .fill, .donut-seg, .stacked span { animation: none; }
   }
   @media print {
-    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+    .chart-line, .fill, .donut-seg, .stacked span { animation: none; }
   }
 </style>
 ```
 
 ## CSS grid Gantt
 
+Wrap the Gantt in `.gantt-wrap` and give the inner `.gantt` a `min-width` (650px desktop), so phones scroll the track horizontally instead of squeezing eight columns. The label column is 150px desktop and 100px below 700px.
+
 ```html
-<div style="margin:16px 0;font-size:12px;">
-  <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;margin-bottom:6px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;">
-    <div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div>
-  </div>
-  <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
-    <div style="font-weight:650;">Store + upload</div>
-    <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:28px;">
-      <div style="grid-row:1;grid-column:1 / span 2;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--accent);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">201, delete key, 4 MiB</div>
+<div class="gantt-wrap">
+  <div class="gantt" style="min-width:650px;">
+    <div style="display:grid;grid-template-columns:150px repeat(8,minmax(0,1fr));gap:6px;margin-bottom:6px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;">
+      <div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div>
     </div>
-  </div>
-  <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
-    <div style="font-weight:650;">View + cache</div>
-    <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:28px;">
-      <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
+    <div style="display:grid;grid-template-columns:150px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
+      <div style="font-weight:650;">Store + upload</div>
+      <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:26px;">
+        <div style="grid-row:1;grid-column:1 / span 2;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--accent);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">201, delete key, 4 MiB</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:150px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
+      <div style="font-weight:650;">View + cache</div>
+      <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:26px;">
+        <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
+      </div>
     </div>
   </div>
 </div>
-```
-
-At narrow widths, shrink the label column:
-
-```html
 <style>
+  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
   @media (max-width: 700px) {
-    .gantt-row, .gantt-head { grid-template-columns: 112px repeat(8, minmax(18px, 1fr)); }
+    .gantt { min-width: 560px; }
+    .gantt-row, .gantt-head { grid-template-columns: 100px repeat(8, minmax(0, 1fr)); }
   }
 </style>
 ```
 
 ## Decision matrix
+
+Wrap any table wider than one phone screen in `.table-wrap` (`overflow-x: auto`), so it scrolls inside its region instead of stretching the page.
 
 ```html
 <table style="width:100%;border-collapse:collapse;font-size:14px;">
