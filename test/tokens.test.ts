@@ -200,6 +200,17 @@ test('the React pages use both card variants', () => {
   expect(theme).not.toContain('.plan-card::before');
 });
 
+test('/terms-of-use is routed, linked and carries the retention licence', async () => {
+  const { PAGES } = await import('../src/generated-pages.js');
+  expect(PAGES.terms).toContain('data-page="terms"');
+  expect(PAGES.terms).toContain('takedown@planny.run');
+  expect(PAGES.terms).toContain('kept indefinitely');
+  const page = read('web/src/Page.tsx');
+  expect(page).toContain('href="/terms-of-use"');
+  const app = read('src/app.ts');
+  expect(app).toContain("app.get('/terms-of-use'");
+});
+
 test('/sample is served with the plan CSP and a CTA', async () => {
   const { PAGES } = await import('../src/generated-pages.js');
   expect(PAGES.sample).toContain('<title>Harbor Coffee Roasters');

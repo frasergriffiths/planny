@@ -47,7 +47,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `POST /admin/plans/:uuid/remove` | Operator takedown. Needs `PLANNY_ADMIN_TOKEN`. |
 | `POST /admin/reset` | Reset a monthly counter: `{"counter":"reads"|"bytes"|"uploads"|"all"}`. Needs the same token. |
 | `GET /health` | Uncached build, runtime and configuration-presence flags. |
-| `GET /terms-of-use` | Not routed yet. Draft copy is in `docs/terms-of-use.md`; it needs a monitored takedown contact before the route ships. |
+| `GET /terms-of-use` | Terms of use. The takedown contact still needs to be a monitored inbox. |
 
 API errors are JSON: `{"error":{"code":"...","message":"..."}}`. Unknown, malformed and expired links get 404 and 410 pages, not JSON.
 

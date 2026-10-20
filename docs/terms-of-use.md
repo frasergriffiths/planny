@@ -87,7 +87,7 @@ If any provision is found unenforceable, the rest remains in force. These terms 
 <a id="contact"></a>
 ## 12. Contact
 
-For takedowns, legal notices and terms questions: `TAKEDOWN_CONTACT`.
+For takedowns, legal notices and terms questions: `takedown@planny.run`.
 
 For security vulnerabilities, please use GitHub's private vulnerability reporting as described in `SECURITY.md`, not the takedown contact.
 

@@ -1,4 +1,6 @@
-export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
+import { Terms } from './Terms';
+
+export type PageKind = 'home' | 'notfound' | 'gone' | 'paused' | 'terms';
 
 const copy: Record<PageKind, { kicker: string; title: string; body: string; code?: string }> = {
   home: {
@@ -23,6 +25,11 @@ const copy: Record<PageKind, { kicker: string; title: string; body: string; code
     title: 'planny is paused.',
     body: 'A limit was reached. Reading resumes at the reset time.',
     code: '503',
+  },
+  terms: {
+    kicker: 'Terms of use',
+    title: 'Terms of use',
+    body: 'The rules for publishing and reading a plan.',
   },
 };
 
@@ -62,6 +69,8 @@ export function Page({ kind }: { kind: PageKind }) {
               ))}
             </section>
           </>
+        ) : kind === 'terms' ? (
+          <Terms />
         ) : (
           <section className="plan-card mx-auto my-16 max-w-2xl">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">{page.kicker}</p>
@@ -74,7 +83,7 @@ export function Page({ kind }: { kind: PageKind }) {
       </main>
 
       <footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-line px-6 py-6 font-mono text-xs text-zinc-600">
-        <span>planny, plans for agents</span>
+        <span>planny, plans for agents · <a href="/terms-of-use" className="text-zinc-500 no-underline hover:text-white">Terms</a></span>
         <span>One link. One key.</span>
       </footer>
     </div>

@@ -555,6 +555,7 @@ export function createApp(deps: AppDeps): App {
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
   app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
+  app.get('/terms-of-use', () => page(200, PAGES.terms));
 
   // Uncached, so a deploy check can read the raw x-vercel-id from the response headers.
   app.get('/health', () => json(200, {

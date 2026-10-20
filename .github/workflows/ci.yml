@@ -19,4 +19,9 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run build
-      - run: bun run test
+      - run: |
+          set -o pipefail
+          bun test 2>&1 | tee /tmp/test.log
+          grep -Eq '5 skip(ped)?' /tmp/test.log
+      - run: bun run scripts/generate-tokens.ts --check
+      - run: bun run scripts/generate-sample.ts --check
