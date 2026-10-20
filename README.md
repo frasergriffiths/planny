@@ -47,7 +47,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
 | `GET /health` | Uncached build, runtime and configuration-presence flags. |
-| `GET /terms-of-use` | Terms of use. |
+| `GET /terms-of-use` | 301 redirect to the canonical terms document at `docs/terms-of-use.md` on GitHub. |
 | `GET /.well-known/security.txt` | Machine-readable security contact. |
 
 API errors are JSON: `{"error":{"code":"...","message":"..."}}`. Unknown, malformed and expired links get 404 and 410 pages, not JSON.

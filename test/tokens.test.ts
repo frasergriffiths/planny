@@ -228,24 +228,15 @@ test('the React pages use both card variants', () => {
   expect(theme).not.toContain('.plan-card::before');
 });
 
-test('/terms-of-use serves the retention licence page', async () => {
+test('/terms-of-use redirects to the GitHub terms document', async () => {
   const { PAGES } = await import('../src/generated-pages.js');
-  expect(PAGES.terms).toContain('data-page="terms"');
-  expect(PAGES.terms).toContain('frasergriffithsisme@icloud.com');
-  expect(PAGES.terms).toContain('kept indefinitely');
-  // The client bundle links the footer to the terms page (the footer is
-  // client-rendered, so the path appears inside the bundle, not as static HTML).
-  expect(PAGES.home).toContain('/terms-of-use');
-
   const app = await tokensServed();
   try {
     const response = await app.fetchPage('/terms-of-use');
-    expect(response.status).toBe(200);
-    expect(response.headers.get('content-type')).toContain('text/html');
-    expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
-    const body = await response.text();
-    expect(body).toContain('data-page="terms"');
-    expect(body).toContain('frasergriffithsisme@icloud.com');
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe('https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md');
+    // The home footer links straight to the GitHub terms document.
+    expect(PAGES.home).toContain('https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md');
   } finally {
     app.cleanup();
   }
