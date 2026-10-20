@@ -4,6 +4,28 @@ export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
 
+const stepIcon = {
+  write: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16.5 3.5l4 4L8 20H4v-4L16.5 3.5z" />
+      <path d="M14 6l4 4" />
+    </svg>
+  ),
+  publish: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 16V4" />
+      <path d="M6.5 9.5L12 4l5.5 5.5" />
+      <path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" />
+    </svg>
+  ),
+  share: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 10-5.7-5.7l-1.2 1.2" />
+      <path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 105.7 5.7l1.2-1.2" />
+    </svg>
+  ),
+} as const;
+
 function InstallCommand() {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -16,16 +38,26 @@ function InstallCommand() {
     }
   };
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <code className="plan-card-outline block overflow-x-auto font-mono text-sm text-white">{INSTALL_COMMAND}</code>
+    <div className="flex items-center gap-2">
+      <code className="block min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-white">{INSTALL_COMMAND}</code>
       <button
         type="button"
         onClick={copy}
-        aria-live="polite"
-        className="rounded-bar border border-line px-4 py-2 font-mono text-xs text-zinc-300 no-underline hover:border-zinc-600"
+        aria-label="Copy install command"
+        className="flex h-7 w-7 flex-none items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
       >
-        {copied ? 'Copied' : 'Copy'}
+        {copied ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4.5 12.5l5 5 10-11" />
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15V6a1 1 0 011-1h9" />
+          </svg>
+        )}
       </button>
+      <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
     </div>
   );
 }
@@ -81,24 +113,11 @@ export function Page({ kind }: { kind: PageKind }) {
               </div>
             </section>
 
-            <section id="how" className="grid gap-6 border-t border-line py-14 md:grid-cols-3">
-              {[
-                ['Write', 'The agent writes one HTML page, with tables, charts and images inside it.'],
-                ['Publish', 'It uploads the file. planny returns a link that is the only key.'],
-                ['Share', 'Anyone with the link reads the plan until its time runs out.'],
-              ].map(([title, body]) => (
-                <div key={title} className="plan-card-outline">
-                  <h2 className="text-base font-semibold text-white">{title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
-                </div>
-              ))}
-            </section>
-
             <section id="install" className="border-t border-line py-14">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Agent skill</p>
               <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Install the skill. Ask for a plan.</h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                One command installs the skill into Claude Code, Cursor, Codex, OpenCode, Copilot and other agents. It writes the HTML, uploads it, and keeps the delete key private.
+                One command installs the skill into Claude Code, Cursor, Codex, OpenCode and other agents. It writes the HTML, uploads it, and keeps the delete key private.
               </p>
               <div className="mt-6">
                 <InstallCommand />
@@ -113,6 +132,22 @@ export function Page({ kind }: { kind: PageKind }) {
                 <a href="https://www.skills.sh/frasergriffiths/planny/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">skills.sh page</a>
                 <a href="https://github.com/frasergriffiths/planny/tree/main/skills/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">Skill source</a>
               </p>
+            </section>
+
+            <section id="how" className="grid gap-6 border-t border-line py-14 md:grid-cols-3">
+              {[
+                ['Write', 'The agent writes one HTML page, with tables, charts and images inside it.', stepIcon.write],
+                ['Publish', 'It uploads the file. planny returns a link that is the only key.', stepIcon.publish],
+                ['Share', 'Anyone with the link reads the plan until its time runs out.', stepIcon.share],
+              ].map(([title, body, icon]) => (
+                <div key={title} className="plan-card-outline">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-bar border border-line text-zinc-300" aria-hidden="true">
+                    {icon}
+                  </div>
+                  <h2 className="mt-4 text-base font-semibold text-white">{title}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
+                </div>
+              ))}
             </section>
 
             <section className="border-t border-line py-14">

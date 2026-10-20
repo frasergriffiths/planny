@@ -214,7 +214,8 @@ test('the sample is generated from the template stylesheet and body', () => {
 
 test('the React pages use both card variants', () => {
   const page = read('web/src/Page.tsx');
-  expect(page.match(/plan-card-outline/g)?.length).toBe(2);
+  // The outline variant is used by the three how-it-works cards; the install command is plain text.
+  expect(page.match(/plan-card-outline/g)?.length).toBe(1);
   expect(page).toContain('plan-card mx-auto my-16 max-w-2xl');
   expect(page).not.toContain('plan-card-outline p-4');
   expect(page).not.toContain('plan-card p-4');
