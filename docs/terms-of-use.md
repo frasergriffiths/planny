@@ -21,7 +21,7 @@ By publishing a plan, you grant Fraser Griffiths a non-exclusive, worldwide, roy
 
 The licence to the plan HTML lasts while the plan is live. When the plan HTML is deleted at expiry, author deletion or takedown, that licence ends for the HTML, except for cached copies that may remain until the cache expires or is purged.
 
-After the HTML is deleted, we keep a record containing the plan name, status, creation, expiry, deletion and takedown dates, size and technical identifiers (including a keyed address hash and a hashed delete key). You grant us a non-exclusive, worldwide, royalty-free licence to keep, use and display that record for the retention period, including after the HTML is gone. The record does not contain the plan HTML.
+After the HTML is deleted, we keep a record containing the plan name, status, creation, expiry, deletion and takedown dates, size and technical identifiers (including a keyed address hash and a hashed delete key). You grant us a non-exclusive, worldwide, royalty-free licence to keep, use and display that record for as long as we keep that record (currently indefinitely, as section 8 explains), including after the HTML is gone. The record does not contain the plan HTML.
 
 You confirm that you have the rights and consents needed to publish the plan and to grant this licence, and that the plan does not infringe anyone else's rights, contain other people's personal data without permission, or break the law.
 
@@ -33,7 +33,7 @@ The delete key is returned when you publish. Keep it secret. Only a hash of the 
 
 ## 4. Limits and availability
 
-The service has limits, including a 4 MiB plan limit, a plan lifetime, monthly read and upload limits, and per-address rate limits. The current defaults are in the repository README and `.env.example`. We may pause uploads or new views when a guard is reached; deletes, author takedowns and admin resets keep working.
+The service has limits, including a 4 MiB plan limit, a plan lifetime, monthly read and upload limits, and per-address rate limits. The current defaults are in the repository README and `.env.example`. We may pause uploads or new views when a guard is reached; deletions and operator takedowns keep working.
 
 We do not promise uninterrupted availability, a particular speed, or that a plan will remain available for its full lifetime. We may change, suspend or stop the service, in whole or in part.
 

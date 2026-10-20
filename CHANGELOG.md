@@ -19,8 +19,7 @@ All notable changes to planny are recorded here. The format follows
 
 - The public terms no longer describe the operator credential; they say only that a
   plan can be removed.
-- The takedown contact is a monitored personal inbox instead of a domain that does
-  not resolve.
+- The takedown contact is a monitored inbox.
 - The README documents the runtime Vercel actually uses (Node 24) while Bun remains
   the local, test and build runtime.
 - The README front door links the legal, security and community documents.

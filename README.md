@@ -2,6 +2,8 @@
 
 Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only read key; there are no accounts and no list of plans.
 
+Try it at https://planny-pink.vercel.app.
+
 Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [operator runbook](docs/runbook.md).
 
 ## How it works
@@ -16,21 +18,21 @@ The viewer is a plan, not an app: no scripts, no clickable links, no forms, no r
 
 ## Limits
 
-| Setting | Default |
-| --- | --- |
-| Plan size | 4 MiB (4,194,304 bytes), raw body, images included |
-| Plan lifetime | 1 hour to 100 years, default 30 days (`PLANNY_MAX_PLAN_YEARS`) |
-| Site storage | 100 GB (`PLANNY_SITE_BYTES`) |
-| One address stores | 1 GB (`PLANNY_OWNER_BYTES`) |
-| One address reads a month | 10 GB (`PLANNY_OWNER_MONTHLY_READ_BYTES`) |
-| Monthly uploads | 5,000 (`PLANNY_MONTHLY_UPLOADS`) |
-| Monthly origin reads | 1.5 million (`PLANNY_MONTHLY_READS`) |
-| Monthly read bytes | 200 GB (`PLANNY_MONTHLY_READ_BYTES`) |
-| Views per address | 20 a minute (`PLANNY_RATE_VIEWS_MAX`) |
-| Uploads per address | 20 an hour, plus the daily/monthly and spacing checks |
-| Delete attempts per address | 60 an hour |
-| Operator calls per address | 10 a minute |
-| CDN cache | 1 hour (`PLANNY_CACHE_TTL_SECONDS`), capped at the time left before expiry |
+| Setting | Scope | Default |
+| --- | --- | --- |
+| Plan size | per plan | 4 MiB (4,194,304 bytes), raw body, images included |
+| Plan lifetime | per plan | 1 hour to 100 years, default 30 days (`PLANNY_MAX_PLAN_YEARS`) |
+| Site storage | site-wide | 100 GiB (`PLANNY_SITE_BYTES`) |
+| One address stores | per address | 1 GiB (`PLANNY_OWNER_BYTES`) |
+| One address reads a month | per address | 10 GiB (`PLANNY_OWNER_MONTHLY_READ_BYTES`) |
+| Monthly uploads | site-wide | 5,000 (`PLANNY_MONTHLY_UPLOADS`) |
+| Monthly origin reads | site-wide | 1.5 million (`PLANNY_MONTHLY_READS`) |
+| Monthly read bytes | site-wide | 200 GiB (`PLANNY_MONTHLY_READ_BYTES`) |
+| Views per address | per address | 20 a minute (`PLANNY_RATE_VIEWS_MAX`) |
+| Uploads per address | per address | 20 an hour, plus the daily/monthly and spacing checks |
+| Delete attempts per address | per address | 60 an hour |
+| Operator calls per address | per address | 10 a minute |
+| CDN cache | per plan | 1 hour (`PLANNY_CACHE_TTL_SECONDS`), capped at the time left before expiry |
 
 Reads and bytes are separate guards; whichever runs out first pauses new views. Pauses are per path: stored/upload guards stop uploads only, read guards stop new views only, and deletes, author deletes and operator routes keep working. The paused page names the guard and the reset date and is `no-store`.
 
@@ -138,7 +140,7 @@ Needed in the project:
 
 Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro. `GET /health` is uncached and reports the build, runtime and which settings are present.
 
-After the first deploy, on a preview check:
+On a production check:
 
 - Raw `text/html` arrives intact (not pre-parsed as JSON).
 - A repeat view shows `x-vercel-cache: HIT`; 404s and 410s show `MISS`.
@@ -146,7 +148,7 @@ After the first deploy, on a preview check:
 - `/health` reports the runtime it is actually using (Node 24 today) and the production environment.
 - `/sample` is 200 with the plan CSP and the CTA.
 
-Until those pass, keep the cache TTL at one hour as the fallback.
+Keep the cache TTL at one hour as the fallback while those checks are proving out.
 
 ## Tests and CI
 
@@ -177,7 +179,7 @@ tokens.json     Card and chart token source
 
 ## Open source
 
-The code is MIT licensed. The Geist fonts in [`public/fonts`](public/fonts) are under the SIL Open Font License; see [`public/fonts/OFL-geist.txt`](public/fonts/OFL-geist.txt). Also see [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`ACCEPTABLE_USE.md`](ACCEPTABLE_USE.md), [`docs/architecture.md`](docs/architecture.md) and [`docs/terms-of-use.md`](docs/terms-of-use.md).
+The code is MIT licensed. The Geist fonts in [`public/fonts`](public/fonts) are under the SIL Open Font License; see [`public/fonts/OFL-geist.txt`](public/fonts/OFL-geist.txt). Third-party package licences are collected in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Also see [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`ACCEPTABLE_USE.md`](ACCEPTABLE_USE.md), [`docs/architecture.md`](docs/architecture.md) and [`docs/terms-of-use.md`](docs/terms-of-use.md).
 
 ## Design system
 
