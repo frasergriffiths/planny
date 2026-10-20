@@ -39,7 +39,7 @@ function png(size: number): Uint8Array {
           const py = y + (sy + 0.5) / 4;
           const dx = px - (size - 1) / 2;
           const dy = py - (size - 1) / 2;
-          if (Math.hypot(dx, dy) <= size * 0.36) hit++;
+          if (Math.hypot(dx, dy) <= size * 0.28) hit++;
         }
       }
       const i = (y * size + x) * 4;
@@ -119,8 +119,8 @@ function ico(entries: number[]): Uint8Array {
   return out;
 }
 
-writeFileSync(join(root, 'public', 'icon-192.png'), png(192));
-writeFileSync(join(root, 'public', 'icon-512.png'), png(512));
-writeFileSync(join(root, 'public', 'apple-touch-icon.png'), png(180));
+// favicon.ico only: the 16/32/48 dot mark drawn in code.
+// The large PNGs (icon-192.png, icon-512.png, apple-touch-icon.png) come from
+// public/icon-wordmark.svg via scripts/generate-wordmark-icons.sh instead.
 writeFileSync(join(root, 'public', 'favicon.ico'), ico([16, 32, 48]));
-console.log('wrote public favicon PNG/ICO set');
+console.log('wrote public/favicon.ico');
