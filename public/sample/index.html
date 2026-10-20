@@ -99,11 +99,23 @@
   }
   .measure { max-width: 72ch; }
   .box {
-    margin: 24px 0; padding: 20px 22px;
-    border: 0;
-    border-left: 1px solid var(--line);
-    border-radius: 0;
+    position: relative;
+    margin: 24px 0; padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     background: transparent;
+  }
+  .box::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 1px; background: var(--line-strong);
+  }
+  .box::before {
+    content: "";
+    position: absolute;
+    left: -16px; top: 16px; bottom: 16px;
+    width: 1px; background: var(--line);
   }
   .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .kpis {
@@ -112,7 +124,7 @@
     gap: 12px;
     margin: 24px 0 0;
   }
-  .kpi { padding: 16px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; }
+  .kpi { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; }
   .kpi strong {
     display: block;
     margin: 6px 0 2px;
@@ -213,7 +225,7 @@
   }
   @media print {
     .page { padding: 0; }
-    .box, tr, .kpi { padding: 16px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; }
+    .box, tr, .kpi { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; }
     .gantt { break-inside: avoid; }
   }
 
@@ -250,7 +262,25 @@
   :root { --radius: 12px; }
   .box, .kpi, .stacked, .stacked span, .budget-legend i, .donut-legend i, .legend i, .bar, .swatch { border-radius: var(--radius) !important; }
   .stacked { gap: 2px; background: var(--bg); }
-  .box { padding-left: 16px; }
+  .box {
+    position: relative;
+    margin: 24px 0; padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: transparent;
+  }
+  .box::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 1px; background: var(--line-strong);
+  }
+  .box::before {
+    content: "";
+    position: absolute;
+    left: -16px; top: 16px; bottom: 16px;
+    width: 1px; background: var(--line);
+  }
 </style>
 </head>
 <body>
