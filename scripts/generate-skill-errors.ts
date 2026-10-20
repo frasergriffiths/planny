@@ -45,7 +45,7 @@ ${rows.map((row) => `| ${row} |`).join('\n')}
 
 ## Configuration
 
-The Blob-only build reads six values in Production: \`BLOB_READ_WRITE_TOKEN\`, \`BLOB_ACCESS=private\`, \`PLANNY_BLOB_KEY_1\`, \`PLANNY_ADDRESS_KEY\`, \`PLANNY_ADMIN_TOKEN\` and \`PLANNY_PUBLIC_ORIGIN\`. \`BLOB_STORE_ID\` and \`BLOB_WEBHOOK_PUBLIC_KEY\` are connection metadata, not app config. Vercel Blob is the only production store. A missing value returns \`planny_not_configured\` on store routes; the server log names the variable and the page does not.
+\`BLOB_READ_WRITE_TOKEN\` is required. Set \`BLOB_ACCESS=private\` in production. \`PLANNY_ADDRESS_KEY\` is recommended; if it is unset, the Blob token is used as the address-hash key, so rotating the token resets the rate limits. \`PLANNY_ADMIN_TOKEN\` is required for takedown and reset, not for serving or publishing. \`PLANNY_PUBLIC_ORIGIN\` defaults to \`https://use-planny.vercel.app\`. \`PLANNY_BLOB_KEY_1\` is only for a public store; if it is unset, the Blob token is used and rotating it breaks existing links. \`BLOB_STORE_ID\` and \`BLOB_WEBHOOK_PUBLIC_KEY\` are connection metadata, not app config. Vercel Blob is the only production store. A missing Blob token returns \`planny_not_configured\` on store routes; the server log names the variable and the page does not.
 
 ## Reading the table
 

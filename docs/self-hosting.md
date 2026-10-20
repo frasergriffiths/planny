@@ -7,7 +7,7 @@ for that instance.
 
 ## Local
 
-You need Bun 1.4 or newer. Node 22 or newer is fine for the production function.
+You need Bun 1.4 or newer. Node 22 or newer is fine for the production function. The agent skill scripts run on Node 22+ or Bun.
 
 ```sh
 git clone https://github.com/frasergriffiths/planny.git
@@ -63,22 +63,28 @@ Set these in Vercel, not in a committed file:
 | `PLANNY_PUBLIC_ORIGIN` | Your canonical origin, without a trailing slash |
 | `PLANNY_BLOB_KEY_1` | Only for a public store; leave unset for a private store |
 
-Rotating `PLANNY_ADDRESS_KEY` resets every derived address and every rate limit.
-Rotating `PLANNY_BLOB_KEY_1` breaks existing public plan links. Treat both as
-long-lived credentials.
+Only `BLOB_READ_WRITE_TOKEN` is required to serve and publish. `PLANNY_ADDRESS_KEY`
+is recommended; if it is unset, the Blob token is used as the address-hash key.
+`PLANNY_ADMIN_TOKEN` is required only for takedown and reset. Rotating
+`PLANNY_ADDRESS_KEY` resets every derived address and every rate limit. Rotating
+`PLANNY_BLOB_KEY_1` breaks existing public plan links. Treat both as long-lived
+credentials.
 
 The optional limit variables are documented in `.env.example` and the README.
 
 ### 4. Deploy
 
-A push to `main` deploys. To deploy by hand:
+A push to `main` deploys when the Vercel project is connected to the GitHub
+repository. To deploy by hand:
 
 ```sh
-bun run scripts/deploy.ts --prod
+bunx vercel@latest --prod --yes
 ```
 
-The script reads the project plan and refuses unless the project is Pro. It does
-not deploy from a preview branch.
+The optional helper `bun run scripts/deploy.ts --prod` refuses unless the
+checked-out branch is `main` and the linked project is Pro. It is stricter than
+Vercel; a Hobby project can still be deployed with `vercel --prod` if you accept
+its limits. The helper does not deploy from a preview branch.
 
 ### 5. Verify
 
@@ -94,12 +100,32 @@ Pass conditions:
   in the Vercel dashboard that the Blob store itself is private);
 - `runtime` matches the function runtime you expect (Node 24 on Vercel today);
 - `purge` is `ok`;
-- `blobToken`, `addressKey` and `adminToken` are `true`.
+- `blobToken` is `true`;
+- `addressKey` and `adminToken` are `true` if you set them; `addressKey` is
+  recommended, and `adminToken` is required only for takedown and reset.
+
+Only `BLOB_READ_WRITE_TOKEN` is required to serve and publish. The health route
+reports whether a value is present, not whether it is valid. If
+`PLANNY_ADDRESS_KEY` is unset, the Blob token is used as the address-hash key, so
+rotating the Blob token also resets the rate limits.
 
 Then publish a test plan through the skill or `curl`, view it, delete it with the
-delete key, and confirm the deleted link returns 410. Check `/sample`, `/terms-of-use`
-and a 404 page. A repeat view should show `x-vercel-cache: HIT`; a 404 or 410 should
-show `MISS`.
+delete key, and confirm the deleted link returns 410. Check `/sample`, the
+`/terms-of-use` redirect to GitHub, and a 404 page. A repeat view should show
+`x-vercel-cache: HIT`; a 404 or 410 should show `MISS`.
+
+### 6. Optional: install the agent skill
+
+The public skill defaults to the hosted service. To use it with your instance:
+
+```sh
+npx skills add frasergriffiths/planny --skill planny
+```
+
+Set `PLANNY_URL=https://your-origin.example` in the environment where the agent
+runs, or pass `--base https://your-origin.example` to
+`skills/planny/scripts/publish.mjs`. The delete script uses the origin stored in
+the plan's key file, so it deletes from the instance that published the plan.
 
 ## Your responsibilities as the operator
 
@@ -120,8 +146,9 @@ show `MISS`.
 - **`/health` says `access: public`** — `BLOB_ACCESS` is set to `public`. Stop and set
   it to `private` (or move the store to private), then verify the store is private in the
   Vercel dashboard: the health value follows the env var, not the store.
-- **A deploy is refused** — the Vercel project is not Pro, or the CLI is not signed
-  in. The deploy guard fails closed on purpose.
+- **A deploy is refused** — the optional helper requires a Pro project and a
+  signed-in CLI. It fails closed on purpose. Use `bunx vercel@latest --prod --yes`
+  to deploy a Hobby project directly, if you accept the Hobby limits.
 - **A plan returns 503** — the store is unavailable or a guard is paused. The page
   names the guard and the reset date.
 - **A delete returns 404 after a successful publish** — Blob reads can lag across

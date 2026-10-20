@@ -60,11 +60,13 @@ If you add an error code, add it to `src/error-codes.ts`, run the errors generat
 
 ## Documentation
 
-The user-facing terms copy is `docs/terms-of-use.md`; the React route is wired separately. The terms must keep the honest retention wording: the plan HTML is deleted at expiry, deletion or takedown, while the name/status/date record currently has no automatic expiry. Use the contact addresses already published in the terms and security documents; do not invent one or add a second.
+The canonical terms copy is `docs/terms-of-use.md`; `/terms-of-use` redirects to the GitHub file, and the footer links there directly. The terms must keep the honest retention wording: the plan HTML is deleted at expiry, deletion or takedown, while the name/status/date record currently has no automatic expiry. Use the contact addresses already published in the terms and security documents; do not invent one or add a second.
+
+When behaviour, routes, configuration or deployment steps change, update the README, `docs/architecture.md`, `docs/self-hosting.md` and `docs/runbook.md` in the same PR. Do not document a required setting as optional, or an optional helper as an enforced guard.
 
 ## Security, privacy and licence
 
-Plans are public to anyone with the link. Do not put secrets or personal data in a plan, a test fixture, a screenshot or a commit. Report a vulnerability by email using the contact in `SECURITY.md` rather than a public issue. Takedown requests use the contact on the terms page.
+Plans are public to anyone with the link. Do not put secrets or personal data in a plan, a test fixture, a screenshot or a commit. Report a vulnerability by email using the contact in `SECURITY.md` rather than a public issue. Takedown requests use the contact in the terms and security documents.
 
 By contributing, you agree that your contribution is licensed under the MIT licence in `LICENSE`. There is no separate CLA.
 

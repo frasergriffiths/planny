@@ -88,9 +88,9 @@ Headings outside cards use the 16px inset; subheads inside cards use `.eyebrow` 
 
 ## Deployment
 
-Vercel builds `main`. `api/index.ts` is the function entry; `vercel.json` sets the LHR1 region and routes requests to it. Vercel runs the function on Node 24; Bun runs local development, tests and builds. `/health` is uncached and reports the build, runtime and configuration flags. The startup purge removes stale cache tags for every plan blob, once per instance.
+Vercel deploys `main` when the project is connected to the GitHub repository. `api/index.ts` is the function entry; `vercel.json` sets the LHR1 region and routes requests to it. Vercel runs the function on Node 24; Bun runs local development, tests and builds. `/health` is uncached and reports the build, runtime, commit and configuration flags. The startup purge removes stale cache tags for every plan blob, once per instance.
 
-The deploy guard in `scripts/deploy.ts` refuses to publish unless the project plan is Pro. The production branch should stay `main`; a preview must not accept uploads.
+The optional helper in `scripts/deploy.ts` refuses unless the checked-out branch is `main` and the project plan is Pro. It is stricter than Vercel and is not a runtime boundary; a Hobby project can be deployed with `vercel --prod`. The production branch should stay `main`; a preview must not accept uploads.
 
 `/health` reports the runtime actually in use.
 
@@ -101,7 +101,7 @@ The deploy guard in `scripts/deploy.ts` refuses to publish unless the project pl
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
 - **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits.
-- **Deploy guard:** refuses non-Pro projects and fail-closed plan checks; previews must not publish.
+- **Deploy helper:** the optional `scripts/deploy.ts` refuses non-Pro projects and fails closed on unknown plans; previews must not publish. Vercel itself does not enforce the Pro check.
 - **Secrets:** the Blob token, address key, Blob path key and admin token. See `SECURITY.md`.
 
 ## Failure modes
@@ -113,7 +113,7 @@ The deploy guard in `scripts/deploy.ts` refuses to publish unless the project pl
 - **Orphan plan:** a crash between the plan write and the pending record leaves a plan blob; the sweep and the record lifecycle handle it.
 - **Purge failure:** the delete/takedown still removes the plan from the store and marks the record; the cache TTL is the fallback until the tag purge succeeds.
 - **Public store leak:** `state.json`/`config/kill.json` are directly readable; use a private store or the state HMAC.
-- **Preview publish:** the deploy guard and the production origin check are meant to stop it; verify on every preview.
+- **Preview publish:** the preview upload check and the production origin check are meant to stop it; verify on every preview.
 
 ## Tests and CI
 

@@ -4,6 +4,37 @@ All notable changes to planny are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.0 — 2026-10-20
+
+### Added
+
+- The Planny agent skill is published on skills.sh and installable with
+  `npx skills add frasergriffiths/planny --skill planny`.
+- The home page has an agent-skill install section with a copyable command,
+  supported-agent list, and links to skills.sh and the skill source.
+- The favicon set has a dot for 16/32/48px and the `● planny` wordmark for the
+  180/192/512px icons.
+- README and docs cover the skill, the option to point it at a self-hosted
+  instance, and the difference between the required Blob token and the optional
+  operator settings.
+
+### Changed
+
+- The canonical origin is `https://use-planny.vercel.app`; links, SEO metadata,
+  `security.txt`, docs and the skill default use it.
+- Production uses a private Vercel Blob store (`BLOB_ACCESS=private`). The old
+  public store is no longer used by the app.
+- The canonical terms document lives at `docs/terms-of-use.md` on GitHub.
+  `/terms-of-use` returns a 301 there and the footer links to it directly.
+- Skill scripts run on Node 22+ as well as Bun; the skill no longer requires Bun
+  for a normal `npx skills` install.
+- The optional deploy helper is documented as stricter than Vercel: it refuses
+  non-Pro projects, while a manual `vercel --prod` deploy remains possible.
+
+### Removed
+
+- The hosted terms page and its React route.
+
 ## 1.1.0 — 2026-10-20
 
 ### Added
