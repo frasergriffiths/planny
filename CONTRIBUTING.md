@@ -2,6 +2,8 @@
 
 Thanks for taking a look. planny is a small service: one HTML file in, one link out. Keep changes focused and leave the security boundaries alone unless the change is about them.
 
+By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). For a vulnerability, use the private route in [SECURITY.md](SECURITY.md), not a public issue.
+
 ## Setup
 
 ```sh
@@ -11,7 +13,7 @@ bun run test
 bun run dev                  # http://127.0.0.1:4317
 ```
 
-The local app keeps its data in `~/Library/Application Support/planny-local`. Never commit real values from `.env.local`, a plan, a screenshot or a test fixture. Plans are public to anyone with the link; use the fictional sample for examples.
+The local app keeps its data in `~/Library/Application Support/planny-local`. Never commit real values from `.env.local`, a plan, a screenshot or a test fixture. Plans are public to anyone with the link; use the fictional sample for examples. For a hosted instance, see [`docs/self-hosting.md`](docs/self-hosting.md).
 
 ## The checks
 
@@ -71,3 +73,5 @@ By contributing, you agree that your contribution is licensed under the MIT lice
 Small, single-purpose PRs are easiest to review. Include what changed, why, the commands you ran, and any behaviour that is deliberately left out. If a change affects the Blob store, the sanitiser, the delete path, the terms or the deploy guard, say so explicitly.
 
 Before opening a PR, run `bun run test` and `bun run build`. Do not commit generated build output, local data, `.env` files or real plan content.
+
+Reviews are best effort and there is no response SLA. A maintainer may ask for a narrower change or decline a PR that changes a security boundary without tests. See the [Code of Conduct](CODE_OF_CONDUCT.md) for how reports about conduct are handled.

@@ -8,11 +8,11 @@ Use GitHub's private vulnerability reporting for this repository. Do not open a 
 
 Include the route or file, the smallest reproduction you can make, and whether the issue exposes a plan, a token or the store. If you are unsure whether something is a vulnerability, report it privately anyway.
 
-We will acknowledge the report as soon as we can, agree a disclosure timeline with you, and credit you if you want. Please give us a reasonable chance to fix the issue before publishing it. There is no bug bounty.
+We will acknowledge the report as soon as we can, agree a disclosure timeline with you, and credit you if you want. Our target is to acknowledge within 72 hours and give an initial assessment within 7 days. Please give us a reasonable chance to fix the issue before publishing it. There is no bug bounty. A machine-readable contact is at `/.well-known/security.txt`.
 
 ## Takedowns
 
-For a takedown request, use the contact published on the terms page: `/terms-of-use#contact`. Include the plan URL, what is wrong, and a way to verify the request. Do not send vulnerability reports there; use the private advisory flow above.
+For a takedown request, email `frasergriffithsisme@icloud.com`. Include the plan URL, what is wrong, and a way to verify the request. Do not send vulnerability reports there; use the private advisory flow above.
 
 The operator may remove a plan at any time. The plan HTML is removed from the store; the record with the plan name, status and dates remains as the terms describe. A takedown is not a promise that every edge cache has already expired; the cache tag is purged and the TTL is the fallback.
 

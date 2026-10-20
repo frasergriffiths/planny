@@ -3,6 +3,17 @@
   "version": "1.1.0",
   "private": true,
   "description": "Plans for agents. Upload one HTML file, get a link that shows it.",
+  "license": "MIT",
+  "author": "Fraser Griffiths",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frasergriffiths/planny.git"
+  },
+  "homepage": "https://planny-pink.vercel.app",
+  "bugs": {
+    "url": "https://github.com/frasergriffiths/planny/issues"
+  },
+  "packageManager": "bun@1.4.0",
   "type": "module",
   "engines": {
     "node": ">=22"

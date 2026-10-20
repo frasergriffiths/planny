@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 // Replace this with the monitored takedown inbox before launch.
-const CONTACT = 'takedown@planny.run';
+const CONTACT = 'frasergriffithsisme@icloud.com';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -70,8 +70,7 @@ export function Terms() {
           </p>
           <p>
             The delete key is returned when you publish. Keep it secret. Only a hash of the delete key is stored; we
-            cannot recover the key for you. Anyone with the delete key can delete the plan. The operator can remove a
-            plan with the admin token.
+            cannot recover the key for you. Anyone with the delete key can delete the plan.
           </p>
         </Section>
 
