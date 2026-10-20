@@ -55,7 +55,7 @@ export function Page({ kind }: { kind: PageKind }) {
                 ['Publish', 'It uploads the file. planny returns a link that is the only key.'],
                 ['Share', 'Anyone with the link reads the plan until its time runs out.'],
               ].map(([title, body]) => (
-                <div key={title}>
+                <div key={title} className="border-l border-zinc-800 pl-4">
                   <h2 className="text-base font-semibold text-white">{title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
                 </div>
@@ -63,7 +63,7 @@ export function Page({ kind }: { kind: PageKind }) {
             </section>
           </>
         ) : (
-          <section className="mx-auto max-w-2xl py-24">
+          <section className="mx-auto max-w-2xl border-l border-zinc-800 py-24 pl-6">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">{page.kicker}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-white md:text-6xl">{page.title}</h1>
             <p className="mt-5 text-lg leading-relaxed text-zinc-400">{page.body}</p>

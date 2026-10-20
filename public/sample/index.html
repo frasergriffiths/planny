@@ -100,7 +100,8 @@
   .measure { max-width: 72ch; }
   .box {
     margin: 24px 0; padding: 20px 22px;
-    border: 1px solid var(--line);
+    border: 0;
+    border-left: 1px solid var(--line);
     border-radius: 0;
     background: transparent;
   }
@@ -111,7 +112,7 @@
     gap: 12px;
     margin: 24px 0 0;
   }
-  .kpi { padding: 16px; border: 1px solid var(--line); border-radius: 0; background: transparent; }
+  .kpi { padding: 16px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; }
   .kpi strong {
     display: block;
     margin: 6px 0 2px;
@@ -212,7 +213,7 @@
   }
   @media print {
     .page { padding: 0; }
-    .box, tr, .kpi { padding: 16px; border: 1px solid var(--line); border-radius: 0; background: transparent; }
+    .box, tr, .kpi { padding: 16px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; }
     .gantt { break-inside: avoid; }
   }
 
