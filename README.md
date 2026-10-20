@@ -99,7 +99,7 @@ Core production settings:
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
-The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD`, `PLANNY_SHA` and `PLANNY_URL` are platform/runtime values.
+The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.ts`, `delete.ts`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
 
 ## Blob-only trade-offs
 
