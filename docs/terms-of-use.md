@@ -1,4 +1,4 @@
-<!-- Copy for the /terms-of-use page. The React route is wired separately. -->
+<!-- Canonical terms document. The hosted /terms-of-use route redirects here. -->
 # Terms of use
 
 **Effective 20 October 2026. Last updated 20 October 2026.**
@@ -82,7 +82,7 @@ You are responsible for your plan and for any claim arising from it. You will in
 
 ## 11. Changes
 
-We may update these terms. The current version will be at `/terms-of-use`, with the effective date. Continued use after an update means you accept the updated terms. If a change is material, we will make that clear on the page.
+We may update these terms. The current version is this document, with the effective date; `/terms-of-use` redirects here. Continued use after an update means you accept the updated terms. If a change is material, we will make that clear on the page.
 
 If any provision is found unenforceable, the rest remains in force. These terms and the documents they link to are the entire agreement about the service.
 

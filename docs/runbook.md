@@ -71,7 +71,7 @@ objects directly. Do not create one.
 2. Acknowledge within 72 hours. Agree a disclosure timeline; credit the reporter if
    they want it.
 3. Reproduce in a local instance. Treat the sanitiser, the plan CSP, the delete path,
-   the Blob store and the deploy guard as the highest severity.
+   the Blob store, the preview upload block and the deploy helper as the highest severity.
 4. Fix, add a regression test, deploy, then publish an advisory if needed.
 5. If a token may be exposed, rotate it before anything else.
 
@@ -89,6 +89,7 @@ takedown.
 Weekly:
 
 - `/health` is 200, `configured: true`, `purge: ok`, `access: private`, `accessConfigured: true`.
+- The live commit in `/health` matches the intended `main` commit.
 - The Blob store is still private in the Vercel dashboard (`/health` echoes the env value only).
 - No new secret scanning alert, Dependabot alert or failed deployment.
 - The takedown inbox and security advisories have no unanswered report.
@@ -97,5 +98,5 @@ Weekly:
 Monthly:
 
 - Review the limits against actual traffic.
-- Check that the latest `main` is deployed and the previous release tag is intact.
+- Check that the latest `main` is deployed and the previous deployment is still available for rollback in Vercel.
 - Re-read the retention wording against what the store actually does.

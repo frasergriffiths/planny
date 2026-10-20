@@ -75,7 +75,7 @@ Headings outside cards use `padding-left: var(--inset-card)`; subheads inside ca
   <div class="card">
     <div class="eyebrow">Week 1</div>
     <strong style="display:block;margin:6px 0 2px;font-size:28px;line-height:1.1;">1</strong>
-    <span style="font-size:12px;color:var(--muted);">private store live</span>
+    <span style="font-size:12px;color:var(--muted);">milestone complete</span>
   </div>
   <div class="card">
     <div class="eyebrow">Target</div>
@@ -371,7 +371,7 @@ Inline SVG boxes and lines. No markers or external references.
 
 <div class="card" style="margin:20px 0;--accent:var(--ok);">
   <strong style="display:block;margin-bottom:4px;">Done</strong>
-  <p style="margin:0;">The home page, health route and static files work without the stores.</p>
+  <p style="margin:0;">The static pages work without the stores.</p>
 </div>
 ```
 
@@ -381,8 +381,8 @@ Inline SVG boxes and lines. No markers or external references.
 <ol style="list-style:none;margin:16px 0;padding:0;border-left:2px solid var(--line);">
   <li style="position:relative;padding:0 0 22px 22px;">
     <span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);"></span>
-    <strong>Week 1. Private store</strong>
-    <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">Delete the public store. Create the private store in LHR1. Upload one plan and read it back.</p>
+    <strong>Week 1. Production store</strong>
+    <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">Create the production store, upload one plan, and read it back.</p>
   </li>
   <li style="position:relative;padding:0 0 22px 22px;">
     <span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--ink);"></span>

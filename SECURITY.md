@@ -16,7 +16,7 @@ The operator may remove a plan at any time. The plan HTML is removed from the st
 
 ## Supported versions
 
-The hosted service runs the latest `main`. There are no maintained older release branches. For a self-hosted copy, update to the latest commit before reporting a deployment-specific issue.
+The hosted service is deployed from `main`; check `/health` for the live commit. There are no maintained older release branches. For a self-hosted copy, update to the latest commit before reporting a deployment-specific issue.
 
 ## What is in scope
 
@@ -24,7 +24,7 @@ The hosted service runs the latest `main`. There are no maintained older release
 - The upload, view, delete and takedown paths, including key comparison, expiry and cache purging.
 - The Blob state lock and the record lifecycle, including a delete that could revive or hide another plan.
 - The address hash and the rate and storage guards.
-- The deploy guard and any path that could publish a preview or a non-production build.
+- The optional deploy helper and the preview upload block, including any path that could publish a preview or a non-production build.
 - A public Blob store exposing `state.json`, `config/kill.json` or another object that bypasses expiry, deletion or a takedown.
 
 ## What is not in scope
@@ -39,7 +39,7 @@ The hosted service runs the latest `main`. There are no maintained older release
 
 `BLOB_READ_WRITE_TOKEN`, `PLANNY_ADDRESS_KEY`, `PLANNY_BLOB_KEY_1` and `PLANNY_ADMIN_TOKEN` are secrets. They belong in the Vercel environment, never in the repository, a plan, a screenshot or a log line. If a token is exposed, rotate it before doing anything else. A public Blob store token can read and write the whole store.
 
-The address key is stable: rotating it changes every derived address and resets the rate limits. The Blob key is stable too: rotating it changes the public plan paths and makes existing links fail. Treat both as long-lived credentials.
+The address key is stable: rotating it changes every derived address and resets the rate limits. For a public store, the Blob path key is stable too: rotating it changes the public plan paths and makes existing links fail. Treat both as long-lived credentials. If `PLANNY_ADDRESS_KEY` is unset, the Blob token is used as the address-hash key, so rotating the token also resets the limits.
 
 `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata. Do not paste them into a plan or a public issue.
 

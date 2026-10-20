@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { assertMainBranch, assertProPlan, planFromInspect } from '../src/deploy-guard.js';
 
 function run(args: string[]): string {
-  return execFileSync('npx', ['--yes', 'vercel@latest', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync('bunx', ['vercel@latest', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
 const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' });
@@ -22,7 +22,7 @@ try {
 try {
   run(['whoami']);
 } catch {
-  console.error('Refusing to deploy: the Vercel CLI is not logged in here. Run npx vercel login or set VERCEL_TOKEN.');
+  console.error('Refusing to deploy: the Vercel CLI is not logged in here. Run bunx vercel login or set VERCEL_TOKEN.');
   process.exit(1);
 }
 

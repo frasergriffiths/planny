@@ -16,7 +16,7 @@ export function planFromInspect(value: unknown): Plan {
 export function assertProPlan(value: unknown): void {
   const plan = planFromInspect(value);
   if (plan !== 'pro') {
-    throw new Error(`Refusing to deploy: the Vercel project plan is ${plan}, not pro. A Hobby project can't run lhr1 functions or carry public traffic.`);
+    throw new Error(`Refusing to deploy: the Vercel project plan is ${plan}, not pro. This helper only deploys Pro projects; use \`vercel --prod\` directly if you accept the Hobby limits.`);
   }
 }
 
