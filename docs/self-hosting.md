@@ -90,7 +90,7 @@ its limits. The helper does not deploy from a preview branch.
 ### 5. Verify
 
 ```sh
-curl -s https://your-origin.example/health
+curl -s https://your-origin.example/health | jq '{commit, configured, access, purge}'
 ```
 
 Pass conditions:
