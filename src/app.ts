@@ -386,9 +386,9 @@ export function createApp(deps: AppDeps): App {
     if (!limit.allowed) {
       return page(429, build === 'vercel' ? PAGES.gone : pages.rateLimited({ build, retryAfter: limit.retryAfter }), { 'retry-after': String(limit.retryAfter) });
     }
-    if (withQuery || !isPlanId(id)) return page(404, pages.notFound({ build }));
+    if (withQuery || !isPlanId(id)) return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
     const record = await records.get(id);
-    if (!record || record.state === 'pending') return page(404, pages.notFound({ build }));
+    if (!record || record.state === 'pending') return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
     if (record.state === 'live' && !record.hidden && record.expiresAt > at) {
       const result = await records.view({
         id,

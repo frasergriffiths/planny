@@ -98,6 +98,15 @@ test('the Vercel build stores HTML privately and serves it with the plan headers
   expect(await page.text()).not.toContain('LOCAL');
 });
 
+test('a missing plan uses the React 404 page on Vercel', async () => {
+  const t = setup();
+  const response = await view(t.app, `${ORIGIN}/p/00000000-0000-4000-8000-000000000000`);
+  expect(response.status).toBe(404);
+  const body = await response.text();
+  expect(body).toContain('data-page="notfound"');
+  expect(body).not.toContain('/planny.css');
+});
+
 test('deleting purges the tag and the page is gone', async () => {
   const t = setup();
   const json = (await (await upload(t.app)).json()) as { id: string; url: string; deleteKey: string };
