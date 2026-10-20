@@ -106,6 +106,19 @@ test('the switch fails closed', async () => {
   expect((await upload(t.app)).status).toBe(201);
 });
 
+test('a failing kill-switch read pauses uploads', async () => {
+  const t = setup();
+  const realGet = t.blob.get.bind(t.blob);
+  t.blob.get = async (pathname: string, options: Record<string, unknown>) => {
+    if (pathname === 'config/kill.json') throw new Error('store exploded');
+    return realGet(pathname, options);
+  };
+  await expect(t.app.uploadsEnabled()).rejects.toThrow(/store exploded/);
+  const paused = await upload(t.app);
+  expect(paused.status).toBe(503);
+  expect(((await paused.json()) as { error: { code: string } }).error.code).toBe('uploads_paused');
+});
+
 test('takedown, expiry and purge work through the Blob-only store', async () => {
   const t = setup();
   const json = (await (await upload(t.app)).json()) as { id: string; url: string };
