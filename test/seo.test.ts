@@ -227,5 +227,8 @@ describe('seo', () => {
       // The footer carries the GitHub terms link in every shell's bundle.
       expect(page).toContain('https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md');
     }
+    // The home page installs the agent skill in one command.
+    expect(PAGES.home).toContain('npx skills add frasergriffiths/planny --skill planny');
+    expect(PAGES.home).toContain('https://www.skills.sh/frasergriffiths/planny/planny');
   });
 });
