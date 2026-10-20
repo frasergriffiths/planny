@@ -38,8 +38,8 @@ function InstallCommand() {
     }
   };
   return (
-    <div className="flex items-center gap-2">
-      <code className="block min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-white">{INSTALL_COMMAND}</code>
+    <div className="flex w-fit max-w-full items-center gap-2">
+      <code className="block min-w-0 overflow-x-auto whitespace-nowrap font-mono text-sm text-white">{INSTALL_COMMAND}</code>
       <button
         type="button"
         onClick={copy}
