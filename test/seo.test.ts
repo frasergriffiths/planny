@@ -85,21 +85,26 @@ describe('seo', () => {
     const { createApp } = await import('../src/app.js');
     const { createLocalStore } = await import('../src/stores/local.js');
     const { loadConfig } = await import('../src/config.js');
-    const app = createApp({
-      build: 'vercel',
-      store: createLocalStore({ dataDir: join(tmpdir(), `planny-seo-security-${Date.now()}`) }),
-      config: loadConfig({}),
-      secret: 'test-secret',
-      origin: origin.slice(0, -1),
-      log: { error: () => {}, alert: () => {} },
-    });
-    const response = await app.fetch(new Request(`${origin.slice(0, -1)}/.well-known/security.txt`), { address: '198.51.100.9' });
-    expect(response.status).toBe(200);
-    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
-    expect(response.headers.get('cache-control')).toContain('s-maxage');
-    const body = await response.text();
-    expect(body).toContain('Contact: mailto:');
-    expect(body).toContain('Expires:');
+    const dataDir = mkdtempSync(join(tmpdir(), 'planny-seo-security-'));
+    try {
+      const app = createApp({
+        build: 'vercel',
+        store: createLocalStore({ dataDir }),
+        config: loadConfig({}),
+        secret: 'test-secret',
+        origin: origin.slice(0, -1),
+        log: { error: () => {}, alert: () => {} },
+      });
+      const response = await app.fetch(new Request(`${origin.slice(0, -1)}/.well-known/security.txt`), { address: '198.51.100.9' });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+      expect(response.headers.get('cache-control')).toContain('s-maxage');
+      const body = await response.text();
+      expect(body).toContain('Contact: mailto:');
+      expect(body).toContain('Expires:');
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
   });
 
   test('/og.png serves the embedded PNG with a long cache', async () => {

@@ -155,12 +155,12 @@ Keep the cache TTL at one hour as the fallback while those checks are proving ou
 ```sh
 bun run test        # tsc --noEmit, generated tokens/sample checks, bun test, error registry
 bun run build       # tokens, sample, Vite build and generated pages
-bun test            # the test suite alone
+bun test --isolate --concurrency=1   # the test suite alone
 ```
 
 The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy guard, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
-CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
+CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test --isolate --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 
 ## Project layout
 

@@ -25,7 +25,7 @@ bun run build
 
 `bun run test` runs the type check, verifies that the generated tokens and sample are in sync, runs the test suite, and checks the error registry. The suite uses the local store; the real Blob calls and cache purges need a deployed smoke test. The CI workflow runs the same checks with `bun install --frozen-lockfile`.
 
-`bun test` alone runs the suite without the generated-file checks. A lock test can be slow under load; rerun it before changing anything around the lock.
+`bun test --isolate --concurrency=1` runs the suite alone, without the generated-file checks. A lock test can be slow under load; rerun it before changing anything around the lock.
 
 ## Cards and tokens
 
