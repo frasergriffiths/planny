@@ -68,6 +68,40 @@ export function Page({ kind }: { kind: PageKind }) {
                 </div>
               ))}
             </section>
+
+            <section className="border-t border-line py-14">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">What you can publish</h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">One self-contained HTML page per plan. Common uses:</p>
+              <ul className="mt-6 grid gap-3 text-sm text-zinc-400 sm:grid-cols-3">
+                {[
+                  ['Agent runbooks', 'Step-by-step operating procedures an agent or teammate can follow at the link.'],
+                  ['Research one-pagers', 'A summary with a table, a chart and sources, all inside the one file.'],
+                  ['Project plans', 'Milestones, budgets and risks, ready to share with people outside your tools.'],
+                ].map(([title, body]) => (
+                  <li key={title} className="plan-card">
+                    <p className="font-semibold text-white">{title}</p>
+                    <p className="mt-2 leading-relaxed text-zinc-500">{body}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="border-t border-line py-14">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Questions</h2>
+              <dl className="mt-6 max-w-3xl">
+                {[
+                  ['Who can read a plan?', 'Anyone with the link. There are no accounts and no private plans, so do not publish secrets or personal data.'],
+                  ['How long does a plan stay up?', 'You choose a lifetime when uploading. After it expires, or when you delete it with the delete key, the HTML is removed.'],
+                  ['How much does it cost?', 'Nothing. planny is free to use and the source is MIT licensed on GitHub.'],
+                  ['What can go in a plan?', 'One HTML file up to 4 MiB. planny sanitises it: no scripts, forms or frames, and charts are inline SVG or CSS.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="border-t border-line py-5">
+                    <dt className="text-sm font-semibold text-white">{q}</dt>
+                    <dd className="mt-2 text-sm leading-relaxed text-zinc-500">{a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
           </>
         ) : kind === 'terms' ? (
           <Terms />
