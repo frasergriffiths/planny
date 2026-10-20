@@ -57,7 +57,9 @@ test('hostile markup leaves nothing dangerous behind', () => {
 
 test('plan content survives', () => {
   const html = '<html><head><title>Plan</title><meta name="viewport" content="width=device-width">'
-    + '<style>.bar{fill:#1B2430}</style></head><body><h1>Q4</h1><table><tr><th scope="col">Item</th>'
+    + '<style>.bar{fill:#1B2430}@media (max-width:600px){.bar{fill:#fff}}@supports (display:grid){.g{display:grid}}'
+    + '@keyframes grow{from{opacity:0}to{opacity:1}}@media print{.bar{fill:#000}}@media (prefers-reduced-motion:reduce){*{animation:none}}'
+    + '@media (min-width:1200px){.wide{width:100%}}</style></head><body><h1>Q4</h1><table><tr><th scope="col">Item</th>'
     + '<td colspan="2">Value</td></tr></table><svg viewBox="0 0 10 10" width="100" height="100">'
     + '<rect x="1" y="1" width="8" height="4" fill="#5E6B78" class="bar"/><text x="1" y="9">label</text></svg>'
     + '<img alt="dot" src="data:image/png;base64,iVBORw0KGgo="><time datetime="2026-10-19">today</time>'
@@ -195,5 +197,18 @@ test('the generated adversarial matrix is clean after sanitising', () => {
     } catch (error) {
       throw new Error(`${payload} => ${error instanceof Error ? error.message : error}`);
     }
+  }
+});
+
+
+test('the CSS parser keeps motion and media rules and strips imports, remote URLs and fonts', () => {
+  const safe = sanitize('<style>@media (max-width:600px){p{color:red}}@supports (display:grid){p{display:grid}}@keyframes g{to{opacity:1}}</style>');
+  expect(safe.removed['<style>']).toBeUndefined();
+  expect(safe.html).toContain('@media (max-width:600px)');
+  expect(safe.html).toContain('@keyframes g');
+  for (const css of ['@import url(https://evil.example/x.css);', '@font-face{src:url(https://evil.example/x.woff2)}', 'p{background:url(https://evil.example/x.png)}']) {
+    const bad = sanitize(`<style>${css}</style>`);
+    expect(bad.html).not.toContain('evil.example');
+    expect(Object.keys(bad.removed).length).toBeGreaterThan(0);
   }
 });

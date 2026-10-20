@@ -1,4 +1,5 @@
 import { parse, parseFragment, serialize } from 'parse5';
+import postcss from 'postcss';
 import { escapeHtml } from './util.js';
 
 interface Attribute {
@@ -57,7 +58,7 @@ const SVG_ATTRS = new Set<string>([
   'stroke-linecap', 'stroke-linejoin', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-miterlimit', 'opacity',
   'font-family', 'font-size', 'font-weight', 'font-style', 'text-anchor', 'dominant-baseline', 'letter-spacing',
   'dx', 'dy', 'offset', 'stop-color', 'stop-opacity', 'gradientunits', 'gradienttransform', 'spreadmethod',
-  'fx', 'fy',
+  'fx', 'fy', 'pathlength',
 ]);
 
 const ELEMENT_ATTRS: ReadonlyMap<string, readonly string[]> = new Map([
@@ -207,9 +208,32 @@ function cleanAttrs(walk: Walk, node: Node, tag: string, isSvg: boolean): Attrib
 }
 
 export function checkCss(css: string): string | null {
-  const probe = probeOf(css);
-  if (UNSAFE_CSS.test(probe)) return 'unsafe CSS';
-  return urlsAreFragments(probe) ? null : 'external URL';
+  let root;
+  try {
+    root = postcss.parse(css);
+  } catch {
+    return 'invalid CSS';
+  }
+  let reason: string | null = null;
+  root.walkAtRules((rule) => {
+    const name = rule.name.toLowerCase();
+    if (name === 'import') reason = 'unsafe CSS';
+    else if (name === 'font-face') reason = 'URL font';
+    else if (!['media', 'supports', 'keyframes', '-webkit-keyframes', 'charset', 'layer'].includes(name)) {
+      reason = `unsupported @${name}`;
+    }
+  });
+  root.walkDecls((decl) => {
+    if (reason) return;
+    const value = decl.value.toLowerCase();
+    if (/expression\s*\(|javascript:|behavior\s*:|-moz-binding/.test(value)) reason = 'unsafe CSS';
+    const urls = [...value.matchAll(/url\s*\(\s*(["']?)([^"')]*)\1\s*\)/g)];
+    for (const match of urls) {
+      const target = (match[2] ?? '').trim();
+      if (!target.startsWith('#') && !DATA_IMAGE_PROBE.test(target)) reason = 'external URL';
+    }
+  });
+  return reason;
 }
 
 function checkValue(value: string): string | null {
@@ -223,7 +247,7 @@ function checkValue(value: string): string | null {
 
 function urlsAreFragments(probe: string): boolean {
   const calls = (probe.match(/url\s*\(/g) ?? []).length;
-  const args = [...probe.matchAll(/url\(\s*(["']?)([^"')]*)\1\s*\)/g)];
+  const args = [...probe.matchAll(/url\s*\(\s*(["']?)([^"')]*)\1\s*\)/g)];
   return args.length === calls && args.every((match) => {
     const target = (match[2] ?? '').trim();
     return target.startsWith('#') || DATA_IMAGE_PROBE.test(target);
