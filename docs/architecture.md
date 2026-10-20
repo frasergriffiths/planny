@@ -97,7 +97,7 @@ The deploy guard in `scripts/deploy.ts` refuses to publish unless the project pl
 ## Security boundaries
 
 - **Plan content:** the sanitiser and the sandboxed plan CSP. No scripts, links, forms, frames or remote requests.
-- **Store:** the Blob token, the private store, the plan-path HMAC and the state HMAC.
+- **Store:** the Blob token and the private store. The plan-path HMAC protects plan HTML only; on a public store `state.json` and `kill.json` stay reachable at their Blob URLs, so use a private store.
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
 - **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits.

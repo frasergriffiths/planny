@@ -103,8 +103,7 @@ secure; report a vulnerability through the reporting route in `SECURITY.md`.
 
 ## Changes
 
-We may update this notice. The current version will be in the repository and on the
-service, with the effective date. If a change is material, we will make that clear.
+We may update this notice. The current version is in the repository, with the effective date. If a change is material, we will make that clear.
 
 ## Contact
 

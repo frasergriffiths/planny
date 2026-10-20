@@ -100,10 +100,10 @@ function ico(entries: number[]): Uint8Array {
     entry[1] = size < 256 ? size : 0;
     entry[2] = 0; // palette
     entry[3] = 0; // reserved
-    dv.setUint16(4, 1); // planes
-    dv.setUint16(6, 32); // bpp
-    dv.setUint32(8, blob.length);
-    dv.setUint32(12, offset);
+    dv.setUint16(4, 1, true); // planes
+    dv.setUint16(6, 32, true); // bpp
+    dv.setUint32(8, blob.length, true);
+    dv.setUint32(12, offset, true);
     offset += blob.length;
     blobs.push(blob);
   });

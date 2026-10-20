@@ -44,8 +44,6 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
-| `POST /admin/plans/:uuid/remove` | Operator takedown. |
-| `POST /admin/reset` | Reset a monthly counter: `{"counter":"reads"|"bytes"|"uploads"|"all"}`. |
 | `GET /health` | Uncached build, runtime and configuration-presence flags. |
 | `GET /terms-of-use` | Terms of use. |
 
@@ -135,7 +133,7 @@ The repo is the Vercel project root. `vercel.json` sets the LHR1 region and rout
 Needed in the project:
 
 1. A Blob store in LHR1. A private store is the safe default; a public store exposes every object at its Blob URL.
-2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY` and `PLANNY_PUBLIC_ORIGIN`. Operator settings are in the [self-hosting guide](docs/self-hosting.md).
+2. Production environment variables: `BLOB_READ_WRITE_TOKEN`, `BLOB_ACCESS`, `PLANNY_BLOB_KEY_1` (only for a public store), `PLANNY_ADDRESS_KEY` and `PLANNY_PUBLIC_ORIGIN`. The operator token required for takedown and reset is documented in the [self-hosting guide](docs/self-hosting.md).
 
 Production branch is `main`. A push to `main` deploys; any other branch makes a preview. Deploy by hand with `bun run scripts/deploy.ts`: it reads the project's plan and refuses unless it is Pro. `GET /health` is uncached and reports the build, runtime and which settings are present.
 
@@ -159,7 +157,7 @@ bun test            # the test suite alone
 
 The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy guard, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
-The CI workflow runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build` and `bun run test`. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
+CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test` (expecting the 5 Live Blob skips), then `bun run scripts/generate-tokens.ts --check` and `bun run scripts/generate-sample.ts --check`. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 
 ## Project layout
 
@@ -169,7 +167,7 @@ src/            Hono app, stores, sanitiser, records, pages, limits
 web/            React home, 404/410/503 pages and the Vite build
 public/sample/  Sample body and generated sample
 skills/planny/  The agent skill, plan template and component reference
-scripts/        Generators, deploy, admin, load and parity helpers
+scripts/        Generators, deploy and admin helpers
 local/          Local SQLite server and LaunchAgent
 test/           Unit and integration tests
 docs/           Architecture and terms copy
