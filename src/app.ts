@@ -1,14 +1,13 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import * as pages from './pages.js';
 import { PAGES } from './generated-pages.js';
 import { createRecords, type PlanRecord } from './records.js';
 import { SanitizeTooDeepError, sanitize } from './sanitize.js';
-import type { AppConfig } from './config.js';
+import { MiB, type AppConfig } from './config.js';
 import type { Store } from './stores/local.js';
 import { ApiError, badType, isHtmlType, parseDuration } from './validate.js';
 import { StoreUnavailableError } from './stores/blob.js';
 import {
-  escapeHtml,
   isPlanId,
   newClaimId,
   newDeleteKey,
@@ -19,7 +18,6 @@ import {
 } from './util.js';
 import { z } from 'zod';
 
-const MiB = 1024 * 1024;
 const NEVER = Number.MAX_SAFE_INTEGER;
 const PLAN_CSP = "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
@@ -75,23 +73,12 @@ const bearerSchema = z.string().regex(/^Bearer\s+\S+$/i);
 
 const deleteKeySchema = z.string().min(1);
 
-const adminResetSchema = z.object({
-  counter: z.enum(['reads', 'bytes', 'uploads', 'owner', 'all']),
-});
-
 export interface App extends Hono<AppEnv> {
   sweep(options?: { limit?: number }): Promise<Array<{ id: string; reason: string; outcome: string }>>;
   takedown(id: string): Promise<{ outcome: string; purged: boolean }>;
   resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all'): Promise<{ reads: number; bytes: number; uploads: number }>;
   uploadsEnabled(): Promise<boolean>;
   setUploadsEnabled(enabled: boolean): Promise<void>;
-}
-
-function injectPlanFooter(html: string): string {
-  const footer = '<div style="margin:2.5rem 0 0;padding:1rem 0;border-top:1px solid rgba(255,255,255,.14);'
-    + 'color:#a1a1a1;font:400 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace">Published by planny</div>';
-  if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, `${footer}</body>`);
-  return `${html}${footer}`;
 }
 
 export function createApp(deps: AppDeps): App {
@@ -300,7 +287,7 @@ export function createApp(deps: AppDeps): App {
     }
     let cleaned: { html: string; removed: Record<string, number> };
     try {
-      cleaned = sanitize(text, { mode: build });
+      cleaned = sanitize(text);
     } catch (error) {
       if (error instanceof SanitizeTooDeepError) {
         throw new ApiError(400, 'too_deep', 'The plan nests elements too deeply. Keep nesting under 200 levels.');
@@ -381,7 +368,7 @@ export function createApp(deps: AppDeps): App {
     return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
   }
 
-  async function view(rawId: string, request: Request, address: string, withQuery: boolean, raw = false): Promise<Response> {
+  async function view(rawId: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
     const id = rawId.toLowerCase();
     const at = now();
     const limit = await records.rate('views', ownerKey(secret, address), at, config.rateLimits.views);

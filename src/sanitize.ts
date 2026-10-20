@@ -1,6 +1,5 @@
-import { parse, parseFragment, serialize } from 'parse5';
+import { parse, serialize } from 'parse5';
 import postcss from 'postcss';
-import { escapeHtml } from './util.js';
 
 interface Attribute {
   name: string;
@@ -75,7 +74,6 @@ const ELEMENT_ATTRS: ReadonlyMap<string, readonly string[]> = new Map([
 
 const DATA_IMAGE = /^data:image\/(png|jpeg|gif|webp|avif);base64,[a-z0-9+/=\s]+$/i;
 const DATA_IMAGE_PROBE = /^data:image\/(png|jpeg|gif|webp|avif)[;,]/;
-const UNSAFE_CSS = /@import|expression\s*\(|behavior\s*:|-moz-binding|javascript:|image-set\s*\(|\bimage\s*\(|\bsrc\s*\(|<\/|<!--|-->/;
 
 export class SanitizeTooDeepError extends Error {
   readonly code = 'too_deep';
@@ -90,16 +88,12 @@ export interface SanitizeResult {
   readonly removed: Record<string, number>;
 }
 
-export interface SanitizeOptions {
-  readonly mode?: 'local' | 'vercel';
-}
-
 interface Walk {
   removed: Map<string, number>;
   depth: number;
 }
 
-export function sanitize(input: string, options: SanitizeOptions = {}): SanitizeResult {
+export function sanitize(input: string): SanitizeResult {
   const document = parse(input) as unknown as Document;
   const walk: Walk = { removed: new Map<string, number>(), depth: 0 };
   document.childNodes = cleanList(walk, document.childNodes);
