@@ -5,8 +5,8 @@ export type PageKind = 'home' | 'notfound' | 'gone' | 'paused' | 'terms';
 const copy: Record<PageKind, { kicker: string; title: string; body: string; code?: string }> = {
   home: {
     kicker: 'Plans for agents',
-    title: 'Plans that live at a link.',
-    body: 'An agent writes one HTML plan and publishes it. You get a link. Share it with the people who need it; it stays up until its time runs out.',
+    title: 'Share an HTML plan as a link',
+    body: 'Sanitised, expiring, no account. Built for plans your agent writes.',
   },
   notfound: {
     kicker: 'No plan',
@@ -74,9 +74,9 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">One self-contained HTML page per plan. Common uses:</p>
               <ul className="mt-6 grid gap-3 text-sm text-zinc-400 sm:grid-cols-3">
                 {[
-                  ['Agent runbooks', 'Step-by-step operating procedures an agent or teammate can follow at the link.'],
+                  ['Agent runbooks', 'The operating procedure your agent wrote, shared as a link that expires on its own.'],
                   ['Research one-pagers', 'A summary with a table, a chart and sources, all inside the one file.'],
-                  ['Project plans', 'Milestones, budgets and risks, ready to share with people outside your tools.'],
+                  ['Project plans', 'Milestones, budgets and risks, shared with people outside your tools.'],
                 ].map(([title, body]) => (
                   <li key={title} className="plan-card">
                     <p className="font-semibold text-white">{title}</p>
@@ -90,10 +90,10 @@ export function Page({ kind }: { kind: PageKind }) {
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Questions</h2>
               <dl className="mt-6 max-w-3xl">
                 {[
-                  ['Who can read a plan?', 'Anyone with the link. There are no accounts and no private plans, so do not publish secrets or personal data.'],
-                  ['How long does a plan stay up?', 'You choose a lifetime when uploading. After it expires, or when you delete it with the delete key, the HTML is removed.'],
-                  ['How much does it cost?', 'Nothing. planny is free to use and the source is MIT licensed on GitHub.'],
-                  ['What can go in a plan?', 'One HTML file up to 4 MiB. planny sanitises it: no scripts, forms or frames, and charts are inline SVG or CSS.'],
+                  ['Do I need an account?', 'No. Paste the HTML, choose a lifetime, keep the delete key.'],
+                  ['How long does a link last, and can I delete it early?', 'One hour to 100 years; it expires on its own, or delete it with the delete key returned at upload.'],
+                  ['Is the link private?', 'No. Anyone with the link can read it. Plans are not listed, but a shared link can be indexed, so keep out secrets and personal data.'],
+                  ['What can I publish?', 'One self-contained HTML file up to 4 MiB. Scripts, links, forms, frames, external files and fonts are stripped; CSS, inline SVG, tables and data: images work. That makes plans unsuitable for reports that need clickable sources.'],
                 ].map(([q, a]) => (
                   <div key={q} className="border-t border-line py-5">
                     <dt className="text-sm font-semibold text-white">{q}</dt>

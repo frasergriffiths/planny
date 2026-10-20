@@ -12,7 +12,7 @@ describe('seo', () => {
   const home = PAGES.home;
 
   test('home page has title, description and canonical', () => {
-    expect(home).toContain('<title>planny — publish an agent plan at one link</title>');
+    expect(home).toContain('<title>Share an HTML plan as a link, no account | planny</title>');
     expect(home).toContain('name="description"');
     expect(home).toContain(`<link rel="canonical" href="${origin}">`);
     expect(home).toContain('name="robots" content="index, follow"');
