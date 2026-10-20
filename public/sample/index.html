@@ -51,7 +51,6 @@
     max-width: none;
     padding: clamp(20px, 4vw, 64px);
   }
-  .rule { height: 6px; background: var(--ink); }
   .eyebrow {
     font-family: var(--mono);
     font-size: 11px;
@@ -62,11 +61,10 @@
   }
   .hero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
     align-items: end;
     padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px);
-    border-bottom: 1px solid var(--line);
   }
   h1 {
     margin: 12px 0 18px;
@@ -92,27 +90,6 @@
     font-size: 12px;
     color: var(--muted);
   }
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--panel);
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  .status::before {
-    content: "";
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--ok);
-  }
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
@@ -122,12 +99,10 @@
   }
   .measure { max-width: 72ch; }
   .box {
-    margin: 24px 0;
-    padding: 20px 22px;
+    margin: 24px 0; padding: 20px 22px;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--accent);
-    border-radius: 12px;
-    background: var(--accent-soft);
+    border-radius: 0;
+    background: transparent;
   }
   .box p:last-child, .box ul:last-child { margin-bottom: 0; }
   .kpis {
@@ -136,12 +111,7 @@
     gap: 12px;
     margin: 24px 0 0;
   }
-  .kpi {
-    padding: 16px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--panel);
-  }
+  .kpi { padding: 16px; border: 1px solid var(--line); border-radius: 0; background: transparent; }
   .kpi strong {
     display: block;
     margin: 6px 0 2px;
@@ -231,20 +201,8 @@
   .donut svg { flex: 0 0 auto; }
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
-  .footer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 12px;
-  }
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: 1fr; }
-    .status { justify-self: start; }
   }
   @media (max-width: 700px) {
     .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -254,7 +212,7 @@
   }
   @media print {
     .page { padding: 0; }
-    .box, tr, .kpi { break-inside: avoid; }
+    .box, tr, .kpi { padding: 16px; border: 1px solid var(--line); border-radius: 0; background: transparent; }
     .gantt { break-inside: avoid; }
   }
 
@@ -263,11 +221,34 @@
   .donut-legend { display:grid; gap:6px; font-size:12px; color:var(--muted); }
   .donut-legend span { display:flex; align-items:center; gap:6px; }
   .donut-legend i { display:inline-block; width:8px; height:8px; border-radius:2px; }
+  .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
+  .chart-bar { transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
+  .donut-seg { animation: draw-donut 1.1s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  @keyframes draw-donut { from { stroke-dashoffset: 1; } }
+  @keyframes grow { from { transform: scaleY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+  }
+  @media print {
+    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+  }
+  .budget-total { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .budget-total span { margin-left: 6px; color: var(--muted); font-family: var(--sans); font-size: 11px; }
+  .stacked { display: flex; height: 10px; overflow: hidden; border-radius: 999px; background: var(--line); }
+  .stacked span { display: block; height: 100%; transform-origin: left; animation: stack-grow .8s ease-out both; }
+  .stack-coffee { background: #3291FF; }
+  .stack-packaging { background: #8ab8ff; }
+  .stack-marketing { background: #5f6368; }
+  .stack-ops { background: #3f3f3f; }
+  .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+  .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .budget-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+  @keyframes stack-grow { from { transform: scaleX(0); } }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="rule"></div>
 
   <header class="hero">
     <div>
@@ -281,8 +262,7 @@
         <span>Status: Draft</span>
       </div>
     </div>
-    <div class="status">Draft</div>
-  </header>
+      </header>
 
   <section class="box">
     <div class="eyebrow">TL;DR</div>
@@ -309,7 +289,7 @@
       <section>
         <h2>Traction</h2>
         <p class="measure">The bag club is the seed. The line is the subscription ramp we need to hit 1,200 by September.</p>
-        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Subscribers by month, January to September, rising from 180 to 1,200">
+        <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Subscribers by month: Jan 180, Feb 260, Mar 360, Apr 480, May 620, Jun 760, Jul 900, Aug 1,060, Sep 1,200">
           <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
             <line x1="64" y1="30" x2="64" y2="260" stroke="#262626"></line>
             <line x1="64" y1="260" x2="690" y2="260" stroke="#262626"></line>
@@ -322,16 +302,16 @@
             <text x="54" y="92" text-anchor="end">900</text>
             <text x="54" y="35" text-anchor="end">1,200</text>
             <polygon points="64,260 64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30 690,260" fill="#0b1b33"></polygon>
-            <polyline points="64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            <circle cx="64" cy="226" r="4" fill="#3291FF"></circle>
-            <circle cx="142" cy="210" r="4" fill="#3291FF"></circle>
-            <circle cx="221" cy="191" r="4" fill="#3291FF"></circle>
-            <circle cx="299" cy="168" r="4" fill="#3291FF"></circle>
-            <circle cx="377" cy="141" r="4" fill="#3291FF"></circle>
-            <circle cx="455" cy="114" r="4" fill="#3291FF"></circle>
-            <circle cx="534" cy="88" r="4" fill="#3291FF"></circle>
-            <circle cx="612" cy="57" r="4" fill="#3291FF"></circle>
-            <circle cx="690" cy="30" r="4" fill="#3291FF"></circle>
+            <polyline class="chart-line" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="64,226 142,210 221,191 299,168 377,141 455,114 534,88 612,57 690,30" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="64" cy="226" r="4" fill="#3291FF"><title>January: 180 subscribers</title></circle>
+            <circle cx="142" cy="210" r="4" fill="#3291FF"><title>February: 260 subscribers</title></circle>
+            <circle cx="221" cy="191" r="4" fill="#3291FF"><title>March: 360 subscribers</title></circle>
+            <circle cx="299" cy="168" r="4" fill="#3291FF"><title>April: 480 subscribers</title></circle>
+            <circle cx="377" cy="141" r="4" fill="#3291FF"><title>May: 620 subscribers</title></circle>
+            <circle cx="455" cy="114" r="4" fill="#3291FF"><title>June: 760 subscribers</title></circle>
+            <circle cx="534" cy="88" r="4" fill="#3291FF"><title>July: 900 subscribers</title></circle>
+            <circle cx="612" cy="57" r="4" fill="#3291FF"><title>August: 1,060 subscribers</title></circle>
+            <circle cx="690" cy="30" r="4" fill="#3291FF"><title>September: 1,200 subscribers</title></circle>
             <text x="64" y="286" text-anchor="middle">Jan</text>
             <text x="142" y="286" text-anchor="middle">Feb</text>
             <text x="221" y="286" text-anchor="middle">Mar</text>
@@ -358,10 +338,10 @@
             <text x="54" y="264" text-anchor="end">0</text>
             <text x="54" y="159" text-anchor="end">250</text>
             <text x="54" y="54" text-anchor="end">500</text>
-            <rect x="130" y="84" width="90" height="176" rx="4" fill="#3291FF"></rect>
-            <rect x="280" y="134" width="90" height="126" rx="4" fill="#3291FF"></rect>
-            <rect x="430" y="151" width="90" height="109" rx="4" fill="#3291FF"></rect>
-            <rect x="580" y="168" width="90" height="92" rx="4" fill="#3291FF"></rect>
+            <rect class="chart-bar" x="130" y="84" width="90" height="176" rx="4" fill="#3291FF"><title>Referral: 420 new subscribers</title></rect>
+            <rect class="chart-bar" x="280" y="134" width="90" height="126" rx="4" fill="#3291FF"><title>Instagram: 300 new subscribers</title></rect>
+            <rect class="chart-bar" x="430" y="151" width="90" height="109" rx="4" fill="#3291FF"><title>Farmers market: 260 new subscribers</title></rect>
+            <rect class="chart-bar" x="580" y="168" width="90" height="92" rx="4" fill="#3291FF"><title>Wholesale: 220 new subscribers</title></rect>
             <text x="175" y="76" text-anchor="middle" fill="#f5f5f5" font-weight="700">420</text>
             <text x="325" y="126" text-anchor="middle" fill="#f5f5f5" font-weight="700">300</text>
             <text x="475" y="143" text-anchor="middle" fill="#f5f5f5" font-weight="700">260</text>
@@ -434,24 +414,31 @@
     <aside>
       <section class="box">
         <div class="eyebrow">Budget</div>
+        <p class="budget-total">$240k <span>2027 budget</span></p>
+        <div class="stacked" role="img" aria-label="2027 budget: coffee 45 percent, packaging 20 percent, marketing 20 percent, operations 15 percent">
+          <span class="stack-coffee" style="width:45%" title="Coffee 45%"></span>
+          <span class="stack-packaging" style="width:20%" title="Packaging 20%"></span>
+          <span class="stack-marketing" style="width:20%" title="Marketing 20%"></span>
+          <span class="stack-ops" style="width:15%" title="Operations 15%"></span>
+        </div>
+        <div class="budget-legend">
+          <span><i style="background:#3291FF"></i>Coffee 45%</span>
+          <span><i style="background:#8ab8ff"></i>Packaging 20%</span>
+          <span><i style="background:#5f6368"></i>Marketing 20%</span>
+          <span><i style="background:#3f3f3f"></i>Ops 15%</span>
+        </div>
+      </section>
+
+      <section class="box">
+        <div class="eyebrow">Confidence</div>
         <div class="donut">
-          <svg width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="Budget mix: coffee 45%, packaging 20%, marketing 20%, operations 15%">
+          <svg width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="Plan confidence 82 percent">
             <circle cx="52" cy="52" r="40" fill="none" stroke="#262626" stroke-width="12"></circle>
-            <g transform="rotate(-90 52 52)" fill="none" stroke-width="12">
-              <circle cx="52" cy="52" r="40" stroke="#3291FF" stroke-dasharray="113 251"></circle>
-              <circle cx="52" cy="52" r="40" stroke="#8ab8ff" stroke-dasharray="50 251" stroke-dashoffset="-113"></circle>
-              <circle cx="52" cy="52" r="40" stroke="#5f6368" stroke-dasharray="50 251" stroke-dashoffset="-163"></circle>
-              <circle cx="52" cy="52" r="40" stroke="#3f3f3f" stroke-dasharray="38 251" stroke-dashoffset="-213"></circle>
-            </g>
-            <text x="52" y="50" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#f5f5f5">$240k</text>
-            <text x="52" y="67" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#a1a1a1">2027 budget</text>
+            <circle class="donut-seg" pathLength="1" cx="52" cy="52" r="40" fill="none" stroke="#3291FF" stroke-width="12" stroke-dasharray=".82 1" stroke-dashoffset="0" transform="rotate(-90 52 52)"><title>Plan confidence: 82 percent</title></circle>
+            <text x="52" y="50" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#f5f5f5">82%</text>
+            <text x="52" y="67" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#a1a1a1">confidence</text>
           </svg>
-          <div class="donut-legend">
-            <span><i style="background:#3291FF"></i>Coffee 45%</span>
-            <span><i style="background:#8ab8ff"></i>Packaging 20%</span>
-            <span><i style="background:#5f6368"></i>Marketing 20%</span>
-            <span><i style="background:#3f3f3f"></i>Ops 15%</span>
-          </div>
+          <p>The beta is the main unknown. The plan has a fallback at 600 subscribers.</p>
         </div>
       </section>
 

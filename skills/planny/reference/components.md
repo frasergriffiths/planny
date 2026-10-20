@@ -90,6 +90,26 @@ At narrow widths, add:
 </div>
 ```
 
+## Stacked budget bar
+
+Use one bar for a small budget split. The total is quiet text above, not a card. The legend stays small.
+
+```html
+<p style="margin:0 0 10px;color:var(--ink);font-family:var(--mono);font-size:14px;">$240k <span style="margin-left:6px;color:var(--muted);font-family:var(--sans);font-size:11px;">2027 budget</span></p>
+<div role="img" aria-label="2027 budget: coffee 45 percent, packaging 20 percent, marketing 20 percent, operations 15 percent" style="display:flex;height:10px;overflow:hidden;border-radius:999px;background:var(--line);">
+  <span style="display:block;height:100%;width:45%;background:#3291FF;" title="Coffee 45%"></span>
+  <span style="display:block;height:100%;width:20%;background:#8ab8ff;" title="Packaging 20%"></span>
+  <span style="display:block;height:100%;width:20%;background:#5f6368;" title="Marketing 20%"></span>
+  <span style="display:block;height:100%;width:15%;background:#3f3f3f;" title="Operations 15%"></span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;color:var(--muted);font-size:11px;">
+  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3291FF;"></i>Coffee 45%</span>
+  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#8ab8ff;"></i>Packaging 20%</span>
+  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#5f6368;"></i>Marketing 20%</span>
+  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3f3f3f;"></i>Ops 15%</span>
+</div>
+```
+
 ## Inline SVG bar chart
 
 No JavaScript. Replace the values and labels.
@@ -103,12 +123,12 @@ No JavaScript. Replace the values and labels.
     <text x="18" y="164">500</text>
     <text x="18" y="114">1,000</text>
     <text x="18" y="64">1,500</text>
-    <rect x="96" y="150" width="54" height="60" rx="4" fill="#3291FF"></rect>
-    <rect x="180" y="120" width="54" height="90" rx="4" fill="#3291FF"></rect>
-    <rect x="264" y="90" width="54" height="120" rx="4" fill="#3291FF"></rect>
-    <rect x="348" y="70" width="54" height="140" rx="4" fill="#3291FF"></rect>
-    <rect x="432" y="110" width="54" height="100" rx="4" fill="#3291FF"></rect>
-    <rect x="516" y="40" width="54" height="170" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="96" y="150" width="54" height="60" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="180" y="120" width="54" height="90" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="264" y="90" width="54" height="120" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="348" y="70" width="54" height="140" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="432" y="110" width="54" height="100" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="516" y="40" width="54" height="170" rx="4" fill="#3291FF"></rect>
     <text x="123" y="228" text-anchor="middle">Jan</text>
     <text x="207" y="228" text-anchor="middle">Feb</text>
     <text x="291" y="228" text-anchor="middle">Mar</text>
@@ -129,7 +149,7 @@ No JavaScript. Replace the values and labels.
     <line x1="56" y1="158" x2="612" y2="158" stroke="#1a1a1a"></line>
     <line x1="56" y1="108" x2="612" y2="108" stroke="#1a1a1a"></line>
     <line x1="56" y1="58" x2="612" y2="58" stroke="#1a1a1a"></line>
-    <polyline points="56,184 138,170 220,150 302,158 384,120 466,96 548,64 612,52" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    <polyline class="chart-line" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="56,184 138,170 220,150 302,158 384,120 466,96 548,64 612,52" fill="none" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
     <circle cx="56" cy="184" r="4" fill="#3291FF"></circle>
     <circle cx="138" cy="170" r="4" fill="#3291FF"></circle>
     <circle cx="220" cy="150" r="4" fill="#3291FF"></circle>
@@ -152,17 +172,40 @@ No JavaScript. Replace the values and labels.
 
 ## Inline SVG donut
 
-`stroke-dasharray` is the arc. For 78 percent on a 239 circumference, use about `186 239`. Adjust both numbers together.
+`pathLength="1"` turns the ring into a 0 to 1 scale. For 78 percent use `stroke-dasharray=".78 1"` and `stroke-dashoffset="0"`.
 
 ```html
 <div style="display:flex;align-items:center;gap:16px;">
   <svg width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="Confidence 78 percent">
     <circle cx="48" cy="48" r="40" fill="none" stroke="#262626" stroke-width="10"></circle>
-    <circle cx="48" cy="48" r="40" fill="none" stroke="#3291FF" stroke-width="10" stroke-linecap="round" stroke-dasharray="196 251" transform="rotate(-90 48 48)"></circle>
+    <circle class="donut-seg" pathLength="1" cx="48" cy="48" r="40" fill="none" stroke="#3291FF" stroke-width="10" stroke-linecap="round" stroke-dasharray=".78 1" stroke-dashoffset="0" transform="rotate(-90 48 48)"><title>Confidence: 78 percent</title></circle>
     <text x="48" y="54" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f5f5f5">78%</text>
   </svg>
   <p style="margin:0;font-size:13px;color:var(--muted);">Two unknowns remain. Both have owners and dates.</p>
 </div>
+```
+
+## Motion and accessibility
+
+Keep the final state in the markup and animate with CSS only. The line and donut use `pathLength="1"`, so the dash values are fractions. Bars grow from the baseline. Print and reduced motion show the final state.
+
+Add `class="chart-line"` to the line, `class="chart-bar"` to each bar, and `class="donut-seg"` to the donut arc. Put `<title>` inside each bar, point and segment. Give each chart `role="img"` and an `aria-label` that includes the figures.
+
+```html
+<style>
+  .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
+  .chart-bar { transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
+  .donut-seg { animation: draw-donut 1.1s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  @keyframes draw-donut { from { stroke-dashoffset: 1; } }
+  @keyframes grow { from { transform: scaleY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+  }
+  @media print {
+    .chart-line, .chart-bar, .donut-seg, .stacked span { animation: none; }
+  }
+</style>
 ```
 
 ## CSS grid Gantt
@@ -250,7 +293,7 @@ At narrow widths, shrink the label column:
 Inline SVG boxes and lines. No markers or external references.
 
 ```html
-<svg viewBox="0 0 720 300" role="img" aria-label="Agent to planny to Blob and Redis" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+<svg viewBox="0 0 720 300" role="img" aria-label="Agent to planny to Blob" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
   <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#f5f5f5">
     <rect x="30" y="110" width="150" height="70" rx="10" fill="#0a0a0a" stroke="#2b4a7a"></rect>
     <text x="105" y="140" text-anchor="middle" font-weight="700">Agent</text>
@@ -262,7 +305,7 @@ Inline SVG boxes and lines. No markers or external references.
     <text x="625" y="75" text-anchor="middle" font-weight="700">Blob</text>
     <text x="625" y="95" text-anchor="middle" fill="#a1a1a1">private HTML</text>
     <rect x="555" y="185" width="140" height="70" rx="10" fill="#0a0a0a" stroke="#262626"></rect>
-    <text x="625" y="215" text-anchor="middle" font-weight="700">Upstash</text>
+    <text x="625" y="215" text-anchor="middle" font-weight="700">Blob state</text>
     <text x="625" y="235" text-anchor="middle" fill="#a1a1a1">records, counters</text>
     <line x1="180" y1="145" x2="285" y2="145" stroke="#f5f5f5" stroke-width="2"></line>
     <polygon points="285,145 275,140 275,150" fill="#f5f5f5"></polygon>
@@ -308,15 +351,6 @@ Inline SVG boxes and lines. No markers or external references.
     <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">Serve the plan with the sandbox CSP, prove a HIT, and prove the purge on delete.</p>
   </li>
 </ol>
-```
-
-## Status pill
-
-```html
-<span style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font:11px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;">
-  <span style="width:7px;height:7px;border-radius:50%;background:var(--ok);"></span>
-  On track
-</span>
 ```
 
 ## Rules that keep a plan safe
