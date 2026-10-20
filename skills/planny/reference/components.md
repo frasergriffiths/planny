@@ -11,14 +11,19 @@ Put this once in the plan's `<style>` block. Adjust the accent, keep the contras
 ```html
 <style>
   :root {
+    /* TOKENS */
+    --radius-card: 12px;
+    --radius-bar: 4px;
+    --radius-swatch: 3px;
+    --line: #262626;
+    --accent: #3291FF;
+    --panel: #0a0a0a;
+    /* /TOKENS */
     color-scheme: dark;
     --line-strong: #3f3f3f;
     --paper: #000000;
-    --panel: #0a0a0a;
     --ink: #f5f5f5;
     --muted: #a1a1a1;
-    --line: #262626;
-    --accent: #3291FF;
     --accent-soft: #0b1b33;
     --ok: #4ade80;
     --warn: #fbbf24;
@@ -27,6 +32,7 @@ Put this once in the plan's `<style>` block. Adjust the accent, keep the contras
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   * { box-sizing: border-box; }
+  .arch-box { rx: var(--radius-card); }
   body {
     margin: 0;
     background: var(--paper);
@@ -40,26 +46,37 @@ Put this once in the plan's `<style>` block. Adjust the accent, keep the contras
 </style>
 ```
 
+## Card A
+
+Transparent card with a 1px outline, 12px radius, and a 2px left accent 1px inside the outline and 12px from the top and bottom. Use it for the TL;DR, budget and KPI cards.
+
+```html
+<style>
+  .card { position: relative; background: transparent; border: 1px solid var(--line); border-radius: var(--radius-card); }
+  .card::before { content: ""; position: absolute; left: 1px; top: var(--radius-card); bottom: var(--radius-card); width: 2px; background: var(--accent); }
+</style>
+```
+
 ## KPI cards
 
 ```html
 <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;">
-  <div style="padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+  <div class="card" style="padding:16px 16px 16px 18px;">
     <div style="font:10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Week 1</div>
     <strong style="display:block;margin:6px 0 2px;font-size:28px;line-height:1.1;">1</strong>
     <span style="font-size:12px;color:var(--muted);">private store live</span>
   </div>
-  <div style="padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+  <div class="card" style="padding:16px 16px 16px 18px;">
     <div style="font:10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Target</div>
     <strong style="display:block;margin:6px 0 2px;font-size:28px;line-height:1.1;">&lt; 2s</strong>
     <span style="font-size:12px;color:var(--muted);">p95 first view</span>
   </div>
-  <div style="padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+  <div class="card" style="padding:16px 16px 16px 18px;">
     <div style="font:10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Cap</div>
     <strong style="display:block;margin:6px 0 2px;font-size:28px;line-height:1.1;">4 MiB</strong>
     <span style="font-size:12px;color:var(--muted);">per plan</span>
   </div>
-  <div style="padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+  <div class="card" style="padding:16px 16px 16px 18px;">
     <div style="font:10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Guard</div>
     <strong style="display:block;margin:6px 0 2px;font-size:28px;line-height:1.1;">200 GB</strong>
     <span style="font-size:12px;color:var(--muted);">origin reads a month</span>
@@ -84,8 +101,8 @@ At narrow widths, add:
   <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:13px;">
     <span>Private store cutover</span><span style="color:var(--muted);font-family:var(--mono);">72%</span>
   </div>
-  <div style="height:10px;border-radius:999px;background:var(--line);overflow:hidden;">
-    <div style="height:100%;width:72%;border-radius:999px;background:var(--accent);"></div>
+  <div style="height:10px;border-radius:var(--radius-bar);background:var(--line);overflow:hidden;">
+    <div style="height:100%;width:72%;border-radius:var(--radius-bar);background:var(--accent);"></div>
   </div>
 </div>
 ```
@@ -96,17 +113,17 @@ Use one bar for a small budget split. The total is quiet text above, not a card.
 
 ```html
 <p style="margin:0 0 10px;color:var(--ink);font-family:var(--mono);font-size:14px;">$240k <span style="margin-left:6px;color:var(--muted);font-family:var(--sans);font-size:11px;">2027 budget</span></p>
-<div role="img" aria-label="2027 budget: coffee 45 percent, packaging 20 percent, marketing 20 percent, operations 15 percent" style="display:flex;height:10px;overflow:hidden;border-radius:999px;background:var(--line);">
+<div role="img" aria-label="2027 budget: coffee 45 percent, packaging 20 percent, marketing 20 percent, operations 15 percent" style="display:flex;height:10px;overflow:hidden;border-radius:var(--radius-bar);background:var(--line);gap:2px;">
   <span style="display:block;height:100%;width:45%;background:#3291FF;" title="Coffee 45%"></span>
   <span style="display:block;height:100%;width:20%;background:#8ab8ff;" title="Packaging 20%"></span>
   <span style="display:block;height:100%;width:20%;background:#5f6368;" title="Marketing 20%"></span>
   <span style="display:block;height:100%;width:15%;background:#3f3f3f;" title="Operations 15%"></span>
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;color:var(--muted);font-size:11px;">
-  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3291FF;"></i>Coffee 45%</span>
-  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#8ab8ff;"></i>Packaging 20%</span>
-  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#5f6368;"></i>Marketing 20%</span>
-  <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3f3f3f;"></i>Ops 15%</span>
+  <span><i style="display:inline-block;width:6px;height:6px;border-radius:var(--radius-swatch);background:#3291FF;"></i>Coffee 45%</span>
+  <span><i style="display:inline-block;width:6px;height:6px;border-radius:var(--radius-swatch);background:#8ab8ff;"></i>Packaging 20%</span>
+  <span><i style="display:inline-block;width:6px;height:6px;border-radius:var(--radius-swatch);background:#5f6368;"></i>Marketing 20%</span>
+  <span><i style="display:inline-block;width:6px;height:6px;border-radius:var(--radius-swatch);background:#3f3f3f;"></i>Ops 15%</span>
 </div>
 ```
 
@@ -115,7 +132,7 @@ Use one bar for a small budget split. The total is quiet text above, not a card.
 No JavaScript. Replace the values and labels.
 
 ```html
-<svg viewBox="0 0 640 260" role="img" aria-label="Monthly uploads, January to June" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+<svg viewBox="0 0 640 260" role="img" aria-label="Monthly uploads, January to June" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--radius-card);background:transparent;">
   <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
     <line x1="64" y1="20" x2="64" y2="210" stroke="#262626"></line>
     <line x1="64" y1="210" x2="610" y2="210" stroke="#262626"></line>
@@ -123,12 +140,12 @@ No JavaScript. Replace the values and labels.
     <text x="18" y="164">500</text>
     <text x="18" y="114">1,000</text>
     <text x="18" y="64">1,500</text>
-    <rect class="chart-bar" x="96" y="150" width="54" height="60" rx="4" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="180" y="120" width="54" height="90" rx="4" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="264" y="90" width="54" height="120" rx="4" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="348" y="70" width="54" height="140" rx="4" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="432" y="110" width="54" height="100" rx="4" fill="#3291FF"></rect>
-    <rect class="chart-bar" x="516" y="40" width="54" height="170" rx="4" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="96" y="150" width="54" height="60" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="180" y="120" width="54" height="90" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="264" y="90" width="54" height="120" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="348" y="70" width="54" height="140" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="432" y="110" width="54" height="100" fill="#3291FF"></rect>
+    <rect class="chart-bar" x="516" y="40" width="54" height="170" fill="#3291FF"></rect>
     <text x="123" y="228" text-anchor="middle">Jan</text>
     <text x="207" y="228" text-anchor="middle">Feb</text>
     <text x="291" y="228" text-anchor="middle">Mar</text>
@@ -142,7 +159,7 @@ No JavaScript. Replace the values and labels.
 ## Inline SVG line chart
 
 ```html
-<svg viewBox="0 0 640 260" role="img" aria-label="Origin reads per week" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+<svg viewBox="0 0 640 260" role="img" aria-label="Origin reads per week" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--radius-card);background:transparent;">
   <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#a1a1a1">
     <line x1="56" y1="20" x2="56" y2="208" stroke="#262626"></line>
     <line x1="56" y1="208" x2="612" y2="208" stroke="#262626"></line>
@@ -194,7 +211,7 @@ Add `class="chart-line"` to the line, `class="chart-bar"` to each bar, and `clas
 ```html
 <style>
   .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
-  .chart-bar { transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
+  .chart-bar { rx: var(--radius-bar); transform-box: fill-box; transform-origin: bottom; animation: grow .8s ease-out both; }
   .donut-seg { animation: draw-donut 1.1s ease-out both; }
   @keyframes draw { from { stroke-dashoffset: 1; } }
   @keyframes draw-donut { from { stroke-dashoffset: 1; } }
@@ -218,13 +235,13 @@ Add `class="chart-line"` to the line, `class="chart-bar"` to each bar, and `clas
   <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
     <div style="font-weight:650;">Store + upload</div>
     <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:28px;">
-      <div style="grid-row:1;grid-column:1 / span 2;display:flex;align-items:center;padding:0 9px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">201, delete key, 4 MiB</div>
+      <div style="grid-row:1;grid-column:1 / span 2;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--accent);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">201, delete key, 4 MiB</div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:180px repeat(8,minmax(0,1fr));gap:6px;align-items:center;margin-bottom:6px;">
     <div style="font-weight:650;">View + cache</div>
     <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:28px;">
-      <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:6px;background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
+      <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
     </div>
   </div>
 </div>
@@ -293,18 +310,18 @@ At narrow widths, shrink the label column:
 Inline SVG boxes and lines. No markers or external references.
 
 ```html
-<svg viewBox="0 0 720 300" role="img" aria-label="Agent to planny to Blob" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);">
+<svg viewBox="0 0 720 300" role="img" aria-label="Agent to planny to Blob" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--radius-card);background:transparent;">
   <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#f5f5f5">
-    <rect x="30" y="110" width="150" height="70" rx="10" fill="#0a0a0a" stroke="#2b4a7a"></rect>
+    <rect class="arch-box" x="30" y="110" width="150" height="70" fill="#0a0a0a" stroke="#2b4a7a"></rect>
     <text x="105" y="140" text-anchor="middle" font-weight="700">Agent</text>
     <text x="105" y="160" text-anchor="middle" fill="#a1a1a1">one HTML file</text>
-    <rect x="285" y="95" width="170" height="100" rx="10" fill="#3291FF"></rect>
+    <rect class="arch-box" x="285" y="95" width="170" height="100" fill="#3291FF"></rect>
     <text x="370" y="130" text-anchor="middle" fill="#0a0a0a" font-weight="700">planny</text>
     <text x="370" y="152" text-anchor="middle" fill="#dbeafe">sanitise, store, link</text>
-    <rect x="555" y="45" width="140" height="70" rx="10" fill="#0a0a0a" stroke="#262626"></rect>
+    <rect class="arch-box" x="555" y="45" width="140" height="70" fill="#0a0a0a" stroke="#262626"></rect>
     <text x="625" y="75" text-anchor="middle" font-weight="700">Blob</text>
     <text x="625" y="95" text-anchor="middle" fill="#a1a1a1">private HTML</text>
-    <rect x="555" y="185" width="140" height="70" rx="10" fill="#0a0a0a" stroke="#262626"></rect>
+    <rect class="arch-box" x="555" y="185" width="140" height="70" fill="#0a0a0a" stroke="#262626"></rect>
     <text x="625" y="215" text-anchor="middle" font-weight="700">Blob state</text>
     <text x="625" y="235" text-anchor="middle" fill="#a1a1a1">records, counters</text>
     <line x1="180" y1="145" x2="285" y2="145" stroke="#f5f5f5" stroke-width="2"></line>
@@ -320,17 +337,17 @@ Inline SVG boxes and lines. No markers or external references.
 ## Callouts
 
 ```html
-<div style="margin:20px 0;padding:18px 20px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;background:var(--accent-soft);">
+<div class="card" style="margin:20px 0;padding:18px 20px;">
   <strong style="display:block;margin-bottom:4px;">Note</strong>
   <p style="margin:0;">Plans are public to anyone with the link. Do not put secrets in one.</p>
 </div>
 
-<div style="margin:20px 0;padding:18px 20px;border:1px solid #5a3d12;border-left:4px solid var(--warn);border-radius:10px;background:#2a1d08;">
+<div class="card" style="margin:20px 0;padding:18px 20px;--accent:var(--warn);">
   <strong style="display:block;margin-bottom:4px;">Watch</strong>
   <p style="margin:0;">A plan at 4 MiB uploads slowly on a phone. Compress screenshots before embedding them.</p>
 </div>
 
-<div style="margin:20px 0;padding:18px 20px;border:1px solid #1e5a3f;border-left:4px solid var(--ok);border-radius:10px;background:#0b241a;">
+<div class="card" style="margin:20px 0;padding:18px 20px;--accent:var(--ok);">
   <strong style="display:block;margin-bottom:4px;">Done</strong>
   <p style="margin:0;">The home page, health route and static files work without the stores.</p>
 </div>
