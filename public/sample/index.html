@@ -240,6 +240,37 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
+  /* The plan spine: Who, Why, What, When, in that order. */
+  .spine {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 4px;
+    padding: 16px 0 6px;
+    border-top: 1px solid var(--line);
+  }
+  .spine div {
+    padding-top: 9px;
+    border-top: 2px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .spine div.active { border-top-color: var(--accent); color: var(--ink); }
+  .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
+  .spine-section { padding: 4px 0; }
+  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
+  .spine-head h2 { margin: 4px 0 0; }
+  .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
+  h3.sub { margin: 20px 0 6px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 700px) {
+    .spine { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
   /* Charts: HTML/CSS bars and HTML-labelled lines are the default. SVG <text>
      scales with the viewBox, so labels and values stay in HTML with fixed px. */
   .chart-card {

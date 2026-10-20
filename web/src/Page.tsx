@@ -117,7 +117,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Agent skill</p>
               <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Install the skill. Ask for a plan.</h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                One command installs the skill into Claude Code, Cursor, Codex, OpenCode and other agents. It writes the HTML, uploads it, and keeps the delete key private.
+                One command installs the skill into Claude Code, Cursor, Codex, OpenCode and other agents. It ships four plan templates (project, launch, research and decision), writes the HTML, uploads it, and keeps the delete key private.
               </p>
               <div className="mt-6">
                 <InstallCommand />

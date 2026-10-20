@@ -88,3 +88,42 @@ function rule(source: string, selector: string): string {
   const end = source.indexOf('}', start);
   return source.slice(start + selector.length + 2, end);
 }
+
+// Every template is self-contained and follows the Who, Why, What, When spine.
+const templatePaths = [
+  'skills/planny/template.html',
+  'skills/planny/templates/launch-plan.html',
+  'skills/planny/templates/research-plan.html',
+  'skills/planny/templates/decision-plan.html',
+];
+
+test('four templates exist and each carries the spine in order', () => {
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source).toContain('class="spine"');
+    const order = ['Who', 'Why', 'What', 'When'].map((part) => source.indexOf(`<div class="eyebrow">${part}</div>`));
+    for (const index of order) expect(index).toBeGreaterThan(-1);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(source.match(/class="spine-section"/g)?.length).toBe(4);
+  }
+});
+
+test('templates stay inside the sanitiser: no scripts, forms, frames or remote URLs', () => {
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source).not.toMatch(/<script/i);
+    expect(source).not.toMatch(/<form/i);
+    expect(source).not.toMatch(/<iframe/i);
+    expect(source).not.toMatch(/https?:\/\//i);
+    expect(Buffer.byteLength(source, 'utf8')).toBeLessThan(4 * 1024 * 1024);
+  }
+});
+
+test('each template names its audience, budget and review cadence', () => {
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source).toContain('Decision maker');
+    expect(source).toContain('Budget');
+    expect(source).toContain('Review cadence');
+  }
+});

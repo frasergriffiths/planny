@@ -239,6 +239,37 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
+  /* The plan spine: Who, Why, What, When, in that order. */
+  .spine {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 4px;
+    padding: 16px 0 6px;
+    border-top: 1px solid var(--line);
+  }
+  .spine div {
+    padding-top: 9px;
+    border-top: 2px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .spine div.active { border-top-color: var(--accent); color: var(--ink); }
+  .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
+  .spine-section { padding: 4px 0; }
+  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
+  .spine-head h2 { margin: 4px 0 0; }
+  .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
+  h3.sub { margin: 20px 0 6px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 700px) {
+    .spine { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
   /* Charts: HTML/CSS bars and HTML-labelled lines are the default. SVG <text>
      scales with the viewBox, so labels and values stay in HTML with fixed px. */
   .chart-card {
@@ -356,196 +387,210 @@
 
   <header class="hero">
     <div>
-      <div class="eyebrow">Plan / Q4 2026 / Product</div>
-      <h1>Ship the agent plan workspace.</h1>
-      <p class="lede">An eight-week plan to turn one HTML file into a durable, shareable plan link, without adding an account system or a dashboard nobody asked for.</p>
+      <div class="eyebrow">Project plan / Studio two / Fern and Flint</div>
+      <h1>Open a second studio without doubling the kiln bill.</h1>
+      <p class="lede">Fern and Flint turns away about 40 people a term. A second room fixes that, but only if one shared kiln, one glaze bench and one extra teacher can carry the load.</p>
       <div class="meta">
-        <span>Owner: Fraser</span>
-        <span>Updated: 19 Oct 2026</span>
-        <span>Horizon: 8 weeks</span>
-        <span>Status: Active</span>
+        <span>Owner: Mara Voss</span>
+        <span>Decision maker: Dev Patel</span>
+        <span>Updated: 20 Oct 2026</span>
+        <span>Horizon: 14 weeks</span>
       </div>
     </div>
-      </header>
+  </header>
+
+  <div class="spine" aria-label="Plan sections">
+    <div class="active"><span>01</span>Who</div>
+    <div><span>02</span>Why</div>
+    <div><span>03</span>What</div>
+    <div><span>04</span>When</div>
+  </div>
 
   <section class="box">
-    <div class="eyebrow">TL;DR</div>
+    <div class="eyebrow">In short</div>
     <ul>
-      <li>Ship the private Blob store and the view route first. An upload path without a reliable read is a demo, not a product.</li>
-      <li>Keep the viewer script-free and link-free. The sanitiser is the product boundary, not a cleanup step.</li>
-      <li>Measure time to first plan and repeat views. There are no accounts, so signups are not a metric.</li>
+      <li>Studio two opens in the old print works in January, with six wheels and one shared kiln.</li>
+      <li>The first term is capped at 30 students so the glaze bench does not turn into a queue.</li>
+      <li>The lease needs a yes by 14 November. After that the landlord lets the space to another tenant.</li>
     </ul>
   </section>
 
   <div class="layout">
     <main>
-      <section>
-        <h2>What we are building</h2>
-        <p class="measure">An agent writes one HTML plan, publishes it with a name and a duration, and gets a link. The link is the only key. The plan renders in a sandbox with no scripts, no links and no external requests, so it can be visual without becoming a page that can phish.</p>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>The people who decide, do and read</h2></div></div>
+        <p class="spine-lead">One person signs the lease. One person can stop the move. Everyone else needs to know what changes for their class.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Role</th><th scope="col">Name</th><th scope="col">What they need from this plan</th></tr></thead>
+            <tbody>
+              <tr><td>Owner</td><td>Mara Voss</td><td>Runs the move, holds the budget and reports every Friday.</td></tr>
+              <tr><td>Decision maker</td><td>Dev Patel</td><td>Signs the lease and approves the kiln spend by 14 November.</td></tr>
+              <tr><td>Stakeholders</td><td>Ines Roldan, Tom Achebe</td><td>Teach the first term. Ines owns the glaze bench, Tom owns the kiln schedule.</td></tr>
+              <tr><td>Readers</td><td>Six part-time teachers and the landlord</td><td>Need dates, room changes and what stays closed during the fit-out.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why a second room, and why this winter</h2></div></div>
+        <p class="spine-lead">The waiting list is real demand, not curiosity. The current room is the limit.</p>
+        <p>Studio one holds eight wheels and one kiln. Classes fill in two days, and 40 people a term go somewhere else. We lose about 9,000 pounds a year in fees we cannot take, before counting the people who never join the list.</p>
+        <h3 class="sub">Outcome</h3>
+        <p>Two rooms, 14 wheels, 30 students in the first term at studio two. The kiln stays in studio one, so the move adds floor space without a second firing schedule.</p>
+        <h3 class="sub">Why now</h3>
+        <p>The print works has been empty since June. The landlord is holding it for us until 14 November and wants a three-year term. In January we lose Ines for a term unless her hours change, and she is the only teacher who can run the glaze induction.</p>
+        <h3 class="sub">How we will know it worked</h3>
         <div class="kpis">
-          <div class="kpi"><span class="eyebrow">Week 1</span><strong>1</strong><span>private store live</span></div>
-          <div class="kpi"><span class="eyebrow">Target</span><strong>&lt; 2s</strong><span>p95 first view</span></div>
-          <div class="kpi"><span class="eyebrow">Cap</span><strong>4 MiB</strong><span>per plan, images included</span></div>
-          <div class="kpi"><span class="eyebrow">Guard</span><strong>200 GB</strong><span>origin reads a month</span></div>
+          <div class="kpi"><span class="eyebrow">Term one</span><strong>30</strong><span>students enrolled</span></div>
+          <div class="kpi"><span class="eyebrow">Wait</span><strong>&lt; 3 days</strong><span>class to first wheel</span></div>
+          <div class="kpi"><span class="eyebrow">Kiln</span><strong>2</strong><span>firings a week, shared</span></div>
+          <div class="kpi"><span class="eyebrow">Budget</span><strong>18k</strong><span>fit-out cap, pounds</span></div>
         </div>
-      </section>
-
-      <section>
-        <h2>Read budget</h2>
         <div class="chart-card">
-          <p class="chart-title">Origin reads: planny plan vs pay-as-you-go</p>
-          <div class="hbars" role="img" aria-label="Origin reads by month, planny plan versus pay-as-you-go: April 570 versus 900, May 630 versus 1,050, June 700 versus 1,150">
-            <div class="hbar"><span>April</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:49%"></span><span class="fill slim alt" style="width:78%"></span></div><span class="val">−37%</span></div>
-            <div class="hbar"><span>May</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:55%"></span><span class="fill slim alt" style="width:91%"></span></div><span class="val">−40%</span></div>
-            <div class="hbar"><span>June</span><div class="bar-track group" aria-hidden="true"><span class="fill slim" style="width:61%"></span><span class="fill slim alt" style="width:100%"></span></div><span class="val">−39%</span></div>
+          <p class="chart-title">Wheel hours lost to waiting, by term</p>
+          <div class="hbars" role="img" aria-label="Wheel hours lost to waiting by term: spring 96 hours, summer 74 hours, autumn 41 hours">
+            <div class="hbar"><span>Spring</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">96 h</span></div>
+            <div class="hbar"><span>Summer</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:77%"></div></div><span class="val">74 h</span></div>
+            <div class="hbar"><span>Autumn</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:43%"></div></div><span class="val">41 h</span></div>
           </div>
-          <div class="chart-legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Planny plan</span><span><i style="background:var(--line-strong)"></i>Pay-as-you-go</span></div>
-          <p class="chart-caption">Fictional plan data. Two slim bars per row, scaled to 0-1,150 reads.</p>
+          <p class="chart-caption">One series. Hours a term that students waited to use a wheel, from the booking sheet. Autumn is part term.</p>
         </div>
       </section>
 
-      <section>
-        <h2>Timeline</h2>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>Scope, work and cost</h2></div></div>
+        <p class="spine-lead">The job is a fit-out and a timetable. It is not a new brand or a shop.</p>
+        <h3 class="sub">In scope</h3>
+        <ul>
+          <li>Six wheels, six benches, a glaze bench and storage in studio two.</li>
+          <li>A shared kiln schedule that keeps both rooms on two firings a week.</li>
+          <li>One new teacher, plus Ines moving to a job share.</li>
+          <li>Accessible entry, a sink and a drying rack that fits the room.</li>
+        </ul>
+        <h3 class="sub">Out of scope</h3>
+        <ul>
+          <li>A second kiln. Revisit only if firings pass three a week for a full term.</li>
+          <li>A retail area. Online sales stay on the current shop.</li>
+          <li>Weekend masterclasses. The timetable has no room until the second term.</li>
+        </ul>
+        <h3 class="sub">Workstreams</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Workstream</th><th scope="col">Lead</th><th scope="col">Done when</th></tr></thead>
+            <tbody>
+              <tr><td>Lease and insurance</td><td>Dev Patel</td><td>Signed term and cover for the second room</td></tr>
+              <tr><td>Fit-out</td><td>Mara Voss</td><td>Six wheels wired, sink tested, drying rack built</td></tr>
+              <tr><td>Kiln schedule</td><td>Tom Achebe</td><td>Both rooms run two firings a week for four weeks</td></tr>
+              <tr><td>Teaching plan</td><td>Ines Roldan</td><td>First-term timetable staffed and glaze induction written</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 class="sub">Deliverables</h3>
+        <ul class="check">
+          <li><span>Signed three-year lease with a break at 18 months.</span></li>
+          <li><span>Six working wheels and a tested glaze bench.</span></li>
+          <li><span>One kiln schedule that both rooms read from.</span></li>
+          <li><span>A first-term timetable with 30 places and two backups per class.</span></li>
+        </ul>
+        <h3 class="sub">Budget</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Line</th><th scope="col">Cost</th><th scope="col">Note</th></tr></thead>
+            <tbody>
+              <tr><td>Wheels and benches</td><td>7,200</td><td>Six second-hand wheels, serviced</td></tr>
+              <tr><td>Electrical and sink</td><td>4,100</td><td>New circuit, water heater, accessible entry</td></tr>
+              <tr><td>Shelving and drying</td><td>2,300</td><td>Built by Tom over two weeks</td></tr>
+              <tr><td>Deposit and legal</td><td>3,600</td><td>Three months deposit, lease review</td></tr>
+              <tr><td>Contingency</td><td>800</td><td>Held by Mara, released with Dev's approval</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="budget-total">Total 18,000 pounds<span>Cap agreed with Dev on 2 October</span></p>
+        <h3 class="sub">Risks</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+            <tbody>
+              <tr><td>The landlord withdraws the offer</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Ask for written terms by 4 November and keep the storage unit as a fallback.</td><td>Dev</td></tr>
+              <tr><td>Fit-out runs past the first class</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Book the electrician before the lease is signed; hold three buffer weeks.</td><td>Mara</td></tr>
+              <tr><td>The shared kiln becomes a bottleneck</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Cap term one at 30 students and review firing hours every Friday.</td><td>Tom</td></tr>
+              <tr><td>Ines leaves before the term starts</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>Agree the job share in writing by 30 November and train a backup.</td><td>Mara</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Timeline, milestones and reviews</h2></div></div>
+        <p class="spine-lead">Fourteen weeks from the lease decision to the first class. The fit-out owns the middle eight.</p>
         <div class="legend">
           <span><span class="swatch"></span>Build</span>
           <span><span class="swatch alt"></span>Verify</span>
           <span><span class="swatch soft"></span>Buffer</span>
         </div>
         <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Eight week plan with five workstreams">
+          <div class="gantt" role="img" aria-label="Fourteen week plan with five workstreams: lease in weeks 1 to 2, fit-out weeks 3 to 10, kiln schedule weeks 8 to 11, teaching plan weeks 6 to 12, first class and review weeks 13 to 14">
             <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Store + upload</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">201, delete key, 4 MiB</div></div></div>
-            <div class="gantt-row"><div class="label">View + cache</div><div class="track"><div class="bar" style="grid-column: 2 / span 3;">200, TTL, purge</div></div></div>
-            <div class="gantt-row"><div class="label">Safety + limits</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Sanitise, pause, reset</div></div></div>
-            <div class="gantt-row"><div class="label">Preview + deploy</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 2;">LHR1, region, live pass</div></div></div>
-            <div class="gantt-row"><div class="label">Skill + docs</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Template, components, errors</div></div></div>
+            <div class="gantt-row"><div class="label">Lease and cover</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Terms, deposit, insurance</div></div></div>
+            <div class="gantt-row"><div class="label">Fit-out</div><div class="track"><div class="bar" style="grid-column: 3 / span 8;">Wheels, sink, drying, entry</div></div></div>
+            <div class="gantt-row"><div class="label">Kiln schedule</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Two firings a week</div></div></div>
+            <div class="gantt-row"><div class="label">Teaching plan</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 6;">Timetable, induction</div></div></div>
+            <div class="gantt-row"><div class="label">First class</div><div class="track"><div class="bar soft" style="grid-column: 12 / span 2;">Run, observe, fix</div></div></div>
           </div>
         </div>
-      </section>
-
-      <section>
-        <h2>Milestones</h2>
+        <p class="chart-caption">The Gantt shows the fourteen-week horizon in eight columns; later weeks share the last column. Phones stack each row.</p>
+        <h3 class="sub">Milestones</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
             <tbody>
-              <tr><td>24 Oct</td><td>Private Blob store and upload path live</td><td>Steven</td><td>In progress</td></tr>
-              <tr><td>31 Oct</td><td>View route with cache, purge and 410 path</td><td>Steven</td><td>Next</td></tr>
-              <tr><td>07 Nov</td><td>Pause matrix and address reset proven on preview</td><td>Lens</td><td>Planned</td></tr>
-              <tr><td>14 Nov</td><td>Production deploy in LHR1 and live pass</td><td>Scout</td><td>Planned</td></tr>
-              <tr><td>21 Nov</td><td>Skill install and first external plan</td><td>Sage</td><td>Planned</td></tr>
+              <tr><td>14 Nov</td><td>Lease signed and deposit paid</td><td>Dev</td><td>Decision due</td></tr>
+              <tr><td>28 Nov</td><td>Electrician booked and wheels ordered</td><td>Mara</td><td>Planned</td></tr>
+              <tr><td>09 Jan</td><td>Fit-out complete and sink tested</td><td>Mara</td><td>Planned</td></tr>
+              <tr><td>16 Jan</td><td>Kiln schedule proven for four weeks</td><td>Tom</td><td>Planned</td></tr>
+              <tr><td>23 Jan</td><td>First class in studio two</td><td>Ines</td><td>Planned</td></tr>
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2>Cost comparison</h2>
-        <div class="chart-card">
-          <p class="chart-title">Host budget: origin reads per quarter</p>
-          <div class="hbars" role="img" aria-label="Origin reads per quarter by band: July 900 reads, August 1,100, September 760">
-            <div class="hbar"><span>July</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:82%"></div></div><span class="val">900</span></div>
-            <div class="hbar"><span>August</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">1,100</span></div>
-            <div class="hbar"><span>September</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:69%"></div></div><span class="val">760</span></div>
-          </div>
-          <p class="chart-caption">One series, one value per row. The 200 GB read guard covers each figure.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2>Decisions</h2>
+        <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th scope="col">Decision</th><th scope="col">Options</th><th scope="col">Call</th><th scope="col">Why</th></tr></thead>
+            <thead><tr><th scope="col">Dependency</th><th scope="col">Needed by</th><th scope="col">Owner</th><th scope="col">If late</th></tr></thead>
             <tbody>
-              <tr><td>Viewer runtime</td><td>Scripts on / scripts off</td><td>Scripts off</td><td>Removes the largest exfiltration path and most of the abuse surface.</td></tr>
-              <tr><td>Link policy</td><td>Dead links / clickable links</td><td>Dead links</td><td>A clickable link on our origin is a phishing route. Plans keep their text.</td></tr>
-              <tr><td>Storage</td><td>Public Blob / private Blob</td><td>Private Blob</td><td>The view route must check expiry, delete and takedown before every read.</td></tr>
-              <tr><td>Cache TTL</td><td>5 minutes / 1 hour</td><td>1 hour</td><td>Plans do not change. A purge handles the rare takedown, and the TTL is the fallback.</td></tr>
+              <tr><td>Written lease terms</td><td>4 Nov</td><td>Dev</td><td>No fit-out spend, no January start</td></tr>
+              <tr><td>Electrician slot</td><td>21 Nov</td><td>Mara</td><td>Move the first class to February</td></tr>
+              <tr><td>Second-hand wheels</td><td>28 Nov</td><td>Mara</td><td>Buy new, cut the shelving budget</td></tr>
+              <tr><td>Ines job share signed</td><td>30 Nov</td><td>Mara</td><td>Advertise for a term teacher</td></tr>
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2>Risks</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
-            <tbody>
-              <tr><td>A preview deployed on Hobby lands in the wrong region</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Check the function segment of the raw x-vercel-id on /health before promoting.</td><td>Scout</td></tr>
-              <tr><td>A popular plan exhausts the read budget</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>One-hour TTL, per-plan alert at 1,000 origin reads an hour, and the 200 GB guard.</td><td>Steven</td></tr>
-              <tr><td>A purge fails and a takedown stays cached</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Retry the purge on 429, report the purge status, and keep the TTL as the fallback.</td><td>Steven</td></tr>
-              <tr><td>A plan uses a browser bug to escape the sandbox</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>Allowlist sanitiser, strict CSP, no scripts, no links, no forms, and a hostile-payload fixture.</td><td>Lens</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section>
-        <h2>Read forecast</h2>
-        <div class="chart-card">
-          <p class="chart-title">Weekly origin reads, W1 to W9</p>
-          <div class="line-chart" role="img" aria-label="Weekly origin reads, weeks 1 to 9: W1 120, W2 240, W3 380, W4 340, W5 520, W6 640, W7 780, W8 720, W9 900">
-            <div class="line-plot" aria-hidden="true">
-              <div class="gridline" style="top:0"><span class="y-label">1,000</span></div>
-              <div class="gridline dim" style="top:25%"><span class="y-label">750</span></div>
-              <div class="gridline dim" style="top:50%"><span class="y-label">500</span></div>
-              <div class="gridline dim" style="top:75%"><span class="y-label">250</span></div>
-              <div class="gridline" style="top:100%"><span class="y-label">0</span></div>
-              <svg viewBox="0 0 800 200" preserveAspectRatio="none" fill="none">
-                <polyline class="chart-line" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" points="0,178 100,161 200,138 300,146 400,112 500,89 600,62 700,69 800,41" stroke="#3291FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-              </svg>
-            </div>
-            <div class="x-labels" aria-hidden="true"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span></div>
-          </div>
-          <div class="chart-legend"><span><i style="background:var(--accent)"></i>Weekly reads</span></div>
-          <p class="chart-caption">Fictional plan data. The SVG carries the shape only; labels and values are HTML outside it, so they never scale with the viewBox. Every second week label hides under 700px.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2>Next steps</h2>
-        <ul class="check">
-          <li><span><strong>Replace the public store.</strong> Delete it, create the private store in LHR1, and rotate the burned token.</span></li>
-          <li><span><strong>Set the environment.</strong> Address key, admin token and Blob token.</span></li>
-          <li><span><strong>Prove the pause matrix.</strong> One read, then a 503 with the guard name, reset date and no-store.</span></li>
-          <li><span><strong>Prove the region.</strong> /health returns 200 ok, and the raw x-vercel-id has an lhr1 function segment.</span></li>
-          <li><span><strong>Install the skill.</strong> Publish, view, delete and 410 from the command line, then from an agent session.</span></li>
+        <h3 class="sub">Review cadence</h3>
+        <ul>
+          <li>Friday, 20 minutes: Mara, Tom and Ines. Budget, fit-out and the next week's blocker.</li>
+          <li>First Monday of the month: Dev joins for the lease and spend decision.</li>
+          <li>After the first class: a 30-minute review with the three teachers, then one page of fixes.</li>
         </ul>
       </section>
     </main>
 
     <aside>
-      <section class="box">
-        <div class="eyebrow">Confidence</div>
-        <div class="donut">
-          <svg width="92" height="92" viewBox="0 0 92 92" role="img" aria-label="Confidence 78 percent">
-            <circle cx="46" cy="46" r="38" fill="none" stroke="#262626" stroke-width="10"></circle>
-            <circle class="donut-seg" pathLength="1" cx="46" cy="46" r="38" fill="none" stroke="#3291FF" stroke-width="10" stroke-linecap="round" stroke-dasharray=".78 1" stroke-dashoffset="0" transform="rotate(-90 46 46)"><title>Confidence: 78 percent</title></circle>
-            <text x="46" y="51" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f5f5f5">78%</text>
-          </svg>
-          <p>Two unknowns remain: the private store cutover and the preview region. Both have owners and dates.</p>
-        </div>
+      <section class="box outline">
+        <div class="eyebrow">Done means</div>
+        <ul class="aside-list">
+          <li>Six wheels turn and the sink passes a test run.</li>
+          <li>Both rooms follow one kiln schedule.</li>
+          <li>30 students have a place and a backup class.</li>
+          <li>The first class runs without borrowing a wheel.</li>
+        </ul>
       </section>
-
       <section class="box outline">
         <div class="eyebrow">Open questions</div>
         <ul class="aside-list">
-          <li>Does the preview need its own Blob store, or is the prefix enough?</li>
-          <li>Is 4 MiB enough for a plan with embedded screenshots?</li>
-          <li>Who reads the abuse inbox after launch?</li>
-        </ul>
-      </section>
-
-      <section class="box outline">
-        <div class="eyebrow">Definition of done</div>
-        <ul class="aside-list">
-          <li>An upload returns a link and a delete key.</li>
-          <li>The link renders with no external requests.</li>
-          <li>Expired, deleted and taken-down links return 410.</li>
-          <li>A pause returns 503 with the guard and reset date.</li>
-          <li>The skill publishes, views and deletes from an agent session.</li>
+          <li>Does the deposit come from cash or the equipment loan?</li>
+          <li>Who covers the glaze induction if Ines is ill?</li>
+          <li>Can the landlord add a break clause at 18 months?</li>
         </ul>
       </section>
     </aside>
