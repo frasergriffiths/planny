@@ -128,8 +128,9 @@ describe('seo', () => {
     expect(count).toBe(3); // 16/32/48
     for (let i = 0; i < count; i++) {
       const entry = 6 + i * 16; // directory entries: 16 bytes each, little-endian
-      const w = ico[entry]! || 256;
-      const h = ico[entry + 1]! || 256;
+      expect(ico[entry]!).toBe([16, 32, 48][i]!); // width: 16, 32, 48 in order
+      const w = ico[entry]!;
+      const h = ico[entry + 1]!;
       expect(h).toBe(w);
       expect(dv.getUint16(entry + 4, true)).toBe(1); // planes
       expect(dv.getUint16(entry + 6, true)).toBe(32); // bpp
