@@ -534,7 +534,7 @@ export function createApp(deps: AppDeps): App {
       : page(500, pages.serverError({ build }));
   });
 
-  app.get('/', (c) => {
+  app.get('/', () => {
     const ttl = config.cacheTtlSeconds;
     return page(200, build === 'vercel' ? PAGES.home : pages.home({ build, origin, config }), {
       'cache-control': `public, max-age=0, s-maxage=${ttl}, must-revalidate`,
