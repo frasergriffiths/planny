@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from 'bun:test';
 import { blobPlanPath, createBlobStore } from '../src/stores/blob.js';
 
-// These are the only tests that touch a real Vercel Blob store. The five live tests skip
-// without a token and are excluded from CI's normal run; CI has no token, so they skip.
+// These are the only tests that touch a real Vercel Blob store. The five live tests run
+// only when a token is set; without one they skip.
 const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
 const liveTest = test.skipIf(token === '');
 const access = process.env.BLOB_ACCESS === 'private' ? 'private' : 'public';
