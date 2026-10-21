@@ -50,21 +50,29 @@ bunx vercel link
 
 The repo is the project root. `vercel.json` sets the region and the function route.
 
-### 3. Set the production environment
+### 3. Choose the store (optional)
+
+Vercel Blob is the default. To use Neon Postgres instead, connect a Neon database
+to the project and set `PLANNY_STORE=postgres` plus `DATABASE_URL`. Postgres mode
+does not read `BLOB_READ_WRITE_TOKEN`, but it needs `PLANNY_ADDRESS_KEY`. Blob
+remains available: unset `PLANNY_STORE` or set it to `blob` to switch back.
+
+### 4. Set the production environment
 
 Set these in Vercel, not in a committed file:
 
 | Variable | Value |
 | --- | --- |
-| `BLOB_READ_WRITE_TOKEN` | The Blob read-write token. Treat it as a full-store secret |
+| `PLANNY_STORE` | `blob` (default) or `postgres` |
+| `DATABASE_URL` | The Neon connection string when `PLANNY_STORE=postgres` |
+| `BLOB_READ_WRITE_TOKEN` | The Blob read-write token. Required for `PLANNY_STORE=blob` |
 | `BLOB_ACCESS` | `private` |
 | `PLANNY_ADDRESS_KEY` | A stable secret, for example `openssl rand -base64 32` |
 | `PLANNY_ADMIN_TOKEN` | An operator secret, for example `openssl rand -hex 32` |
 | `PLANNY_PUBLIC_ORIGIN` | Your canonical origin, without a trailing slash |
 | `PLANNY_BLOB_KEY_1` | Only for a public store; leave unset for a private store |
 
-Only `BLOB_READ_WRITE_TOKEN` is required to serve and publish. `PLANNY_ADDRESS_KEY`
-is recommended; if it is unset, the Blob token is used as the address-hash key.
+`BLOB_READ_WRITE_TOKEN` is required in Blob mode; Postgres mode requires `DATABASE_URL` and `PLANNY_ADDRESS_KEY` instead. `PLANNY_ADDRESS_KEY` is recommended in Blob mode; if it is unset, the Blob token is used as the address-hash key.
 `PLANNY_ADMIN_TOKEN` is required only for takedown and reset. Rotating
 `PLANNY_ADDRESS_KEY` resets every derived address and every rate limit. Rotating
 `PLANNY_BLOB_KEY_1` breaks existing public plan links. Treat both as long-lived
@@ -72,7 +80,7 @@ credentials.
 
 The optional limit variables are documented in `.env.example` and the README.
 
-### 4. Deploy
+### 5. Deploy
 
 A push to `main` deploys when the Vercel project is connected to the GitHub
 repository. Check `/health` after a minute; if the push did not produce a

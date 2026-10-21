@@ -24,9 +24,9 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 
 1. An agent sends raw `text/html` to `POST /plans` with a name and a duration.
 2. planny caps the body at 4 MiB and sanitises it: parse5 for the tree, PostCSS for the CSS, allowlists for elements, attributes, properties and at-rules. Scripts, links, forms, frames, remote resources and event handlers are removed.
-3. The plan HTML is written to Vercel Blob, and a pending record is written to the state blob.
-4. `GET /p/<uuid>` checks the record, reads the plan from Blob, and returns it with a sandboxed CSP and a cache tag.
-5. `DELETE /p/<uuid>` compares the hashed delete key, removes the plan blob, marks the record deleted and purges the cache tag. An operator takedown uses the same removal path.
+3. The plan HTML and a pending record are written to the selected store (Vercel Blob by default, or Postgres).
+4. `GET /p/<uuid>` checks the record, reads the plan from the store, and returns it with a sandboxed CSP and a cache tag.
+5. `DELETE /p/<uuid>` compares the hashed delete key, removes the plan file, marks the record deleted and purges the cache tag. An operator takedown uses the same removal path.
 
 The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No clickable links, forms, remote images or external requests. The sample at `/sample` uses the same plan CSP with a user-activated top-level CTA.
 
@@ -106,7 +106,9 @@ Core production settings:
 
 | Variable | Purpose |
 | --- | --- |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read-write token. Required. It can read and write the whole store. |
+| `PLANNY_STORE` | `blob` (default) or `postgres`. |
+| `DATABASE_URL` | Neon connection string, required for `PLANNY_STORE=postgres`. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read-write token. Required in Blob mode. It can read and write the whole store. |
 | `BLOB_ACCESS` | `private` or `public`. Production requires `private`: a public store exposes every object at its Blob URL, including `state.json` and `config/kill.json`. |
 | `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Set it for a public store; if unset, the Blob token is used and rotating it breaks existing links. |
 | `PLANNY_ADDRESS_KEY` | Recommended stable keyed hash of client addresses for rates and pauses. If unset, the Blob token is used; rotating either resets every derived address and rate limit. |
@@ -114,11 +116,17 @@ Core production settings:
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
-The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses the Blob store. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.mjs`, `delete.mjs`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
+The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Vercel deployment uses `PLANNY_STORE` to choose Blob (the default) or Postgres. `PLANNY_BUILD` and `PLANNY_SHA` are platform/runtime values; the skill scripts (`skills/planny/scripts/publish.mjs`, `delete.mjs`) read `PLANNY_URL` (or `PLANNY_BASE`) only as an optional base-URL override for the planny origin.
 
-## Blob-only trade-offs
+## Storage options
 
-There is one production store: Vercel Blob.
+Vercel Blob is the default production store. Set `PLANNY_STORE=postgres` to use the Neon Postgres database behind `DATABASE_URL` instead. Blob stays selectable, and the local build keeps SQLite.
+
+Postgres mode needs `PLANNY_ADDRESS_KEY` and does not need `BLOB_READ_WRITE_TOKEN`. The store keeps the same state engine in one locked row, so each write is a real transaction instead of a Blob lock file. Plans live in `planny_plans` as `bytea`.
+
+## Blob trade-offs
+
+The default production store is Vercel Blob.
 
 - `state.json` is one JSON blob holding records, counters, rate windows and the small amount of control state. Each plan's HTML is a separate blob. `config/kill.json` is the upload switch.
 - State changes are serialised by a create-only `state.lock` blob, with a 15-second stale-lock recovery. Each instance keeps the last state it wrote, with a monotonic sequence, so a read that lags a write does not lose the latest record.
