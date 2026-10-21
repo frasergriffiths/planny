@@ -250,8 +250,11 @@
   .spine div.active { border-top-color: var(--accent); color: var(--ink); }
   .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
   .spine-section { padding: 4px 0; }
-  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head { margin: 30px 0 8px; }
+  .spine-kicker { display: flex; align-items: center; gap: 10px; }
   .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-icon { display: inline-flex; flex: 0 0 auto; color: var(--accent); }
+  .spine-icon svg { display: block; width: 18px; height: 18px; }
   .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
   .spine-head h2 { margin: 4px 0 0; }
   .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
@@ -452,7 +455,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Questions</div><h2>Ask the right question about turnover</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">01</span><div class="eyebrow">01 Questions</div></div><h2>Ask the right question about turnover</h2></div>
         <p class="spine-lead">The study is independent of the council. Ruth can change the scope, not the findings.</p>
         <div class="table-wrap">
           <table>
@@ -493,7 +496,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Method</div><h2>Eight sites, thirty interviews</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">02</span><div class="eyebrow">02 Method</div></div><h2>Eight sites, thirty interviews</h2></div>
         <p class="spine-lead">Mixed methods, small sample, honest limits. The study describes eight sites and does not claim to speak for the county.</p>
         <h3 class="sub">In scope</h3>
         <ul>
@@ -549,7 +552,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Fieldwork</div><h2>Run fieldwork and analysis in ten weeks</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">03</span><div class="eyebrow">03 Fieldwork</div></div><h2>Run fieldwork and analysis in ten weeks</h2></div>
         <p class="spine-lead">Fieldwork in weeks two to six. Analysis in weeks six to eight. The draft goes to the committees before it goes to the council.</p>
         <ol class="timeline" aria-label="Research milestones">
           <li><span class="dot" aria-hidden="true"></span><span class="when">24 Oct 2026</span><strong>Interview guide approved</strong><p>Consent form signed off.</p></li>
@@ -573,7 +576,7 @@
         </div>
       </section>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Report</div><h2>Write the report and share the evidence</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">04</span><div class="eyebrow">04 Report</div></div><h2>Write the report and share the evidence</h2></div>
         <p class="spine-lead">Three findings, each tied to evidence, plus the limits the sample cannot cross.</p>
         <h3 class="sub">Deliverables</h3>
         <ul class="check">

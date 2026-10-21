@@ -192,6 +192,15 @@ test('the templates use a small set of inline Heroicons', () => {
   expect(template.match(/class="spine-head"/g)?.length).toBe(4);
 });
 
+test('each section kicker aligns the number, icon and label on one row', () => {
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source.match(/class="spine-kicker"/g)?.length).toBe(4);
+    expect(source).toContain('.spine-kicker { display: flex; align-items: center;');
+    expect(source).toContain('.spine-icon svg { display: block; width: 18px; height: 18px; }');
+  }
+});
+
 test('each template numbers its four task sections 01 to 04 in order', () => {
   for (const path of templatePaths) {
     const source = read(path);
