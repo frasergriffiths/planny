@@ -178,24 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -239,7 +229,7 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
-  /* The plan spine: Who, Why, What, When, in that order. */
+  /* The plan spine: four numbered tasks, in order. */
   .spine {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -344,6 +334,59 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  /* Code blocks: static token classes, no runtime highlighter. */
+  .code-block {
+    position: relative;
+    margin: 16px 0 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
+  .code-copy {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-bar);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .code-copy:hover, .code-copy:focus-visible { color: var(--ink); }
+  .code-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .code-copy svg { display: block; }
+  .tok-key, .tok-tag { color: #8ab8ff; }
+  .tok-string { color: #86efac; }
+  .tok-number, .tok-bool { color: #fbbf24; }
+  .tok-comment { color: #737373; font-style: italic; }
+  .tok-fn { color: #c4b5fd; }
+  .tok-punct { color: #a1a1a1; }
+  .tok-attr { color: #f9a8d4; }
+  @media (max-width: 420px) {
+    .code-block code { font-size: 12px; }
+    .code-block pre { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: minmax(0, 1fr); }
   }
@@ -355,14 +398,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -378,7 +413,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -400,10 +434,10 @@
   </header>
 
   <div class="spine" aria-label="Plan sections">
-    <div class="active"><span>01</span>Who</div>
-    <div><span>02</span>Why</div>
-    <div><span>03</span>What</div>
-    <div><span>04</span>When</div>
+    <div class="active"><span>01</span>Criteria</div>
+    <div><span>02</span>Options</div>
+    <div><span>03</span>Trial</div>
+    <div><span>04</span>Decision</div>
   </div>
 
   <section class="box">
@@ -418,7 +452,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>Who chooses, who uses it, who is affected</h2></div></div>
+        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Criteria</div><h2>Agree the criteria before the demos</h2></div></div>
         <p class="spine-lead">Ellen makes the call. The people who answer the phone have to live with it.</p>
         <div class="table-wrap">
           <table>
@@ -431,12 +465,8 @@
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why the paper diary has to go</h2></div></div>
-        <p class="spine-lead">Not because paper is old. Because two people can write in it at once.</p>
-        <p>Reception takes about 40 calls a week across two shifts. The diary lives at the desk, so a booking made on a Saturday morning is invisible to the person answering on Sunday. In August that produced two double bookings and a refund. The same month, 14 calls went to voicemail and never came back.</p>
+        <h3 class="sub">Why replace the diary</h3>
+        <p>Not because paper is old. Because two people can write in it at once. Reception takes about 40 calls a week across two shifts. The diary lives at the desk, so a booking made on a Saturday morning is invisible to the person answering on Sunday. In August that produced two double bookings and a refund. The same month, 14 calls went to voicemail and never came back.</p>
         <h3 class="sub">Outcome</h3>
         <p>One calendar that both shifts and the room owners can see. Guests can book online without calling. Deposits are taken at the time of booking.</p>
         <h3 class="sub">Why now</h3>
@@ -457,10 +487,23 @@
           </div>
           <p class="chart-caption">One series. Bookings from the diary and the inbox for July to September. Phone still carries most of the work.</p>
         </div>
+        <h3 class="sub">Criteria</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">How we score it</th></tr></thead>
+            <tbody>
+              <tr><td>Deposit at booking</td><td>30</td><td>Works end to end with a test card, no manual step</td></tr>
+              <tr><td>Shared calendar</td><td>25</td><td>Both shifts see the same booking within 5 seconds</td></tr>
+              <tr><td>Reception speed</td><td>20</td><td>Median time to take a phone booking in the trial</td></tr>
+              <tr><td>Cost</td><td>15</td><td>Monthly fee plus card fees at current volume</td></tr>
+              <tr><td>Data export</td><td>10</td><td>A full diary export opens in a spreadsheet</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>What we are choosing and what we are not</h2></div></div>
+        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Options</div><h2>Compare three systems on paper</h2></div></div>
         <p class="spine-lead">Five rooms, one calendar, deposits. Not a property management system.</p>
         <h3 class="sub">In scope</h3>
         <ul>
@@ -483,19 +526,6 @@
               <tr><td>Roombook</td><td>74</td><td>Yes, card</td><td>CSV</td><td>Simple calendar, weak group bookings</td></tr>
               <tr><td>Stayline</td><td>96</td><td>Yes, card and transfer</td><td>CSV and API</td><td>More than we need, but clean exports</td></tr>
               <tr><td>Innkeeper Lite</td><td>38</td><td>No</td><td>CSV</td><td>Cheap, no deposit at booking</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <h3 class="sub">Criteria</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">How we score it</th></tr></thead>
-            <tbody>
-              <tr><td>Deposit at booking</td><td>30</td><td>Works end to end with a test card, no manual step</td></tr>
-              <tr><td>Shared calendar</td><td>25</td><td>Both shifts see the same booking within 5 seconds</td></tr>
-              <tr><td>Reception speed</td><td>20</td><td>Median time to take a phone booking in the trial</td></tr>
-              <tr><td>Cost</td><td>15</td><td>Monthly fee plus card fees at current volume</td></tr>
-              <tr><td>Data export</td><td>10</td><td>A full diary export opens in a spreadsheet</td></tr>
             </tbody>
           </table>
         </div>
@@ -535,24 +565,32 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Eight weeks from shortlist to decision</h2></div></div>
+        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Trial</div><h2>Trial the top two for two weeks</h2></div></div>
         <p class="spine-lead">Trial in weeks three and four. Decision on 20 November. Setup finishes before the January renewal.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Trial</span>
-          <span><span class="swatch alt"></span>Decide</span>
-          <span><span class="swatch soft"></span>Setup</span>
+        <ol class="timeline" aria-label="Decision milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">23 Oct 2026</span><strong>Criteria weights agreed</strong><p>Frozen before the demos.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">06 Nov 2026</span><strong>Trial complete</strong><p>Two busy Saturdays scored.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">20 Nov 2026</span><strong>System chosen</strong><p>Contract signed with an exit clause.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">11 Dec 2026</span><strong>Rooms and rates loaded</strong><p>Full export tested.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">18 Dec 2026</span><strong>Reception live</strong><p>Both shifts trained.</p></li>
+        </ol>
+
+        <h3 class="sub">Dependencies</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Dependency</th><th scope="col">Needed by</th><th scope="col">Owner</th><th scope="col">If late</th></tr></thead>
+            <tbody>
+              <tr><td>Card processor approval</td><td>30 Oct</td><td>Ellen</td><td>Drop any option without deposits</td></tr>
+              <tr><td>Trial accounts from both vendors</td><td>30 Oct</td><td>Jonah</td><td>Run one trial, score it blind</td></tr>
+              <tr><td>Room owner sign-off</td><td>20 Nov</td><td>Ellen</td><td>Delay setup, keep the diary for winter</td></tr>
+              <tr><td>Reception availability for training</td><td>11 Dec</td><td>Sofia</td><td>Train one shift, shadow the other</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Eight week decision plan: criteria and demos weeks 1 to 2, trial weeks 3 to 4, scoring and decision weeks 5 to 6, setup and training weeks 6 to 8">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Criteria and demos</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Weights, two demos</div></div></div>
-            <div class="gantt-row"><div class="label">Trial</div><div class="track"><div class="bar" style="grid-column: 3 / span 2;">Roombook, Stayline</div></div></div>
-            <div class="gantt-row"><div class="label">Score and decide</div><div class="track"><div class="bar alt" style="grid-column: 5 / span 2;">Scorecard, contract</div></div></div>
-            <div class="gantt-row"><div class="label">Setup</div><div class="track"><div class="bar soft" style="grid-column: 6 / span 3;">Rooms, rates, export</div></div></div>
-            <div class="gantt-row"><div class="label">Training</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Two shifts, one guide</div></div></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows eight weeks in eight columns. Phones stack each row.</p>
+      </section>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Decision</div><h2>Score, choose and sign</h2></div></div>
+        <p class="spine-lead">The scorecard is filled before the decision meeting. The choice is one system, not a shortlist.</p>
         <h3 class="sub">Milestones</h3>
         <div class="table-wrap">
           <table>
@@ -563,18 +601,6 @@
               <tr><td>20 Nov</td><td>System chosen and contract signed</td><td>Ellen</td><td>Planned</td></tr>
               <tr><td>11 Dec</td><td>Rooms and rates loaded, export tested</td><td>Jonah</td><td>Planned</td></tr>
               <tr><td>18 Dec</td><td>Reception trained and live</td><td>Sofia</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <h3 class="sub">Dependencies</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Dependency</th><th scope="col">Needed by</th><th scope="col">Owner</th><th scope="col">If late</th></tr></thead>
-            <tbody>
-              <tr><td>Card processor approval</td><td>30 Oct</td><td>Ellen</td><td>Drop any option without deposits</td></tr>
-              <tr><td>Trial accounts from both vendors</td><td>30 Oct</td><td>Jonah</td><td>Run one trial, score it blind</td></tr>
-              <tr><td>Room owner sign-off</td><td>20 Nov</td><td>Ellen</td><td>Delay setup, keep the diary for winter</td></tr>
-              <tr><td>Reception availability for training</td><td>11 Dec</td><td>Sofia</td><td>Train one shift, shadow the other</td></tr>
             </tbody>
           </table>
         </div>

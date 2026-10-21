@@ -178,24 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -239,7 +229,7 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
-  /* The plan spine: Who, Why, What, When, in that order. */
+  /* The plan spine: four numbered tasks, in order. */
   .spine {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -344,6 +334,61 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  .spine-icon { flex: 0 0 auto; margin-top: 3px; color: var(--accent); }
+
+  /* Code blocks: static token classes, no runtime highlighter. */
+  .code-block {
+    position: relative;
+    margin: 16px 0 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
+  .code-copy {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-bar);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .code-copy:hover, .code-copy:focus-visible { color: var(--ink); }
+  .code-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .code-copy svg { display: block; }
+  .tok-key, .tok-tag { color: #8ab8ff; }
+  .tok-string { color: #86efac; }
+  .tok-number, .tok-bool { color: #fbbf24; }
+  .tok-comment { color: #737373; font-style: italic; }
+  .tok-fn { color: #c4b5fd; }
+  .tok-punct { color: #a1a1a1; }
+  .tok-attr { color: #f9a8d4; }
+  @media (max-width: 420px) {
+    .code-block code { font-size: 12px; }
+    .code-block pre { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: minmax(0, 1fr); }
   }
@@ -355,14 +400,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -378,7 +415,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -400,10 +436,10 @@
   </header>
 
   <div class="spine" aria-label="Plan sections">
-    <div class="active"><span>01</span>Who</div>
-    <div><span>02</span>Why</div>
-    <div><span>03</span>What</div>
-    <div><span>04</span>When</div>
+    <div class="active"><span>01</span>Lease</div>
+    <div><span>02</span>Fit-out</div>
+    <div><span>03</span>Timetable</div>
+    <div><span>04</span>Open</div>
   </div>
 
   <section class="box">
@@ -418,7 +454,13 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>The people who decide, do and read</h2></div></div>
+        <div class="spine-head"><span class="spine-num">01</span>
+          <span class="spine-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 19.1276C15.8329 19.37 16.7138 19.5 17.625 19.5C19.1037 19.5 20.5025 19.1576 21.7464 18.5478C21.7488 18.4905 21.75 18.4329 21.75 18.375C21.75 16.0968 19.9031 14.25 17.625 14.25C16.2069 14.25 14.956 14.9655 14.2136 16.0552M15 19.1276V19.125C15 18.0121 14.7148 16.9658 14.2136 16.0552M15 19.1276C15 19.1632 14.9997 19.1988 14.9991 19.2343C13.1374 20.3552 10.9565 21 8.625 21C6.29353 21 4.11264 20.3552 2.25092 19.2343C2.25031 19.198 2.25 19.1615 2.25 19.125C2.25 15.6042 5.10418 12.75 8.625 12.75C11.0329 12.75 13.129 14.085 14.2136 16.0552M12 6.375C12 8.23896 10.489 9.75 8.625 9.75C6.76104 9.75 5.25 8.23896 5.25 6.375C5.25 4.51104 6.76104 3 8.625 3C10.489 3 12 4.51104 12 6.375ZM20.25 8.625C20.25 10.0747 19.0747 11.25 17.625 11.25C16.1753 11.25 15 10.0747 15 8.625C15 7.17525 16.1753 6 17.625 6C19.0747 6 20.25 7.17525 20.25 8.625Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div><div class="eyebrow">01 Lease</div><h2>Lease the print works</h2></div></div>
         <p class="spine-lead">One person signs the lease. One person can stop the move. Everyone else needs to know what changes for their class.</p>
         <div class="table-wrap">
           <table>
@@ -431,12 +473,8 @@
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why a second room, and why this winter</h2></div></div>
-        <p class="spine-lead">The waiting list is real demand, not curiosity. The current room is the limit.</p>
-        <p>Studio one holds eight wheels and one kiln. Classes fill in two days, and 40 people a term go somewhere else. We lose about 9,000 pounds a year in fees we cannot take, before counting the people who never join the list.</p>
+        <h3 class="sub">Why this room</h3>
+        <p>The waiting list is real demand, not curiosity. The current room is the limit. Studio one holds eight wheels and one kiln. Classes fill in two days, and 40 people a term go somewhere else. We lose about 9,000 pounds a year in fees we cannot take, before counting the people who never join the list.</p>
         <h3 class="sub">Outcome</h3>
         <p>Two rooms, 14 wheels, 30 students in the first term at studio two. The kiln stays in studio one, so the move adds floor space without a second firing schedule.</p>
         <h3 class="sub">Why now</h3>
@@ -460,8 +498,14 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>Scope, work and cost</h2></div></div>
-        <p class="spine-lead">The job is a fit-out and a timetable. It is not a new brand or a shop.</p>
+        <div class="spine-head"><span class="spine-num">03</span>
+          <span class="spine-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.25 14.1499V18.4C20.25 19.4944 19.4631 20.4359 18.3782 20.58C16.2915 20.857 14.1624 21 12 21C9.83757 21 7.70854 20.857 5.62185 20.58C4.5369 20.4359 3.75 19.4944 3.75 18.4V14.1499M20.25 14.1499C20.7219 13.7476 21 13.1389 21 12.4889V8.70569C21 7.62475 20.2321 6.69082 19.1631 6.53086C18.0377 6.36247 16.8995 6.23315 15.75 6.14432M20.25 14.1499C20.0564 14.315 19.8302 14.4453 19.5771 14.5294C17.1953 15.3212 14.6477 15.75 12 15.75C9.35229 15.75 6.80469 15.3212 4.42289 14.5294C4.16984 14.4452 3.94361 14.3149 3.75 14.1499M3.75 14.1499C3.27808 13.7476 3 13.1389 3 12.4889V8.70569C3 7.62475 3.7679 6.69082 4.83694 6.53086C5.96233 6.36247 7.10049 6.23315 8.25 6.14432M15.75 6.14432V5.25C15.75 4.00736 14.7426 3 13.5 3H10.5C9.25736 3 8.25 4.00736 8.25 5.25V6.14432M15.75 6.14432C14.5126 6.0487 13.262 6 12 6C10.738 6 9.48744 6.0487 8.25 6.14432M12 12.75H12.0075V12.7575H12V12.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div><div class="eyebrow">02 Fit-out</div><h2>Fit out six wheels and one kiln</h2></div></div>
+        <p class="spine-lead">Six wheels, a glaze bench and a shared kiln schedule. No second kiln, no shop, no rebrand.</p>
         <h3 class="sub">In scope</h3>
         <ul>
           <li>Six wheels, six benches, a glaze bench and storage in studio two.</li>
@@ -487,6 +531,18 @@
             </tbody>
           </table>
         </div>
+        <h3 class="sub">Schedule file</h3>
+        <div class="code-block">
+          <div class="code-head"><span>kiln-schedule.json</span></div>
+          <pre><code><span class="tok-punct">{</span>
+  <span class="tok-key">"monday"</span><span class="tok-punct">:</span> <span class="tok-string">"bisque"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"thursday"</span><span class="tok-punct">:</span> <span class="tok-string">"glaze"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"maxCone"</span><span class="tok-punct">:</span> <span class="tok-number">6</span><span class="tok-punct">,</span>
+  <span class="tok-key">"shared"</span><span class="tok-punct">:</span> <span class="tok-bool">true</span>
+<span class="tok-punct">}</span></code></pre>
+        </div>
+        <p class="chart-caption">The schedule both rooms read from. Static spans mark the tokens; no highlighter runs in the page.</p>
+
         <h3 class="sub">Deliverables</h3>
         <ul class="check">
           <li><span>Signed three-year lease with a break at 18 months.</span></li>
@@ -523,37 +579,22 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Timeline, milestones and reviews</h2></div></div>
+        <div class="spine-head"><span class="spine-num">04</span>
+          <span class="spine-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6.75 3V5.25M17.25 3V5.25M3 18.75V7.5C3 6.25736 4.00736 5.25 5.25 5.25H18.75C19.9926 5.25 21 6.25736 21 7.5V18.75M3 18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75M3 18.75V11.25C3 10.0074 4.00736 9 5.25 9H18.75C19.9926 9 21 10.0074 21 11.25V18.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div><div class="eyebrow">03 Timetable</div><h2>Set the timetable and prove the kiln</h2></div></div>
         <p class="spine-lead">Fourteen weeks from the lease decision to the first class. The fit-out owns the middle eight.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Build</span>
-          <span><span class="swatch alt"></span>Verify</span>
-          <span><span class="swatch soft"></span>Buffer</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Fourteen week plan with five workstreams: lease in weeks 1 to 2, fit-out weeks 3 to 10, kiln schedule weeks 8 to 11, teaching plan weeks 6 to 12, first class and review weeks 13 to 14">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Lease and cover</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Terms, deposit, insurance</div></div></div>
-            <div class="gantt-row"><div class="label">Fit-out</div><div class="track"><div class="bar" style="grid-column: 3 / span 8;">Wheels, sink, drying, entry</div></div></div>
-            <div class="gantt-row"><div class="label">Kiln schedule</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Two firings a week</div></div></div>
-            <div class="gantt-row"><div class="label">Teaching plan</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 6;">Timetable, induction</div></div></div>
-            <div class="gantt-row"><div class="label">First class</div><div class="track"><div class="bar soft" style="grid-column: 12 / span 2;">Run, observe, fix</div></div></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows the fourteen-week horizon in eight columns; later weeks share the last column. Phones stack each row.</p>
-        <h3 class="sub">Milestones</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-            <tbody>
-              <tr><td>14 Nov</td><td>Lease signed and deposit paid</td><td>Dev</td><td>Decision due</td></tr>
-              <tr><td>28 Nov</td><td>Electrician booked and wheels ordered</td><td>Mara</td><td>Planned</td></tr>
-              <tr><td>09 Jan</td><td>Fit-out complete and sink tested</td><td>Mara</td><td>Planned</td></tr>
-              <tr><td>16 Jan</td><td>Kiln schedule proven for four weeks</td><td>Tom</td><td>Planned</td></tr>
-              <tr><td>23 Jan</td><td>First class in studio two</td><td>Ines</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <ol class="timeline" aria-label="Project milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">14 Nov 2026</span><strong>Lease signed</strong><p>Dev signs and pays the deposit.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">28 Nov 2026</span><strong>Electrician and wheels booked</strong><p>Mara confirms both orders.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">09 Jan 2027</span><strong>Fit-out complete</strong><p>Sink tested and six wheels wired.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">16 Jan 2027</span><strong>Kiln schedule proven</strong><p>Four weeks of two firings a week.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">23 Jan 2027</span><strong>First class</strong><p>30 students, Ines teaching.</p></li>
+        </ol>
+
         <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>
@@ -571,6 +612,17 @@
           <li>Friday, 20 minutes: Mara, Tom and Ines. Budget, fit-out and the next week's blocker.</li>
           <li>First Monday of the month: Dev joins for the lease and spend decision.</li>
           <li>After the first class: a 30-minute review with the three teachers, then one page of fixes.</li>
+        </ul>
+      </section>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Open</div><h2>Open the doors</h2></div></div>
+        <p class="spine-lead">The first class is the real test. These are the checks before the door opens.</p>
+        <ul class="check">
+          <li><span>Six wheels turn and the sink passes a test run.</span></li>
+          <li><span>Both rooms follow one kiln schedule for a full week.</span></li>
+          <li><span>30 students have a place and a backup class.</span></li>
+          <li><span>Ines has run the glaze induction once for the new teacher.</span></li>
+          <li><span>The first class runs without borrowing a wheel.</span></li>
         </ul>
       </section>
     </main>

@@ -49,3 +49,17 @@ test('the unslop rules ship once, inside the planny skill', () => {
   const skill = readFileSync('skills/planny/SKILL.md', 'utf8');
   expect(skill).not.toMatch(/skills add unslop/i);
 });
+
+test('the skill documents code blocks, the viewer copy button and the icon set', () => {
+  const skill = readFileSync('skills/planny/SKILL.md', 'utf8');
+  expect(skill).toContain('code-block');
+  expect(skill).toContain('Copy button');
+  expect(skill).toContain('reference/icons.md');
+  const components = readFileSync('skills/planny/reference/components.md', 'utf8');
+  expect(components).toContain('Code blocks with a copy button');
+  expect(components).toContain('.tok-key');
+  expect(components).toContain('Heroicons');
+  const commands = readFileSync('skills/planny/commands/planny.md', 'utf8');
+  expect(commands).toContain('.code-block');
+  expect(commands).toContain('reference/icons.md');
+});

@@ -7,11 +7,12 @@ description: Publish plans, reports, roadmaps and HTML one-pagers as shareable l
 
 Use this when someone wants a plan, report, roadmap or one-pager published as a link.
 
-- Pick a template first. `template.html` is the project plan. `templates/launch-plan.html`, `templates/research-plan.html` and `templates/decision-plan.html` cover a launch, a research study and a decision. Every template has the same spine: Who, Why, What, When.
+- Pick a template first. `template.html` is the project plan. `templates/launch-plan.html`, `templates/research-plan.html` and `templates/decision-plan.html` cover a launch, a research study and a decision. Every template is organised as four numbered tasks that run from the first step to the finish.
 - Read `reference/unslop.md` before writing a plan and apply it to every visible word: titles, lede, section copy, table cells and labels. If the standalone unslop skill is installed, use it as well; the bundled rules are the portable fallback.
 - `scripts/publish.mjs` is the only publish path. It checks size (4 MiB), UTF-8, warns about markup the sanitiser removes, posts the raw HTML, and writes the key to `~/.planny/<id>.json` with mode 0600 in a 0700 folder. It never prints the key.
 - `scripts/delete.mjs` is the only delete path. It reads that file, sends the DELETE, prints only the status, and removes the file on 200 or 410.
-- `reference/components.md` has charts, Gantt, decision matrix, risk register and KPI snippets. `reference/errors.md` lists the status codes.
+- `reference/components.md` has charts, Gantt, decision matrix, risk register, KPI snippets, the code block contract and the copy button. `reference/icons.md` has 18 inline Heroicons. `reference/errors.md` lists the status codes.
+- Code blocks use `.code-block` with optional `.code-head`, a `pre code` pair and static `.tok-*` spans. The plan viewer injects the Copy button; never add your own script or button.
 
 Rules: no scripts, links, forms, frames, external files or external fonts; CSS, inline SVG, tables and `data:image/` images are fine. Name 1 to 120 characters, duration `h/d/w/m/y` from 1 hour to 100 years.
 
@@ -19,7 +20,7 @@ Rules: no scripts, links, forms, frames, external files or external fonts; CSS, 
 
 1. Choose the template that fits: project, launch, research or decision.
 2. Read `reference/unslop.md` and edit every visible word to its rules.
-3. Keep the Who, Why, What, When order. Replace the sample content with the real plan.
+3. Keep the four numbered task sections in order and rename them for the plan. Replace the sample content with the real plan.
 4. Publish.
 
 ## Install

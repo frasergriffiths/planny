@@ -98,37 +98,13 @@
 
       <section>
         <h2>Timeline</h2>
-        <div class="legend">
-          <span><span class="swatch"></span>Plan</span>
-          <span><span class="swatch alt"></span>Checkpoint</span>
-          <span><span class="swatch soft"></span>Buffer</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
-            <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
-            <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
-            <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
-            <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
-            <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
-            <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Milestones</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">When</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-            <tbody>
-              <tr><td>Feb</td><td>200 beta customers</td><td>Harbor</td><td>Planned</td></tr>
-              <tr><td>Apr</td><td>Packaging and label</td><td>Harbor</td><td>Planned</td></tr>
-              <tr><td>May</td><td>Public launch</td><td>Harbor</td><td>Planned</td></tr>
-              <tr><td>Jul</td><td>600 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-              <tr><td>Sep</td><td>1,200 subscribers</td><td>Harbor</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <ol class="timeline" aria-label="Subscription milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">Feb 2027</span><strong>200 beta customers</strong><p>Existing bag club first.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">Apr 2027</span><strong>Packaging and label</strong><p>Twenty-customer test.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">May 2027</span><strong>Public launch</strong><p>Second bag added.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">Jul 2027</span><strong>600 subscribers</strong><p>Referral offer live.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">Sep 2027</span><strong>1,200 subscribers</strong><p>Second roaster covered.</p></li>
+        </ol>
       </section>
 
       <section>
@@ -159,6 +135,21 @@
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section>
+        <h2>Roast schedule</h2>
+        <p class="measure">The roaster runs two batches a week. The schedule lives in one small file so the shop and the roastery read the same dates.</p>
+        <div class="code-block">
+          <div class="code-head"><span>roast-schedule.json</span></div>
+          <pre><code><span class="tok-punct">{</span>
+  <span class="tok-key">"tuesday"</span><span class="tok-punct">:</span> <span class="tok-string">"filter"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"friday"</span><span class="tok-punct">:</span> <span class="tok-string">"espresso"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"batchKg"</span><span class="tok-punct">:</span> <span class="tok-number">12</span><span class="tok-punct">,</span>
+  <span class="tok-key">"subscriptionFirst"</span><span class="tok-punct">:</span> <span class="tok-bool">true</span>
+<span class="tok-punct">}</span></code></pre>
+        </div>
+        <p class="chart-caption">Static spans mark the tokens. The Copy button is added by the plan viewer, not by this file.</p>
       </section>
 
       <section>

@@ -178,24 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -239,7 +229,7 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
-  /* The plan spine: Who, Why, What, When, in that order. */
+  /* The plan spine: four numbered tasks, in order. */
   .spine {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -344,6 +334,59 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  /* Code blocks: static token classes, no runtime highlighter. */
+  .code-block {
+    position: relative;
+    margin: 16px 0 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
+  .code-copy {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-bar);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .code-copy:hover, .code-copy:focus-visible { color: var(--ink); }
+  .code-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .code-copy svg { display: block; }
+  .tok-key, .tok-tag { color: #8ab8ff; }
+  .tok-string { color: #86efac; }
+  .tok-number, .tok-bool { color: #fbbf24; }
+  .tok-comment { color: #737373; font-style: italic; }
+  .tok-fn { color: #c4b5fd; }
+  .tok-punct { color: #a1a1a1; }
+  .tok-attr { color: #f9a8d4; }
+  @media (max-width: 420px) {
+    .code-block code { font-size: 12px; }
+    .code-block pre { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: minmax(0, 1fr); }
   }
@@ -355,14 +398,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -378,7 +413,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -400,10 +434,10 @@
   </header>
 
   <div class="spine" aria-label="Plan sections">
-    <div class="active"><span>01</span>Who</div>
-    <div><span>02</span>Why</div>
-    <div><span>03</span>What</div>
-    <div><span>04</span>When</div>
+    <div class="active"><span>01</span>Questions</div>
+    <div><span>02</span>Method</div>
+    <div><span>03</span>Fieldwork</div>
+    <div><span>04</span>Report</div>
   </div>
 
   <section class="box">
@@ -418,7 +452,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>Who asks, who decides, who takes part</h2></div></div>
+        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Questions</div><h2>Ask the right question about turnover</h2></div></div>
         <p class="spine-lead">The study is independent of the council. Ruth can change the scope, not the findings.</p>
         <div class="table-wrap">
           <table>
@@ -431,12 +465,8 @@
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why turnover matters more than waiting lists</h2></div></div>
-        <p class="spine-lead">The waiting list gets the attention. The bigger loss is the people who leave a plot within two years.</p>
-        <p>Harlow Green has 210 plots and a waiting list of 60. It also re-lets 48 plots a year. Most of those are given up, not taken away, and the same sites lose people faster than others. The council is about to rewrite the tenancy agreement and has no evidence on why people leave.</p>
+        <h3 class="sub">Why turnover</h3>
+        <p>The waiting list gets the attention. The bigger loss is the people who leave a plot within two years. Harlow Green has 210 plots and a waiting list of 60. It also re-lets 48 plots a year. Most of those are given up, not taken away, and the same sites lose people faster than others. The council is about to rewrite the tenancy agreement and has no evidence on why people leave.</p>
         <h3 class="sub">Research question</h3>
         <p>What makes a shared plot easy to keep for the first two years, and which site conditions most often lead a plot holder to give up?</p>
         <h3 class="sub">Outcome</h3>
@@ -463,7 +493,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>Eight sites, thirty interviews, one report</h2></div></div>
+        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Method</div><h2>Eight sites, thirty interviews</h2></div></div>
         <p class="spine-lead">Mixed methods, small sample, honest limits. The study describes eight sites and does not claim to speak for the county.</p>
         <h3 class="sub">In scope</h3>
         <ul>
@@ -490,13 +520,6 @@
             </tbody>
           </table>
         </div>
-        <h3 class="sub">Deliverables</h3>
-        <ul class="check">
-          <li><span>A 12-page report with three findings and the evidence behind each.</span></li>
-          <li><span>An anonymised site condition table.</span></li>
-          <li><span>A two-page summary for councillors.</span></li>
-          <li><span>The interview guide and codebook, published with the report.</span></li>
-        </ul>
         <h3 class="sub">Budget</h3>
         <div class="table-wrap">
           <table>
@@ -526,37 +549,16 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Ten weeks, with the draft in week eight</h2></div></div>
+        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Fieldwork</div><h2>Run fieldwork and analysis in ten weeks</h2></div></div>
         <p class="spine-lead">Fieldwork in weeks two to six. Analysis in weeks six to eight. The draft goes to the committees before it goes to the council.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Fieldwork</span>
-          <span><span class="swatch alt"></span>Analysis</span>
-          <span><span class="swatch soft"></span>Review</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Ten week research plan: setup weeks 1 to 2, interviews weeks 2 to 6, site walks weeks 2 to 5, analysis weeks 6 to 8, review and report weeks 8 to 10">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Setup</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Recruit, records, guides</div></div></div>
-            <div class="gantt-row"><div class="label">Interviews</div><div class="track"><div class="bar" style="grid-column: 2 / span 5;">Thirty conversations</div></div></div>
-            <div class="gantt-row"><div class="label">Site walks</div><div class="track"><div class="bar" style="grid-column: 2 / span 4;">Eight condition sheets</div></div></div>
-            <div class="gantt-row"><div class="label">Analysis</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 3;">Code, compare, test</div></div></div>
-            <div class="gantt-row"><div class="label">Review and report</div><div class="track"><div class="bar soft" style="grid-column: 8 / span 3;">Sense check, final</div></div></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows ten weeks in eight columns; the last columns carry the closing weeks. Phones stack each row.</p>
-        <h3 class="sub">Milestones</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-            <tbody>
-              <tr><td>24 Oct</td><td>Interview guide and consent form approved</td><td>Nell</td><td>In progress</td></tr>
-              <tr><td>14 Nov</td><td>Twenty interviews complete</td><td>Nell</td><td>Planned</td></tr>
-              <tr><td>28 Nov</td><td>Two-page summary for councillors</td><td>Nell</td><td>Planned</td></tr>
-              <tr><td>05 Dec</td><td>Draft report to committees and Ruth</td><td>Nell</td><td>Planned</td></tr>
-              <tr><td>12 Dec</td><td>Final report and anonymised data published</td><td>Nell</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <ol class="timeline" aria-label="Research milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">24 Oct 2026</span><strong>Interview guide approved</strong><p>Consent form signed off.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">14 Nov 2026</span><strong>Twenty interviews complete</strong><p>Ten former plot holders included.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">28 Nov 2026</span><strong>Councillor summary</strong><p>Two pages, before the draft.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">05 Dec 2026</span><strong>Draft to committees</strong><p>Five working days for corrections.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">12 Dec 2026</span><strong>Final report published</strong><p>Interview data anonymised.</p></li>
+        </ol>
+
         <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>
@@ -569,6 +571,17 @@
             </tbody>
           </table>
         </div>
+      </section>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Report</div><h2>Write the report and share the evidence</h2></div></div>
+        <p class="spine-lead">Three findings, each tied to evidence, plus the limits the sample cannot cross.</p>
+        <h3 class="sub">Deliverables</h3>
+        <ul class="check">
+          <li><span>A 12-page report with three findings and the evidence behind each.</span></li>
+          <li><span>An anonymised site condition table.</span></li>
+          <li><span>A two-page summary for councillors.</span></li>
+          <li><span>The interview guide and codebook, published with the report.</span></li>
+        </ul>
         <h3 class="sub">Review cadence</h3>
         <ul>
           <li>Tuesday, 15 minutes: Nell and Ruth on recruitment, access and anything blocking fieldwork.</li>

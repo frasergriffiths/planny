@@ -7,6 +7,7 @@ The hosted site bundles the following client-side packages:
 - React 19.3.1, React DOM 19.3.1 and Scheduler 0.28.0 — MIT.
 - Tailwind CSS 4.3.3 — MIT, Copyright (c) Tailwind Labs, Inc. The compiled CSS retains its upstream notice.
 - Geist and Geist Mono fonts — SIL Open Font License 1.1; the licence is at [public/fonts/OFL-geist.txt](public/fonts/OFL-geist.txt).
+- Heroicons SVG paths in the plan templates and `skills/planny/reference/icons.md` — MIT, Copyright (c) Tailwind Labs, Inc. Covered by the MIT permission notice below.
 
 Per-package MIT copyright lines, copied from each package's licence file:
 

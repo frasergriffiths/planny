@@ -175,7 +175,6 @@ test('small bars and swatches use the token radii; base cards stay square', () =
     if (source === sample) {
       expect(rule(source, '.stacked')).toContain('border-radius: var(--radius-bar)');
       expect(rule(source, '.table-wrap')).toContain('overflow-x: auto');
-      expect(rule(source, '.gantt-wrap')).toContain('overflow-x: auto');
       expect(rule(source, '.chart-card')).toContain('border: 1px solid var(--line)');
       expect(rule(source, '.chart-card')).toContain('border-radius: var(--radius-card)');
       expect(rule(source, '.chart-card')).not.toContain('border-left');
@@ -193,7 +192,7 @@ test('the sample keeps the quiet budget total and the rich sections', () => {
   expect(rule(sample, '.stacked')).toContain('gap: 2px');
   expect(rule(sample, '.budget-total')).toContain('color: var(--muted)');
   expect(rule(sample, '.budget-total')).toContain('font-size: 12px');
-  for (const section of ['Timeline', 'Milestones', 'Decisions', 'Risks', 'Next steps']) {
+  for (const section of ['Timeline', 'Decisions', 'Risks', 'Next steps']) {
     expect(sample).toContain(`<h2>${section}</h2>`);
   }
 });

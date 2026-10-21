@@ -17,18 +17,29 @@ import {
   sha256Hex,
 } from './util.js';
 import { z } from 'zod';
+import { PLAN_SCRIPT_HASH, PLAN_SCRIPT_TAG } from './plan-script.js';
 
 const NEVER = Number.MAX_SAFE_INTEGER;
-const PLAN_CSP = "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
+const PLAN_CSP = "sandbox allow-scripts; default-src 'none'; "
+  + `script-src 'sha256-${PLAN_SCRIPT_HASH}'; `
+  + "img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-const SAMPLE_CSP = PLAN_CSP.replace('sandbox;', "sandbox allow-top-navigation-by-user-activation;");
+const SAMPLE_CSP = "sandbox allow-top-navigation-by-user-activation allow-scripts; default-src 'none'; "
+  + `script-src 'sha256-${PLAN_SCRIPT_HASH}'; `
+  + "img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
+  + "form-action 'none'; frame-ancestors 'none'";
 const SAMPLE_CTA = '<div style="margin:32px 0 8px;padding:0 clamp(20px,4vw,52px);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;">'
   + '<a href="/" style="display:inline-block;padding:10px 14px;border:1px solid #3f3f3f;border-radius:4px;background:#0a0a0a;color:#f5f5f5;text-decoration:none;">Make your own plan</a></div>';
 
+function withPlanScript(html: string): string {
+  const end = html.lastIndexOf('</body>');
+  return end === -1 ? html + PLAN_SCRIPT_TAG : `${html.slice(0, end)}${PLAN_SCRIPT_TAG}\n${html.slice(end)}`;
+}
+
 function samplePage(): string {
-  return PAGES.sample.replace('</div>\n</body>', `${SAMPLE_CTA}\n</div>\n</body>`);
+  return withPlanScript(PAGES.sample.replace('</div>\n</body>', `${SAMPLE_CTA}\n</div>\n</body>`));
 }
 
 export interface Logger {
@@ -408,13 +419,15 @@ export function createApp(deps: AppDeps): App {
           resumesAt: pages.nextMonthStart(at),
         }));
       }
-      const html = await store.blobs.get(id);
-      if (!html) {
+      const stored = await store.blobs.get(id);
+      if (!stored) {
         log.error(`planny: plan ${id} has a record but no file`);
         return page(500, pages.serverError({ build }));
       }
+      const html = withPlanScript(new TextDecoder().decode(stored));
       const ttl = Math.max(1, Math.min(config.cacheTtlSeconds, Math.floor((record.expiresAt - at) / 1000)));
-      return new Response(request.method === 'HEAD' ? null : new Uint8Array(html), { status: 200, headers: rawHeaders(id, ttl) });
+      const body = new TextEncoder().encode(html);
+      return new Response(request.method === 'HEAD' ? null : new Uint8Array(body), { status: 200, headers: rawHeaders(id, ttl) });
     }
     if (record.state === 'live' && !record.hidden) background(removePlan(id, 'expired', at));
     return unavailable(record);

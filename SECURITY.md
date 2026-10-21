@@ -20,7 +20,7 @@ The hosted service is deployed from `main`; check `/health` for the live commit.
 
 ## What is in scope
 
-- The sanitiser and the plan CSP, including any way to run script, load a remote resource, navigate the page or escape the sandbox.
+- The sanitiser and the plan CSP, including any way to run a plan-authored script, load a remote resource, navigate the page or escape the sandbox. No plan-authored scripts; one fixed copy script is injected by the viewer.
 - The upload, view, delete and takedown paths, including key comparison, expiry and cache purging.
 - The Blob state lock and the record lifecycle, including a delete that could revive or hide another plan.
 - The address hash and the rate and storage guards.

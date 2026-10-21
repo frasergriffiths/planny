@@ -8,8 +8,8 @@ function read(path: string): string {
   return readFileSync(join(root, path), 'utf8');
 }
 
-// The editorial template contract: compact type, wrapped tables and Gantt,
-// quiet chart cards, and HTML/CSS chart labels whose px size never scales.
+// The editorial template contract: compact type, wrapped tables and a vertical
+// milestone timeline, quiet chart cards, and HTML/CSS chart labels that never scale.
 const template = read('skills/planny/template.html');
 const sample = read('public/sample/index.html');
 const reference = read('skills/planny/reference/components.md');
@@ -25,16 +25,13 @@ test('the template uses the editorial type scale with a centred 1240px page', ()
   }
 });
 
-test('tables and the Gantt scroll inside their region on phones', () => {
+test('tables scroll inside their region on phones', () => {
   for (const source of [template, sample]) {
     expect(rule(source, '.table-wrap')).toContain('overflow-x: auto');
-    expect(rule(source, '.gantt-wrap')).toContain('overflow-x: auto');
-    expect(rule(source, '.gantt')).toContain('min-width: 640px');
     expect(rule(source, '.table-wrap table')).toContain('min-width: 520px');
   }
   expect(sample).toMatch(/<div class="table-wrap">\s*<table>/g);
-  expect(sample.match(/<div class="table-wrap">/g)?.length).toBe(3);
-  expect(sample).toContain('<div class="gantt-wrap">');
+  expect(sample.match(/<div class="table-wrap">/g)?.length).toBe(2);
 });
 
 test('charts are quiet cards and chart labels are fixed CSS pixels', () => {
@@ -58,12 +55,22 @@ test('stretchable SVG charts carry no SVG text; the fixed-size donut keeps it', 
   expect(sample).toContain('plan versus pay-as-you-go');
 });
 
-test('line labels sit in one row under the plot; the mobile Gantt stacks without clipping', () => {
+test('line labels sit in one row under the plot', () => {
   for (const source of [template, sample]) {
     expect(rule(source, '.x-labels')).toContain('grid-template-columns: repeat(9, minmax(0, 1fr))');
-    expect(source).toContain('.gantt-head { display: none; }');
-    expect(source).toContain('.gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }');
-    expect(source).toContain('repeating-linear-gradient');
+  }
+});
+
+test('templates use the vertical milestone timeline, not a Gantt', () => {
+  for (const path of [...templatePaths, 'public/sample/index.html']) {
+    const source = read(path);
+    expect(source).toContain('<ol class="timeline"');
+    expect(source).not.toContain('gantt');
+    const items = source.match(/<li><span class="dot" aria-hidden="true"><\/span>/g) ?? [];
+    expect(items.length).toBeGreaterThanOrEqual(4);
+    expect(items.length).toBeLessThanOrEqual(6);
+    expect(rule(source, '.timeline li')).toContain('padding');
+    expect(rule(source, '.timeline .dot')).toContain('border-radius: 50%');
   }
 });
 
@@ -89,7 +96,7 @@ function rule(source: string, selector: string): string {
   return source.slice(start + selector.length + 2, end);
 }
 
-// Every template is self-contained and follows the Who, Why, What, When spine.
+// Every template is self-contained and follows four numbered task steps.
 const templatePaths = [
   'skills/planny/template.html',
   'skills/planny/templates/launch-plan.html',
@@ -97,14 +104,30 @@ const templatePaths = [
   'skills/planny/templates/decision-plan.html',
 ];
 
-test('four templates exist and each carries the spine in order', () => {
+const spines: Record<string, string[]> = {
+  'skills/planny/template.html': ['Lease', 'Fit-out', 'Timetable', 'Open'],
+  'skills/planny/templates/launch-plan.html': ['Batch', 'Dealers', 'Build', 'Demo'],
+  'skills/planny/templates/research-plan.html': ['Questions', 'Method', 'Fieldwork', 'Report'],
+  'skills/planny/templates/decision-plan.html': ['Criteria', 'Options', 'Trial', 'Decision'],
+};
+
+test('four templates exist and each carries its numbered tasks in order', () => {
   for (const path of templatePaths) {
     const source = read(path);
     expect(source).toContain('class="spine"');
-    const order = ['Who', 'Why', 'What', 'When'].map((part) => source.indexOf(`<div class="eyebrow">${part}</div>`));
+    const steps = spines[path]!;
+    expect(steps).toHaveLength(4);
+    const order = steps.map((step, index) => source.indexOf(`<div class="eyebrow">0${index + 1} ${step}</div>`));
     for (const index of order) expect(index).toBeGreaterThan(-1);
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(source.match(/class="spine-section"/g)?.length).toBe(4);
+    // The top nav carries the same task names, with no Who/Why/What/When labels.
+    for (const [index, step] of steps.entries()) {
+      expect(source).toContain(`<span>0${index + 1}</span>${step}</div>`);
+    }
+    for (const label of ['Who', 'Why', 'What', 'When']) {
+      expect(source).not.toContain(`<div class="eyebrow">${label}</div>`);
+    }
   }
 });
 
@@ -126,4 +149,44 @@ test('each template names its audience, budget and review cadence', () => {
     expect(source).toContain('Budget');
     expect(source).toContain('Review cadence');
   }
+});
+
+test('the template ships a code block with static tokens and copy-button styles', () => {
+  for (const source of [template, sample]) {
+    expect(source).toContain('.code-block');
+    expect(source).toContain('.code-head');
+    expect(rule(source, '.code-copy')).toContain('cursor: pointer');
+    expect(rule(source, '.code-copy')).toContain('width: 32px');
+    expect(rule(source, '.code-copy')).toContain('height: 32px');
+    for (const token of ['tok-key', 'tok-string', 'tok-number', 'tok-comment', 'tok-fn', 'tok-punct', 'tok-tag', 'tok-attr', 'tok-bool']) {
+      expect(source).toContain(`.${token}`);
+    }
+  }
+  expect(template).toContain('<div class="code-block">');
+  expect(template).toContain('<span class="tok-key">');
+  expect(sample).toContain('<div class="code-block">');
+  // Every template carries the styles; the launch template also shows a block.
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source).toContain('.code-copy');
+    expect(source).toContain('.tok-key');
+  }
+  expect(read('skills/planny/templates/launch-plan.html')).toContain('<div class="code-block">');
+  // The button is viewer-owned: plan markup must not carry one.
+  expect(template).not.toContain('<button');
+  expect(sample).not.toContain('<button');
+  expect(read('skills/planny/templates/launch-plan.html')).not.toContain('<button');
+});
+
+test('the templates use a small set of inline Heroicons', () => {
+  const icons = read('skills/planny/reference/icons.md');
+  const count = icons.match(/<svg[\s\S]*?<\/svg>/g)?.length ?? 0;
+  expect(count).toBeGreaterThanOrEqual(16);
+  expect(icons).toContain('stroke="currentColor"');
+  expect(icons).toContain('aria-hidden="true"');
+  expect(icons).toContain('MIT License');
+  expect(icons).toContain('Copyright (c) Tailwind Labs, Inc.');
+  const used = template.match(/class="spine-icon"/g)?.length ?? 0;
+  expect(used).toBeGreaterThanOrEqual(2);
+  expect(used).toBeLessThanOrEqual(3);
 });
