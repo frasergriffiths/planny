@@ -372,19 +372,22 @@
   .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
   .code-copy {
+    display: inline-flex;
     flex: 0 0 auto;
-    padding: 3px 8px;
-    border: 1px solid var(--line);
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
     border-radius: var(--radius-bar);
     background: transparent;
     color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
     cursor: pointer;
   }
-  .code-copy:hover, .code-copy:focus-visible { border-color: var(--line-strong); color: var(--ink); }
+  .code-copy:hover, .code-copy:focus-visible { color: var(--ink); }
+  .code-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .code-copy svg { display: block; }
   .tok-key, .tok-tag { color: #8ab8ff; }
   .tok-string { color: #86efac; }
   .tok-number, .tok-bool { color: #fbbf24; }

@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 // responses only, and allowed by the CSP hash below. Plan-authored scripts are
 // still removed by the sanitiser.
 export const PLAN_SCRIPT = `(function () {
+  var COPY_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a1 1 0 0 1 1-1h9"></path></svg>';
+  var CHECK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"></path></svg>';
   function copyText(text) {
     return new Promise(function (resolve) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -27,6 +29,25 @@ export const PLAN_SCRIPT = `(function () {
     document.body.removeChild(area);
     return ok;
   }
+  function status(block, message) {
+    var live = block.querySelector('.code-copy-status');
+    if (!live) {
+      live = document.createElement('span');
+      live.className = 'code-copy-status';
+      live.setAttribute('aria-live', 'polite');
+      live.style.position = 'absolute';
+      live.style.width = '1px';
+      live.style.height = '1px';
+      live.style.margin = '-1px';
+      live.style.padding = '0';
+      live.style.overflow = 'hidden';
+      live.style.clip = 'rect(0 0 0 0)';
+      live.style.whiteSpace = 'nowrap';
+      live.style.border = '0';
+      block.appendChild(live);
+    }
+    live.textContent = message;
+  }
   function enhance(block) {
     if (block.getAttribute('data-copy-ready') === 'true') return;
     var code = block.querySelector('pre code') || block.querySelector('pre');
@@ -37,19 +58,23 @@ export const PLAN_SCRIPT = `(function () {
     button.type = 'button';
     button.className = 'code-copy';
     button.setAttribute('aria-label', 'Copy code');
-    button.textContent = 'Copy';
+    button.innerHTML = COPY_ICON;
     if (!head) {
       button.style.position = 'absolute';
-      button.style.top = '8px';
-      button.style.right = '8px';
+      button.style.top = '4px';
+      button.style.right = '4px';
     }
     var timer = 0;
     button.addEventListener('click', function () {
       copyText(code.innerText || code.textContent || '').then(function (ok) {
         if (!ok) return;
-        button.textContent = 'Copied';
+        button.innerHTML = CHECK_ICON;
+        status(block, 'Copied');
         clearTimeout(timer);
-        timer = setTimeout(function () { button.textContent = 'Copy'; }, 1500);
+        timer = setTimeout(function () {
+          button.innerHTML = COPY_ICON;
+          status(block, '');
+        }, 1500);
       });
     });
     if (head) head.appendChild(button);

@@ -345,6 +345,59 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  /* Code blocks: static token classes, no runtime highlighter. */
+  .code-block {
+    position: relative;
+    margin: 16px 0 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
+  .code-copy {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-bar);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .code-copy:hover, .code-copy:focus-visible { color: var(--ink); }
+  .code-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .code-copy svg { display: block; }
+  .tok-key, .tok-tag { color: #8ab8ff; }
+  .tok-string { color: #86efac; }
+  .tok-number, .tok-bool { color: #fbbf24; }
+  .tok-comment { color: #737373; font-style: italic; }
+  .tok-fn { color: #c4b5fd; }
+  .tok-punct { color: #a1a1a1; }
+  .tok-attr { color: #f9a8d4; }
+  @media (max-width: 420px) {
+    .code-block code { font-size: 12px; }
+    .code-block pre { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: minmax(0, 1fr); }
   }

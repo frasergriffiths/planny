@@ -442,7 +442,7 @@ Inline SVG boxes and lines. No markers or external references.
 
 ## Code blocks with a copy button
 
-Wrap a code sample in `.code-block`. The optional `.code-head` carries the language or file label. planny adds a Copy button to every `.code-block` in the viewer, so do not add your own button, script or event handler.
+Wrap a code sample in `.code-block`. The optional `.code-head` carries the language or file label. planny adds an icon-only Copy button to every `.code-block` in the viewer. It shows a check for 1.5 seconds after a copy and announces "Copied" to screen readers. Do not add your own button, script or event handler.
 
 ```html
 <div class="code-block">
