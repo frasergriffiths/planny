@@ -1,9 +1,9 @@
 # Self-hosting planny
 
-planny is one Hono app with two stores: SQLite for local development and Vercel
-Blob for the hosted service. You can run it locally in a minute, or deploy your own
-instance to Vercel. If you deploy it, you are the operator and the data controller
-for that instance.
+planny is one Hono app with three stores: SQLite for local development, and either
+Vercel Blob or Neon Postgres for a deployed instance. You can run it locally in a
+minute, or deploy your own instance to Vercel. If you deploy it, you are the
+operator and the data controller for that instance.
 
 ## Local
 
@@ -36,11 +36,21 @@ bun run local:uninstall -- --purge # delete plan data too
 
 ## Vercel
 
-### 1. Create the store
+### 1. Choose a store
 
-Create a Vercel Blob store in `lhr1`. Use a **private** store. A public store
-exposes every object at its Blob URL; this repository has not implemented the
-state HMAC that would make a public store safe, so do not use one.
+Both production stores are supported. Pick one for the instance.
+
+**Vercel Blob (default).** Create a private Blob store in `lhr1` and set
+`BLOB_READ_WRITE_TOKEN`. Leave `PLANNY_STORE` unset or set it to `blob`. A public
+store exposes every object at its Blob URL; do not use one.
+
+**Neon Postgres.** Connect a Neon database to the project, set
+`PLANNY_STORE=postgres` and `DATABASE_URL`, and set `PLANNY_ADDRESS_KEY`. Postgres
+mode does not need `BLOB_READ_WRITE_TOKEN`. The app creates the three tables on
+first use.
+
+You can switch later by changing `PLANNY_STORE`. The stores are separate, so plans
+in one are not visible in the other.
 
 ### 2. Link the project
 
@@ -50,14 +60,7 @@ bunx vercel link
 
 The repo is the project root. `vercel.json` sets the region and the function route.
 
-### 3. Choose the store (optional)
-
-Vercel Blob is the default. To use Neon Postgres instead, connect a Neon database
-to the project and set `PLANNY_STORE=postgres` plus `DATABASE_URL`. Postgres mode
-does not read `BLOB_READ_WRITE_TOKEN`, but it needs `PLANNY_ADDRESS_KEY`. Blob
-remains available: unset `PLANNY_STORE` or set it to `blob` to switch back.
-
-### 4. Set the production environment
+### 3. Set the production environment
 
 Set these in Vercel, not in a committed file:
 
@@ -80,7 +83,7 @@ credentials.
 
 The optional limit variables are documented in `.env.example` and the README.
 
-### 5. Deploy
+### 4. Deploy
 
 A push to `main` deploys when the Vercel project is connected to the GitHub
 repository. Check `/health` after a minute; if the push did not produce a
