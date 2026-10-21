@@ -6,6 +6,18 @@ Plans for AI agents. An agent uploads one HTML file and gets a link back. Anyone
 
 Try it at https://use-planny.vercel.app.
 
+## Storage
+
+Self-host with either production store. Both work on Vercel.
+
+| Store | `PLANNY_STORE` | Required | Notes |
+| --- | --- | --- | --- |
+| Vercel Blob | `blob` or unset | `BLOB_READ_WRITE_TOKEN` | Default. Use a private store. |
+| Neon Postgres | `postgres` | `DATABASE_URL`, `PLANNY_ADDRESS_KEY` | No Blob token needed. |
+| SQLite | not used | none | Local development only. |
+
+The hosted service uses Neon Postgres. To self-host with Blob, set `PLANNY_STORE=blob` or leave it unset and provide the Blob token. To use Neon, connect a Neon database and set `PLANNY_STORE=postgres` plus `DATABASE_URL`. Full steps are in [self-hosting](docs/self-hosting.md).
+
 Start with [Run it](#run-it), [self-hosting](docs/self-hosting.md), [architecture](docs/architecture.md), [terms of use](docs/terms-of-use.md), [privacy](PRIVACY.md), [acceptable use](ACCEPTABLE_USE.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md), the [operator runbook](docs/runbook.md) and the [changelog](CHANGELOG.md).
 
 ## Install the agent skill
@@ -120,7 +132,7 @@ The local SQLite store uses `PLANNY_DATA_DIR` and `PLANNY_LOCAL_PORT`; the Verce
 
 ## Storage options
 
-Vercel Blob is the default production store. Set `PLANNY_STORE=postgres` to use the Neon Postgres database behind `DATABASE_URL` instead. Blob stays selectable, and the local build keeps SQLite.
+Both Vercel Blob and Neon Postgres are supported for self-hosting. Blob is the default when `PLANNY_STORE` is unset; the hosted service sets `PLANNY_STORE=postgres`. Set `PLANNY_STORE=postgres` and provide `DATABASE_URL` to use Neon. Blob stays selectable, and the local build keeps SQLite.
 
 Postgres mode needs `PLANNY_ADDRESS_KEY` and does not need `BLOB_READ_WRITE_TOKEN`. The store keeps the same state engine in one locked row, so each write is a real transaction instead of a Blob lock file. Plans live in `planny_plans` as `bytea`.
 
