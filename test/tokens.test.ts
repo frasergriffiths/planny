@@ -256,10 +256,11 @@ test('/sample is served with the plan CSP and a CTA', async () => {
     expect(response.headers.get('content-type')).toContain('text/html');
     const csp = response.headers.get('content-security-policy') ?? '';
     expect(csp).toContain("default-src 'none'");
-    expect(csp).toContain("sandbox allow-top-navigation-by-user-activation");
+    expect(csp).toContain('sandbox allow-scripts');
+    expect(csp).not.toContain('allow-top-navigation');
     const body = await response.text();
     expect(body).toContain('Harbor Coffee Roasters');
-    expect(body).toContain('Make your own plan');
+    expect(body).not.toContain('Make your own plan');
   } finally {
     app.cleanup();
   }

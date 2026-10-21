@@ -155,7 +155,7 @@ Use one bar for a small budget split. The total is quiet text above, not a card.
 
 ## CSS bar chart
 
-CSS bars with HTML labels: 12px text in CSS pixels at every width. Replace the series, values and percentages. A single series is one `.fill` per row; a grouped comparison stacks two `.fill.slim` bars in a `.track.group`.
+CSS bars with HTML labels: 12px text in CSS pixels at every width. Replace the series and values. Use one `.fill` per row and keep the chart to a single series.
 
 ```html
 <div class="chart-card">
@@ -174,10 +174,7 @@ CSS bars with HTML labels: 12px text in CSS pixels at every width. Replace the s
   .hbars { display: grid; gap: 2px; }
   .hbar { display: grid; grid-template-columns: minmax(84px, 116px) minmax(0, 1fr) 52px; gap: 10px; align-items: center; padding: 4px 0; font-size: 12px; color: var(--ink); }
   .hbar .bar-track { display: flex; align-items: center; height: 20px; border-radius: var(--radius-bar); background: var(--panel); overflow: hidden; }
-  .hbar .bar-track.group { height: 44px; flex-direction: column; justify-content: center; gap: 3px; }
   .hbar .fill { display: block; height: 100%; border-radius: var(--radius-bar); background: var(--accent); transform-origin: left; animation: bar-grow .7s ease-out both; }
-  .hbar .fill.slim { height: 9px; }
-  .hbar .fill.alt { background: var(--line-strong); }
   .hbar .val { color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
   .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
   .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
@@ -193,7 +190,7 @@ CSS bars with HTML labels: 12px text in CSS pixels at every width. Replace the s
 </style>
 ```
 
-Keep the widths on a 0-to-max scale of the largest value (largest value = 100%). For a grouped row, put the plan in `.fill.slim` and the comparison in `.fill.slim.alt`, and put a short delta such as `−19%` in `.val`.
+Keep the widths on a 0-to-max scale of the largest value (largest value = 100%). Put the value in `.val`.
 
 ## Line chart with HTML labels
 
