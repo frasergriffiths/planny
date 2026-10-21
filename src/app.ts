@@ -26,12 +26,8 @@ const PLAN_CSP = "sandbox allow-scripts; default-src 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-const SAMPLE_CSP = "sandbox allow-top-navigation-by-user-activation allow-scripts; default-src 'none'; "
-  + `script-src 'sha256-${PLAN_SCRIPT_HASH}'; `
-  + "img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
-  + "form-action 'none'; frame-ancestors 'none'";
-const SAMPLE_CTA = '<div style="margin:32px 0 8px;padding:0 clamp(20px,4vw,52px);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;">'
-  + '<a href="/" style="display:inline-block;padding:10px 14px;border:1px solid #3f3f3f;border-radius:4px;background:#0a0a0a;color:#f5f5f5;text-decoration:none;">Make your own plan</a></div>';
+// The sample is a plan, not a landing page: same CSP as a published plan, no CTA link.
+const SAMPLE_CSP = PLAN_CSP;
 
 function withPlanScript(html: string): string {
   const end = html.lastIndexOf('</body>');
@@ -39,7 +35,7 @@ function withPlanScript(html: string): string {
 }
 
 function samplePage(): string {
-  return withPlanScript(PAGES.sample.replace('</div>\n</body>', `${SAMPLE_CTA}\n</div>\n</body>`));
+  return withPlanScript(PAGES.sample);
 }
 
 export interface Logger {
