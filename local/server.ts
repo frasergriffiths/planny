@@ -7,6 +7,7 @@ import type { Logger } from '../src/app.js';
 import { loadConfig } from '../src/config.js';
 import { loadOrCreateSecret } from '../src/secret.js';
 import { createLocalStore } from '../src/stores/local.js';
+import { createPostgresClient, createPostgresStore } from '../src/stores/postgres.js';
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.PLANNY_LOCAL_PORT ?? 4317);
@@ -23,11 +24,19 @@ const log: Logger = {
 // Builds the local serve config. It does not call Bun.serve: the root server.ts owns that, once.
 // This module is never imported on Vercel, so the SQLite store and the Host check stay local.
 export function localServeConfig() {
+  // Local work uses SQLite. PLANNY_STORE=postgres points the same server at Neon for
+  // an end-to-end check against the production store.
+  const postgres = process.env.PLANNY_STORE === 'postgres';
+  if (postgres && !process.env.DATABASE_URL) throw new Error('PLANNY_STORE=postgres needs DATABASE_URL.');
   const app = createApp({
-    build: 'local',
-    store: createLocalStore({ dataDir }),
+    build: postgres ? 'vercel' : 'local',
+    store: postgres
+      ? createPostgresStore({ client: createPostgresClient(process.env.DATABASE_URL!) })
+      : createLocalStore({ dataDir }),
     config: loadConfig(),
-    secret: loadOrCreateSecret(join(dataDir, 'address.key')),
+    secret: postgres
+      ? (process.env.PLANNY_ADDRESS_KEY ?? loadOrCreateSecret(join(dataDir, 'address.key')))
+      : loadOrCreateSecret(join(dataDir, 'address.key')),
     origin: `http://${HOST}:${PORT}`,
     ...(process.env.PLANNY_ADMIN_TOKEN ? { adminToken: process.env.PLANNY_ADMIN_TOKEN } : {}),
     log,

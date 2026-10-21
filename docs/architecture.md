@@ -35,11 +35,15 @@ POST /admin/plans/<uuid>/remove
 
 ## Storage
 
-There is one production store: Vercel Blob. It holds:
+There are two production stores, selected by `PLANNY_STORE`. Vercel Blob is the default; Postgres (Neon) is the alternative.
+
+Vercel Blob holds:
 
 - `plans/<uuid>-<hmac>.html`: the plan HTML, with an HMAC suffix when the store is public.
 - `state.json`: records, counters, rate windows and control state.
 - `config/kill.json`: the upload switch.
+
+`src/stores/postgres.ts` keeps the same JSON state in `planny_state`, plan HTML in `planny_plans` and the upload switch in `planny_control`. Each state write runs in a transaction with `select ... for update` on the single state row, so instances serialise through Postgres instead of a Blob lock. Tables are created with `if not exists` on first use.
 
 `src/stores/blob.ts` adapts the Blob API to the small key-value interface used by the app. The state is one JSON blob. The simple shape is a deliberate trade-off: no second service to run, at the cost of read-modify-write contention, a growth limit and cross-instance read lag.
 
@@ -97,7 +101,7 @@ The optional helper in `scripts/deploy.ts` refuses unless the checked-out branch
 ## Security boundaries
 
 - **Plan content:** the sanitiser and the sandboxed plan CSP. No plan-authored scripts; one fixed copy script is injected by the viewer. No links, forms, frames or remote requests.
-- **Store:** the Blob token and the private store. The plan-path HMAC protects plan HTML only; on a public store `state.json` and `config/kill.json` stay reachable at their Blob URLs, so use a private store.
+- **Store:** the selected store (Blob token and private Blob, or the Postgres connection string). The plan-path HMAC protects plan HTML only; on a public store `state.json` and `config/kill.json` stay reachable at their Blob URLs, so use a private store.
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
 - **Address hash:** `PLANNY_ADDRESS_KEY`; the raw address is not stored in the plan record. The key is stable; rotating it resets all derived addresses and rate limits. If the key is unset, the Blob token is used, so rotating the token has the same effect.
