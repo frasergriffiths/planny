@@ -187,8 +187,8 @@ test('the templates use a small set of inline Heroicons', () => {
   expect(icons).toContain('MIT License');
   expect(icons).toContain('Copyright (c) Tailwind Labs, Inc.');
   const used = template.match(/class="spine-icon"/g)?.length ?? 0;
-  expect(used).toBeGreaterThanOrEqual(2);
-  expect(used).toBeLessThanOrEqual(3);
+  expect(used).toBe(4);
+  expect(template.match(/class="spine-head"/g)?.length).toBe(4);
 });
 
 test('each template numbers its four task sections 01 to 04 in order', () => {
