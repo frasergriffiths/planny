@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from 'bun:test';
 
 test('the planny skill advertises a one-command install', () => {
@@ -32,4 +33,19 @@ test('the skill ships four templates and requires the unslop rules', () => {
   expect(unslop).toContain('Bundled from the unslop skill');
   expect(unslop).toContain('Patterns to detect and fix');
   expect(unslop).toContain('Plain speech');
+});
+
+test('the unslop rules ship once, inside the planny skill', () => {
+  const found: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const path = join(dir, entry);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (entry === 'unslop.md') found.push(path);
+    }
+  };
+  walk('skills');
+  expect(found).toEqual([join('skills', 'planny', 'reference', 'unslop.md')]);
+  const skill = readFileSync('skills/planny/SKILL.md', 'utf8');
+  expect(skill).not.toMatch(/skills add unslop/i);
 });
