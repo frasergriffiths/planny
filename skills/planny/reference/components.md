@@ -435,6 +435,39 @@ Inline SVG boxes and lines. No markers or external references.
 </ol>
 ```
 
+## Code blocks with a copy button
+
+Wrap a code sample in `.code-block`. The optional `.code-head` carries the language or file label. planny adds a Copy button to every `.code-block` in the viewer, so do not add your own button, script or event handler.
+
+```html
+<div class="code-block">
+  <div class="code-head"><span>deploy.sh</span></div>
+  <pre><code><span class="tok-comment"># one command, no prompts</span>
+<span class="tok-fn">planny</span> publish plan.html <span class="tok-punct">\</span>
+  <span class="tok-key">--name</span> <span class="tok-string">"Q4 rollout"</span> <span class="tok-key">--duration</span> <span class="tok-number">90d</span></code></pre>
+</div>
+```
+
+Highlight statically by wrapping tokens in spans. There is no runtime highlighter and no external library, so the markup is the highlight.
+
+| Class | Use for |
+| --- | --- |
+| `.tok-key` | object keys, flags, keywords |
+| `.tok-string` | quoted text |
+| `.tok-number` | numbers and sizes |
+| `.tok-bool` | true, false, null |
+| `.tok-comment` | comments |
+| `.tok-fn` | function or command names |
+| `.tok-punct` | brackets, commas, operators |
+| `.tok-tag` | HTML or XML tags |
+| `.tok-attr` | attribute names |
+
+Keep the sample short. The block scrolls horizontally on its own, so long lines do not widen the page. Do not put a real secret in a plan.
+
+## Heroicons
+
+`reference/icons.md` lists 18 Heroicons 24px outline SVGs (user, users, calendar, clock, chart-bar, document-text, code-bracket, link, shield-check, exclamation-triangle, check-circle, arrow-trending-up, briefcase, currency-dollar, map, flag, light-bulb, clipboard-document-check). Copy one inline, keep `stroke="currentColor"` and `stroke-width="1.5"`, and set `aria-hidden="true"` because the adjacent heading carries the meaning. External icon files are stripped.
+
 ## Rules that keep a plan safe
 
 - No `<script>`, `<form>`, `<iframe>`, `<object>`, `<embed>` or `<base>`.

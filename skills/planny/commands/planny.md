@@ -3,7 +3,7 @@
 Publish an HTML plan and get a link back.
 
 1. Choose a template. `template.html` is the project plan; `templates/launch-plan.html`, `templates/research-plan.html` and `templates/decision-plan.html` cover a launch, a study and a decision.
-2. Read `reference/unslop.md` and apply it to every visible word. Then write one HTML file. The plan can use HTML, inline SVG, CSS and images embedded as `data:image/...`. No scripts, links, forms, frames, external files or external fonts. Keep the Who, Why, What, When order.
+2. Read `reference/unslop.md` and apply it to every visible word. Then write one HTML file. The plan can use HTML, inline SVG, CSS and images embedded as `data:image/...`. Code blocks use the `.code-block` markup with static `.tok-*` spans; the viewer adds the Copy button. Icons are inline SVGs from `reference/icons.md`. No scripts, links, forms, frames, external files or external fonts. Keep the Who, Why, What, When order.
 3. Publish it:
    `node <skill-dir>/scripts/publish.mjs plan.html --name "Q4 rollout" --duration 90d` (or `node "$HOME/.agents/skills/planny/scripts/publish.mjs" ...` after ./install.sh)
    The script checks the size and UTF-8, warns about markup the sanitiser will remove, then prints the link, the expiry and the path to the key file. It never prints the key. It posts to `https://use-planny.vercel.app` by default; set `PLANNY_URL` to change it.

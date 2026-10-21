@@ -127,3 +127,32 @@ test('each template names its audience, budget and review cadence', () => {
     expect(source).toContain('Review cadence');
   }
 });
+
+test('the template ships a code block with static tokens and copy-button styles', () => {
+  for (const source of [template, sample]) {
+    expect(source).toContain('.code-block');
+    expect(source).toContain('.code-head');
+    expect(rule(source, '.code-copy')).toContain('cursor: pointer');
+    for (const token of ['tok-key', 'tok-string', 'tok-number', 'tok-comment', 'tok-fn', 'tok-punct', 'tok-tag', 'tok-attr', 'tok-bool']) {
+      expect(source).toContain(`.${token}`);
+    }
+  }
+  expect(template).toContain('<div class="code-block">');
+  expect(template).toContain('<span class="tok-key">');
+  expect(sample).toContain('<div class="code-block">');
+  // The button is viewer-owned: plan markup must not carry one.
+  expect(template).not.toContain('<button');
+  expect(sample).not.toContain('<button');
+});
+
+test('the templates use a small set of inline Heroicons', () => {
+  const icons = read('skills/planny/reference/icons.md');
+  const count = icons.match(/<svg[\s\S]*?<\/svg>/g)?.length ?? 0;
+  expect(count).toBeGreaterThanOrEqual(16);
+  expect(icons).toContain('stroke="currentColor"');
+  expect(icons).toContain('aria-hidden="true"');
+  expect(icons).toContain('MIT License');
+  const used = template.match(/class="spine-icon"/g)?.length ?? 0;
+  expect(used).toBeGreaterThanOrEqual(2);
+  expect(used).toBeLessThanOrEqual(3);
+});

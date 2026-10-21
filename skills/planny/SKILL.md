@@ -11,7 +11,8 @@ Use this when someone wants a plan, report, roadmap or one-pager published as a 
 - Read `reference/unslop.md` before writing a plan and apply it to every visible word: titles, lede, section copy, table cells and labels. If the standalone unslop skill is installed, use it as well; the bundled rules are the portable fallback.
 - `scripts/publish.mjs` is the only publish path. It checks size (4 MiB), UTF-8, warns about markup the sanitiser removes, posts the raw HTML, and writes the key to `~/.planny/<id>.json` with mode 0600 in a 0700 folder. It never prints the key.
 - `scripts/delete.mjs` is the only delete path. It reads that file, sends the DELETE, prints only the status, and removes the file on 200 or 410.
-- `reference/components.md` has charts, Gantt, decision matrix, risk register and KPI snippets. `reference/errors.md` lists the status codes.
+- `reference/components.md` has charts, Gantt, decision matrix, risk register, KPI snippets, the code block contract and the copy button. `reference/icons.md` has 18 inline Heroicons. `reference/errors.md` lists the status codes.
+- Code blocks use `.code-block` with optional `.code-head`, a `pre code` pair and static `.tok-*` spans. The plan viewer injects the Copy button; never add your own script or button.
 
 Rules: no scripts, links, forms, frames, external files or external fonts; CSS, inline SVG, tables and `data:image/` images are fine. Name 1 to 120 characters, duration `h/d/w/m/y` from 1 hour to 100 years.
 

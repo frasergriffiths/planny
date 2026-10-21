@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -7,6 +8,7 @@ import { createApp } from '../src/app.js';
 import type { App, Logger } from '../src/app.js';
 import { loadConfig, MiB, type AppConfig } from '../src/config.js';
 import { createLocalStore } from '../src/stores/local.js';
+import { PLAN_SCRIPT, PLAN_SCRIPT_HASH } from '../src/plan-script.js';
 
 const ORIGIN = 'http://127.0.0.1:4317';
 const ADDRESS = '203.0.113.7';
@@ -160,7 +162,8 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     expect(page.status).toBe(200);
     const raw = await t.app.fetch(new Request(json.url), { address: ADDRESS });
     const rawBody = await raw.text();
-    for (const bad of ['<script', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
+    for (const bad of ['alert(1)', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
+    expect(rawBody.match(/<script>/g)?.length).toBe(1);
     expect(rawBody).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);
     expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
@@ -169,6 +172,56 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     expect(page.headers.get('vercel-cdn-cache-control')).toBe('s-maxage=3600');
     expect(page.headers.get('vercel-cache-tag')).toBe(`plan-${json.id}`);
     expect(t.logs).toEqual([]);
+  } finally {
+    t.cleanup();
+  }
+});
+
+
+test('plan responses carry the trusted copy script once with a matching CSP hash', async () => {
+  const t = setup();
+  try {
+    const json = await uploaded(t, { body: '<html><body><div class="code-block"><pre><code>x</code></pre></div></body></html>' });
+    const response = await view(t, json.url);
+    const body = await response.text();
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('sandbox allow-scripts');
+    expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
+    expect(csp).not.toContain("script-src 'unsafe-inline'");
+    expect(body.match(/<script>/g)?.length).toBe(1);
+    const inline = /<script>([\s\S]*?)<\/script>/.exec(body)?.[1] ?? '';
+    expect(inline).toBe(PLAN_SCRIPT);
+    const digest = createHash('sha256').update(inline).digest('base64');
+    expect(csp).toContain(`'sha256-${digest}'`);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('site pages never allow scripts and never carry the plan script', async () => {
+  const t = setup();
+  try {
+    for (const path of ['/', '/nowhere', '/terms-of-use']) {
+      const response = await t.app.fetch(new Request(`${ORIGIN}${path}`), { address: ADDRESS });
+      const csp = response.headers.get('content-security-policy') ?? '';
+      expect(csp).not.toContain('allow-scripts');
+      expect(await response.text()).not.toContain(PLAN_SCRIPT_HASH);
+    }
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the sample gets allow-scripts and the same script hash', async () => {
+  const t = setup();
+  try {
+    const response = await t.app.fetch(new Request(`${ORIGIN}/sample`), { address: ADDRESS });
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('sandbox allow-top-navigation-by-user-activation allow-scripts');
+    expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
+    const body = await response.text();
+    expect(body.match(/<script>/g)?.length).toBe(1);
+    expect(body).toContain('Make your own plan');
   } finally {
     t.cleanup();
   }

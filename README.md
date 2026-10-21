@@ -18,6 +18,8 @@ One command installs the skill into Claude Code, Cursor, Codex, OpenCode and oth
 
 The skill ships four plan templates: [project](skills/planny/template.html), [launch](skills/planny/templates/launch-plan.html), [research](skills/planny/templates/research-plan.html) and [decision](skills/planny/templates/decision-plan.html). Every plan follows the same spine: Who, Why, What and When. The skill also bundles the [unslop rules](skills/planny/reference/unslop.md) and requires the agent to apply them to every visible word before publishing.
 
+Plans can include a styled code block with static syntax highlighting and a Copy button added by the viewer, plus an inline [Heroicons set](skills/planny/reference/icons.md). The [component reference](skills/planny/reference/components.md) documents both.
+
 ## How it works
 
 1. An agent sends raw `text/html` to `POST /plans` with a name and a duration.

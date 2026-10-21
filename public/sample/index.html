@@ -345,6 +345,58 @@
   .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
   .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  .spine-icon { flex: 0 0 auto; margin-top: 3px; color: var(--accent); }
+
+  /* Code blocks: static token classes, no runtime highlighter. */
+  .code-block {
+    position: relative;
+    margin: 16px 0 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .code-block code { display: block; min-width: max-content; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink); white-space: pre; }
+  .code-copy {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-bar);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .code-copy:hover, .code-copy:focus-visible { border-color: var(--line-strong); color: var(--ink); }
+  .tok-key, .tok-tag { color: #8ab8ff; }
+  .tok-string { color: #86efac; }
+  .tok-number, .tok-bool { color: #fbbf24; }
+  .tok-comment { color: #737373; font-style: italic; }
+  .tok-fn { color: #c4b5fd; }
+  .tok-punct { color: #a1a1a1; }
+  .tok-attr { color: #f9a8d4; }
+  @media (max-width: 420px) {
+    .code-block code { font-size: 12px; }
+    .code-block pre { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .hero, .layout { grid-template-columns: minmax(0, 1fr); }
   }
@@ -545,6 +597,21 @@
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section>
+        <h2>Roast schedule</h2>
+        <p class="measure">The roaster runs two batches a week. The schedule lives in one small file so the shop and the roastery read the same dates.</p>
+        <div class="code-block">
+          <div class="code-head"><span>roast-schedule.json</span></div>
+          <pre><code><span class="tok-punct">{</span>
+  <span class="tok-key">"tuesday"</span><span class="tok-punct">:</span> <span class="tok-string">"filter"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"friday"</span><span class="tok-punct">:</span> <span class="tok-string">"espresso"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"batchKg"</span><span class="tok-punct">:</span> <span class="tok-number">12</span><span class="tok-punct">,</span>
+  <span class="tok-key">"subscriptionFirst"</span><span class="tok-punct">:</span> <span class="tok-bool">true</span>
+<span class="tok-punct">}</span></code></pre>
+        </div>
+        <p class="chart-caption">Static spans mark the tokens. The Copy button is added by the plan viewer, not by this file.</p>
       </section>
 
       <section>
