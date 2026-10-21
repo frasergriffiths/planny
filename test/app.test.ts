@@ -239,11 +239,12 @@ test('the sample gets allow-scripts and the same script hash', async () => {
   try {
     const response = await t.app.fetch(new Request(`${ORIGIN}/sample`), { address: ADDRESS });
     const csp = response.headers.get('content-security-policy') ?? '';
-    expect(csp).toContain('sandbox allow-top-navigation-by-user-activation allow-scripts');
+    expect(csp).toContain('sandbox allow-scripts');
+    expect(csp).not.toContain('allow-top-navigation');
     expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
     const body = await response.text();
     expect(body.split('<script>').length - 1).toBe(1);
-    expect(body).toContain('Make your own plan');
+    expect(body).not.toContain('Make your own plan');
   } finally {
     t.cleanup();
   }

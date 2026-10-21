@@ -52,7 +52,8 @@ test('stretchable SVG charts carry no SVG text; the fixed-size donut keeps it', 
   }
   // The donut is 104px fixed, so its two text labels may stay in the SVG.
   expect(sample).toContain('width="104" height="104" viewBox="0 0 104 104"');
-  expect(sample).toContain('plan versus pay-as-you-go');
+  // The sample keeps the single-series channel chart; grouped comparison bars are gone.
+  expect(sample).not.toContain('bar-track group');
 });
 
 test('line labels sit in one row under the plot', () => {
