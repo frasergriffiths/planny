@@ -8,8 +8,13 @@ export const PLAN_SCRIPT = `(function () {
   var CHECK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"></path></svg>';
   function copyText(text) {
     return new Promise(function (resolve) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function () { resolve(true); }, function () { resolve(legacyCopy(text)); });
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { resolve(true); }, function () { resolve(legacyCopy(text)); });
+          return;
+        }
+      } catch (error) {
+        resolve(legacyCopy(text));
         return;
       }
       resolve(legacyCopy(text));
@@ -63,6 +68,12 @@ export const PLAN_SCRIPT = `(function () {
       button.style.position = 'absolute';
       button.style.top = '4px';
       button.style.right = '4px';
+      button.style.width = '32px';
+      button.style.height = '32px';
+      button.style.padding = '0';
+      button.style.border = '0';
+      button.style.background = 'transparent';
+      button.style.color = '#a1a1a1';
     }
     var timer = 0;
     button.addEventListener('click', function () {

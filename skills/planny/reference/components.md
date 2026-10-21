@@ -448,7 +448,7 @@ Wrap a code sample in `.code-block`. The optional `.code-head` carries the langu
 <div class="code-block">
   <div class="code-head"><span>deploy.sh</span></div>
   <pre><code><span class="tok-comment"># one command, no prompts</span>
-<span class="tok-fn">planny</span> publish plan.html <span class="tok-punct">\</span>
+<span class="tok-fn">node</span> scripts/publish.mjs plan.html <span class="tok-punct">\</span>
   <span class="tok-key">--name</span> <span class="tok-string">"Q4 rollout"</span> <span class="tok-key">--duration</span> <span class="tok-number">90d</span></code></pre>
 </div>
 ```

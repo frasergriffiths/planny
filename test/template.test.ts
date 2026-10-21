@@ -155,6 +155,8 @@ test('the template ships a code block with static tokens and copy-button styles'
     expect(source).toContain('.code-block');
     expect(source).toContain('.code-head');
     expect(rule(source, '.code-copy')).toContain('cursor: pointer');
+    expect(rule(source, '.code-copy')).toContain('width: 32px');
+    expect(rule(source, '.code-copy')).toContain('height: 32px');
     for (const token of ['tok-key', 'tok-string', 'tok-number', 'tok-comment', 'tok-fn', 'tok-punct', 'tok-tag', 'tok-attr', 'tok-bool']) {
       expect(source).toContain(`.${token}`);
     }
@@ -162,9 +164,17 @@ test('the template ships a code block with static tokens and copy-button styles'
   expect(template).toContain('<div class="code-block">');
   expect(template).toContain('<span class="tok-key">');
   expect(sample).toContain('<div class="code-block">');
+  // Every template carries the styles; the launch template also shows a block.
+  for (const path of templatePaths) {
+    const source = read(path);
+    expect(source).toContain('.code-copy');
+    expect(source).toContain('.tok-key');
+  }
+  expect(read('skills/planny/templates/launch-plan.html')).toContain('<div class="code-block">');
   // The button is viewer-owned: plan markup must not carry one.
   expect(template).not.toContain('<button');
   expect(sample).not.toContain('<button');
+  expect(read('skills/planny/templates/launch-plan.html')).not.toContain('<button');
 });
 
 test('the templates use a small set of inline Heroicons', () => {
@@ -174,6 +184,7 @@ test('the templates use a small set of inline Heroicons', () => {
   expect(icons).toContain('stroke="currentColor"');
   expect(icons).toContain('aria-hidden="true"');
   expect(icons).toContain('MIT License');
+  expect(icons).toContain('Copyright (c) Tailwind Labs, Inc.');
   const used = template.match(/class="spine-icon"/g)?.length ?? 0;
   expect(used).toBeGreaterThanOrEqual(2);
   expect(used).toBeLessThanOrEqual(3);

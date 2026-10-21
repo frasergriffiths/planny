@@ -188,6 +188,8 @@ test('plan responses carry the trusted copy script once with a matching CSP hash
     expect(csp).toContain('sandbox allow-scripts');
     expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
     expect(csp).not.toContain("script-src 'unsafe-inline'");
+    expect(csp).not.toContain('allow-same-origin');
+    expect(csp).not.toContain("'unsafe-eval'");
     expect(body.split('<script>').length - 1).toBe(1);
     const open = body.indexOf('<script>') + '<script>'.length;
     const close = body.indexOf('</script>', open);
@@ -200,7 +202,7 @@ test('plan responses carry the trusted copy script once with a matching CSP hash
   }
 });
 
-test('site pages never allow scripts and never carry the plan script', async () => {
+test('site pages do not sandbox with allow-scripts and never carry the plan script', async () => {
   const t = setup();
   try {
     for (const path of ['/', '/nowhere', '/terms-of-use']) {
@@ -209,6 +211,24 @@ test('site pages never allow scripts and never carry the plan script', async () 
       expect(csp).not.toContain('allow-scripts');
       expect(await response.text()).not.toContain(PLAN_SCRIPT_HASH);
     }
+  } finally {
+    t.cleanup();
+  }
+});
+
+
+test('HEAD returns the plan headers with no body', async () => {
+  const t = setup();
+  try {
+    const json = await uploaded(t);
+    const response = await view(t, json.url, { method: 'HEAD' });
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('');
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('sandbox allow-scripts');
+    expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
+    expect(csp).not.toContain('allow-same-origin');
+    expect(csp).not.toContain("'unsafe-eval'");
   } finally {
     t.cleanup();
   }

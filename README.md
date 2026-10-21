@@ -28,7 +28,7 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 4. `GET /p/<uuid>` checks the record, reads the plan from Blob, and returns it with a sandboxed CSP and a cache tag.
 5. `DELETE /p/<uuid>` compares the hashed delete key, removes the plan blob, marks the record deleted and purges the cache tag. An operator takedown uses the same removal path.
 
-The viewer is a plan, not an app: no scripts, no clickable links, no forms, no remote images, no external requests. The sample at `/sample` uses the same plan CSP with a user-activated top-level CTA.
+The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No clickable links, forms, remote images or external requests. The sample at `/sample` uses the same plan CSP with a user-activated top-level CTA.
 
 ## Limits
 

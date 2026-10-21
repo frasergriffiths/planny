@@ -71,7 +71,7 @@ The record's content licence survives deletion; the plan HTML licence ends when 
 
 ## Rendering and safety
 
-Plans are untrusted. The sanitiser uses parse5 for HTML and PostCSS for CSS, with allowlists for elements, attributes, properties and at-rules. It removes scripts, links, forms, frames, remote URLs, event handlers and unsafe CSS. The served plan uses a sandboxed CSP with no script source, no remote images and no navigation. The sample route keeps the plan CSP and adds only user-activated top-level navigation for its CTA.
+Plans are untrusted. The sanitiser uses parse5 for HTML and PostCSS for CSS, with allowlists for elements, attributes, properties and at-rules. It removes plan-authored scripts, links, forms, frames, remote URLs, event handlers and unsafe CSS. The served plan uses a sandboxed CSP with one hash-pinned copy script (no plan-authored scripts; one fixed copy script is injected by the viewer), no remote images and no navigation. The sample route keeps the plan CSP and adds only user-activated top-level navigation for its CTA.
 
 The site pages are React, built by Vite into single files and embedded into the function by `scripts/generate-pages.ts`. The function never reads `dist/` at runtime. The plan template is plain HTML and CSS with no scripts.
 
@@ -96,7 +96,7 @@ The optional helper in `scripts/deploy.ts` refuses unless the checked-out branch
 
 ## Security boundaries
 
-- **Plan content:** the sanitiser and the sandboxed plan CSP. No scripts, links, forms, frames or remote requests.
+- **Plan content:** the sanitiser and the sandboxed plan CSP. No plan-authored scripts; one fixed copy script is injected by the viewer. No links, forms, frames or remote requests.
 - **Store:** the Blob token and the private store. The plan-path HMAC protects plan HTML only; on a public store `state.json` and `config/kill.json` stay reachable at their Blob URLs, so use a private store.
 - **Delete key:** only its hash is stored; the key is returned once to the uploader.
 - **Admin:** `PLANNY_ADMIN_TOKEN` for takedown and reset; rate-limited by the keyed address.
