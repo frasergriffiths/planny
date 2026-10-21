@@ -58,12 +58,18 @@ test('stretchable SVG charts carry no SVG text; the fixed-size donut keeps it', 
   expect(sample).toContain('plan versus pay-as-you-go');
 });
 
-test('line labels sit in one row under the plot; the mobile Gantt stacks without clipping', () => {
+test('line labels sit in one row under the plot; the mobile Gantt stacks without clipped text', () => {
   for (const source of [template, sample]) {
     expect(rule(source, '.x-labels')).toContain('grid-template-columns: repeat(9, minmax(0, 1fr))');
     expect(source).toContain('.gantt-head { display: none; }');
     expect(source).toContain('.gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }');
     expect(source).toContain('repeating-linear-gradient');
+    expect(source).toContain('.gantt-row .bar { height: 16px; padding: 0; font-size: 0; }');
+    expect(source).toContain('.gantt-note { display: block;');
+    expect(source.match(/class="gantt-note"/g)?.length).toBeGreaterThanOrEqual(5);
+  }
+  for (const path of templatePaths) {
+    expect(read(path).match(/class="gantt-note"/g)?.length).toBe(5);
   }
 });
 
@@ -89,7 +95,7 @@ function rule(source: string, selector: string): string {
   return source.slice(start + selector.length + 2, end);
 }
 
-// Every template is self-contained and follows the Who, Why, What, When spine.
+// Every template is self-contained and follows four numbered task steps.
 const templatePaths = [
   'skills/planny/template.html',
   'skills/planny/templates/launch-plan.html',
@@ -97,14 +103,30 @@ const templatePaths = [
   'skills/planny/templates/decision-plan.html',
 ];
 
-test('four templates exist and each carries the spine in order', () => {
+const spines: Record<string, string[]> = {
+  'skills/planny/template.html': ['Lease', 'Fit-out', 'Timetable', 'Open'],
+  'skills/planny/templates/launch-plan.html': ['Batch', 'Dealers', 'Build', 'Demo'],
+  'skills/planny/templates/research-plan.html': ['Questions', 'Method', 'Fieldwork', 'Report'],
+  'skills/planny/templates/decision-plan.html': ['Criteria', 'Options', 'Trial', 'Decision'],
+};
+
+test('four templates exist and each carries its numbered tasks in order', () => {
   for (const path of templatePaths) {
     const source = read(path);
     expect(source).toContain('class="spine"');
-    const order = ['Who', 'Why', 'What', 'When'].map((part) => source.indexOf(`<div class="eyebrow">${part}</div>`));
+    const steps = spines[path]!;
+    expect(steps).toHaveLength(4);
+    const order = steps.map((step, index) => source.indexOf(`<div class="eyebrow">0${index + 1} ${step}</div>`));
     for (const index of order) expect(index).toBeGreaterThan(-1);
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(source.match(/class="spine-section"/g)?.length).toBe(4);
+    // The top nav carries the same task names, with no Who/Why/What/When labels.
+    for (const [index, step] of steps.entries()) {
+      expect(source).toContain(`<span>0${index + 1}</span>${step}</div>`);
+    }
+    for (const label of ['Who', 'Why', 'What', 'When']) {
+      expect(source).not.toContain(`<div class="eyebrow">${label}</div>`);
+    }
   }
 });
 

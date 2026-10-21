@@ -16,7 +16,7 @@ npx skills add frasergriffiths/planny --skill planny
 
 One command installs the skill into Claude Code, Cursor, Codex, OpenCode and other skill agents. Add `-g` to install it globally. Runs on Node 22+ or Bun (`bunx skills add frasergriffiths/planny --skill planny`). Set `PLANNY_URL` in the agent's environment to publish to a self-hosted instance instead of the hosted default. See the [skills.sh page](https://www.skills.sh/frasergriffiths/planny/planny) and the [skill source](https://github.com/frasergriffiths/planny/tree/main/skills/planny).
 
-The skill ships four plan templates: [project](skills/planny/template.html), [launch](skills/planny/templates/launch-plan.html), [research](skills/planny/templates/research-plan.html) and [decision](skills/planny/templates/decision-plan.html). Every plan follows the same spine: Who, Why, What and When. The skill also bundles the [unslop rules](skills/planny/reference/unslop.md) and requires the agent to apply them to every visible word before publishing.
+The skill ships four plan templates: [project](skills/planny/template.html), [launch](skills/planny/templates/launch-plan.html), [research](skills/planny/templates/research-plan.html) and [decision](skills/planny/templates/decision-plan.html). Every plan is organised as four numbered tasks, from the first step to the finish. The skill also bundles the [unslop rules](skills/planny/reference/unslop.md) and requires the agent to apply them to every visible word before publishing.
 
 Plans can include a styled code block with static syntax highlighting and a Copy button added by the viewer, plus an inline [Heroicons set](skills/planny/reference/icons.md). The [component reference](skills/planny/reference/components.md) documents both.
 

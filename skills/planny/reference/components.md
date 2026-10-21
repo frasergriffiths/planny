@@ -300,11 +300,13 @@ Wrap the Gantt in `.gantt-wrap` and give the inner `.gantt` a `min-width` (650px
       <div style="grid-column:2 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;min-height:26px;">
         <div style="grid-row:1;grid-column:2 / span 3;display:flex;align-items:center;padding:0 9px;border-radius:var(--radius-bar);background:var(--line-strong);color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;">200, TTL, purge</div>
       </div>
+      <p class="gantt-note">200, TTL, purge</p>
     </div>
   </div>
 </div>
 <style>
   .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
+  .gantt-note { display: none; }
   @media (max-width: 700px) {
     .gantt { min-width: 0; }
     .gantt-head { display: none; }
@@ -312,13 +314,16 @@ Wrap the Gantt in `.gantt-wrap` and give the inner `.gantt` a `min-width` (650px
     .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
     .track {
       grid-column: 1 / -1;
+      min-height: 16px;
       background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
     }
+    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
+    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
 </style>
 ```
 
-Under 700px the Gantt stacks: the label sits above a full-width track with subtle week dividers, so nothing scrolls or clips. Desktop keeps the scrollable wrapper for plans with more weeks.
+Under 700px the Gantt stacks: the label sits above a full-width track with subtle week dividers. The bar text is hidden with `font-size: 0` and the same words appear in a `.gantt-note` below the track, so nothing is cut off. Desktop keeps the text inside the bars and the scrollable wrapper for plans with more weeks.
 
 ## Decision matrix
 

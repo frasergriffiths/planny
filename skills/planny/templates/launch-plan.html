@@ -196,6 +196,7 @@
     text-transform: uppercase;
   }
   .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .gantt-note { display: none; }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -239,7 +240,7 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
-  /* The plan spine: Who, Why, What, When, in that order. */
+  /* The plan spine: four numbered tasks, in order. */
   .spine {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -361,8 +362,11 @@
     .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
     .track {
       grid-column: 1 / -1;
+      min-height: 16px;
       background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
     }
+    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
+    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -400,10 +404,10 @@
   </header>
 
   <div class="spine" aria-label="Plan sections">
-    <div class="active"><span>01</span>Who</div>
-    <div><span>02</span>Why</div>
-    <div><span>03</span>What</div>
-    <div><span>04</span>When</div>
+    <div class="active"><span>01</span>Batch</div>
+    <div><span>02</span>Dealers</div>
+    <div><span>03</span>Build</div>
+    <div><span>04</span>Demo</div>
   </div>
 
   <section class="box">
@@ -418,7 +422,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>Who signs off, who builds, who sells</h2></div></div>
+        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Batch</div><h2>Order one batch of 40 bikes</h2></div></div>
         <p class="spine-lead">Five dealers get the first bikes. Ben can stop the launch up to the day the batch is ordered.</p>
         <div class="table-wrap">
           <table>
@@ -431,11 +435,8 @@
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why a small launch now</h2></div></div>
-        <p class="spine-lead">Dealers are asking for a cargo bike we cannot supply. A small batch answers that without betting the workshop on a warehouse of frames.</p>
+        <h3 class="sub">Why a small batch</h3>
+        <p>Dealers are asking for a cargo bike we cannot supply. A small batch answers that without betting the workshop on a warehouse of frames.</p>
         <p>The commuter line pays the bills and has no room to grow. Five dealers have asked for a cargo demo since July, and we have sent one borrowed bike around all five. Each asked for stock, not another demo. A 40-bike batch covers those shops and gives us real warranty data before a wider run.</p>
         <h3 class="sub">Outcome</h3>
         <p>Two models in five shops by the first week of March. Every demo bike is sold or returned by April, and we know the build hours per bike before ordering a second batch.</p>
@@ -460,8 +461,8 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>Two models, five shops, one batch</h2></div></div>
-        <p class="spine-lead">The launch is a stock order and a demo programme. It is not a new website or a dealer network.</p>
+        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Dealers</div><h2>Sign five dealers for spring</h2></div></div>
+        <p class="spine-lead">Two models, five shops and a 90-day term. No direct sales and no new website.</p>
         <h3 class="sub">In scope</h3>
         <ul>
           <li>Long-tail and short-tail cargo frames, both on the same rear rack.</li>
@@ -475,6 +476,11 @@
           <li>Online direct sales. All first-batch bikes go through dealers.</li>
           <li>New colours. The two current powder coats only.</li>
         </ul>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Build</div><h2>Build ten bikes and test them</h2></div></div>
+        <p class="spine-lead">Ten demos first, then the stock batch. Every bike gets the same 50 km test before it leaves the workshop.</p>
         <h3 class="sub">Workstreams</h3>
         <div class="table-wrap">
           <table>
@@ -523,7 +529,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Twelve weeks from order to demo day</h2></div></div>
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Demo</div><h2>Run five demo days</h2></div></div>
         <p class="spine-lead">Order in week two, build in weeks six to nine, demos in weeks eleven and twelve.</p>
         <div class="legend">
           <span><span class="swatch"></span>Build</span>
@@ -533,11 +539,11 @@
         <div class="gantt-wrap">
           <div class="gantt" role="img" aria-label="Twelve week launch plan: frame order weeks 1 to 2, parts and racks weeks 2 to 5, build and test weeks 6 to 9, dealer agreements weeks 2 to 8, demo days weeks 11 to 12">
             <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Frame order</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Deposit, delivery date</div></div></div>
-            <div class="gantt-row"><div class="label">Parts and racks</div><div class="track"><div class="bar" style="grid-column: 2 / span 4;">Wheels, racks, spares</div></div></div>
-            <div class="gantt-row"><div class="label">Build and test</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Ten bikes, 50 km each</div></div></div>
-            <div class="gantt-row"><div class="label">Dealers</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 6;">Agreements, demo dates</div></div></div>
-            <div class="gantt-row"><div class="label">Demo days</div><div class="track"><div class="bar soft" style="grid-column: 11 / span 2;">Five shops, two weeks</div></div></div>
+            <div class="gantt-row"><div class="label">Frame order</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Deposit, delivery date</div></div><p class="gantt-note">Deposit, delivery date</p></div>
+            <div class="gantt-row"><div class="label">Parts and racks</div><div class="track"><div class="bar" style="grid-column: 2 / span 4;">Wheels, racks, spares</div></div><p class="gantt-note">Wheels, racks, spares</p></div>
+            <div class="gantt-row"><div class="label">Build and test</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Ten bikes, 50 km each</div></div><p class="gantt-note">Ten bikes, 50 km each</p></div>
+            <div class="gantt-row"><div class="label">Dealers</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 6;">Agreements, demo dates</div></div><p class="gantt-note">Agreements, demo dates</p></div>
+            <div class="gantt-row"><div class="label">Demo days</div><div class="track"><div class="bar soft" style="grid-column: 11 / span 2;">Five shops, two weeks</div></div><p class="gantt-note">Five shops, two weeks</p></div>
           </div>
         </div>
         <p class="chart-caption">The Gantt shows twelve weeks in eight columns; weeks nine to twelve share the later columns. Phones stack each row.</p>

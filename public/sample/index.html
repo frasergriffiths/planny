@@ -197,6 +197,7 @@
     text-transform: uppercase;
   }
   .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .gantt-note { display: none; }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -240,7 +241,7 @@
   .donut p { margin: 0; font-size: 13px; color: var(--muted); }
   .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
 
-  /* The plan spine: Who, Why, What, When, in that order. */
+  /* The plan spine: four numbered tasks, in order. */
   .spine {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -414,8 +415,11 @@
     .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
     .track {
       grid-column: 1 / -1;
+      min-height: 16px;
       background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
     }
+    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
+    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -544,11 +548,11 @@
         <div class="gantt-wrap">
           <div class="gantt" role="img" aria-label="Nine month plan with five workstreams">
             <div class="gantt-head"><div>Workstream</div><div>M1</div><div>M2</div><div>M3</div><div>M4</div><div>M5</div><div>M6</div><div>M7</div><div>M8</div></div>
-            <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div></div>
-            <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div></div>
-            <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div></div>
-            <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div></div>
-            <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div></div>
+            <div class="gantt-row"><div class="label">Source + roast</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Six-month contract</div></div><p class="gantt-note">Six-month contract</p></div>
+            <div class="gantt-row"><div class="label">Packaging</div><div class="track"><div class="bar" style="grid-column: 2 / span 2;">Bag + label</div></div><p class="gantt-note">Bag + label</p></div>
+            <div class="gantt-row"><div class="label">Beta</div><div class="track"><div class="bar alt" style="grid-column: 3 / span 2;">200 customers</div></div><p class="gantt-note">200 customers</p></div>
+            <div class="gantt-row"><div class="label">Launch</div><div class="track"><div class="bar alt" style="grid-column: 4 / span 2;">Public offer</div></div><p class="gantt-note">Public offer</p></div>
+            <div class="gantt-row"><div class="label">Retention</div><div class="track"><div class="bar soft" style="grid-column: 5 / span 3;">Churn below 4%</div></div><p class="gantt-note">Churn below 4%</p></div>
           </div>
         </div>
       </section>
