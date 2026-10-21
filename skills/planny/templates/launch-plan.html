@@ -250,8 +250,11 @@
   .spine div.active { border-top-color: var(--accent); color: var(--ink); }
   .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
   .spine-section { padding: 4px 0; }
-  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head { margin: 30px 0 8px; }
+  .spine-kicker { display: flex; align-items: center; gap: 10px; }
   .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-icon { display: inline-flex; flex: 0 0 auto; color: var(--accent); }
+  .spine-icon svg { display: block; width: 18px; height: 18px; }
   .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
   .spine-head h2 { margin: 4px 0 0; }
   .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
@@ -452,7 +455,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Batch</div><h2>Order one batch of 40 bikes</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">01</span><div class="eyebrow">01 Batch</div></div><h2>Order one batch of 40 bikes</h2></div>
         <p class="spine-lead">Five dealers get the first bikes. Ben can stop the launch up to the day the batch is ordered.</p>
         <div class="table-wrap">
           <table>
@@ -491,7 +494,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Dealers</div><h2>Sign five dealers for spring</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">02</span><div class="eyebrow">02 Dealers</div></div><h2>Sign five dealers for spring</h2></div>
         <p class="spine-lead">Two models, five shops and a 90-day term. No direct sales and no new website.</p>
         <h3 class="sub">In scope</h3>
         <ul>
@@ -509,7 +512,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Build</div><h2>Build ten bikes and test them</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">03</span><div class="eyebrow">03 Build</div></div><h2>Build ten bikes and test them</h2></div>
         <p class="spine-lead">Ten demos first, then the stock batch. Every bike gets the same 50 km test before it leaves the workshop.</p>
         <h3 class="sub">Workstreams</h3>
         <div class="table-wrap">
@@ -570,7 +573,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Demo</div><h2>Run five demo days</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">04</span><div class="eyebrow">04 Demo</div></div><h2>Run five demo days</h2></div>
         <p class="spine-lead">Order in week two, build in weeks six to nine, demos in weeks eleven and twelve.</p>
         <ol class="timeline" aria-label="Launch milestones">
           <li><span class="dot" aria-hidden="true"></span><span class="when">04 Dec 2026</span><strong>Frame order placed</strong><p>Second supplier quoted.</p></li>

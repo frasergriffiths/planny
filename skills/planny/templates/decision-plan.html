@@ -250,8 +250,11 @@
   .spine div.active { border-top-color: var(--accent); color: var(--ink); }
   .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
   .spine-section { padding: 4px 0; }
-  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head { margin: 30px 0 8px; }
+  .spine-kicker { display: flex; align-items: center; gap: 10px; }
   .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-icon { display: inline-flex; flex: 0 0 auto; color: var(--accent); }
+  .spine-icon svg { display: block; width: 18px; height: 18px; }
   .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
   .spine-head h2 { margin: 4px 0 0; }
   .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
@@ -452,7 +455,7 @@
   <div class="layout">
     <main>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">01 Criteria</div><h2>Agree the criteria before the demos</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">01</span><div class="eyebrow">01 Criteria</div></div><h2>Agree the criteria before the demos</h2></div>
         <p class="spine-lead">Ellen makes the call. The people who answer the phone have to live with it.</p>
         <div class="table-wrap">
           <table>
@@ -503,7 +506,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">02 Options</div><h2>Compare three systems on paper</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">02</span><div class="eyebrow">02 Options</div></div><h2>Compare three systems on paper</h2></div>
         <p class="spine-lead">Five rooms, one calendar, deposits. Not a property management system.</p>
         <h3 class="sub">In scope</h3>
         <ul>
@@ -565,7 +568,7 @@
       </section>
 
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Trial</div><h2>Trial the top two for two weeks</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">03</span><div class="eyebrow">03 Trial</div></div><h2>Trial the top two for two weeks</h2></div>
         <p class="spine-lead">Trial in weeks three and four. Decision on 20 November. Setup finishes before the January renewal.</p>
         <ol class="timeline" aria-label="Decision milestones">
           <li><span class="dot" aria-hidden="true"></span><span class="when">23 Oct 2026</span><strong>Criteria weights agreed</strong><p>Frozen before the demos.</p></li>
@@ -589,7 +592,7 @@
         </div>
       </section>
       <section class="spine-section">
-        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Decision</div><h2>Score, choose and sign</h2></div></div>
+        <div class="spine-head"><div class="spine-kicker"><span class="spine-num">04</span><div class="eyebrow">04 Decision</div></div><h2>Score, choose and sign</h2></div>
         <p class="spine-lead">The scorecard is filled before the decision meeting. The choice is one system, not a shortlist.</p>
         <h3 class="sub">Milestones</h3>
         <div class="table-wrap">
