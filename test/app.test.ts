@@ -163,7 +163,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     const raw = await t.app.fetch(new Request(json.url), { address: ADDRESS });
     const rawBody = await raw.text();
     for (const bad of ['alert(1)', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
-    expect(rawBody.match(/<script>/g)?.length).toBe(1);
+    expect(rawBody.split('<script>').length - 1).toBe(1);
     expect(rawBody).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);
     expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
@@ -188,8 +188,10 @@ test('plan responses carry the trusted copy script once with a matching CSP hash
     expect(csp).toContain('sandbox allow-scripts');
     expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
     expect(csp).not.toContain("script-src 'unsafe-inline'");
-    expect(body.match(/<script>/g)?.length).toBe(1);
-    const inline = /<script>([\s\S]*?)<\/script>/.exec(body)?.[1] ?? '';
+    expect(body.split('<script>').length - 1).toBe(1);
+    const open = body.indexOf('<script>') + '<script>'.length;
+    const close = body.indexOf('</script>', open);
+    const inline = body.slice(open, close);
     expect(inline).toBe(PLAN_SCRIPT);
     const digest = createHash('sha256').update(inline).digest('base64');
     expect(csp).toContain(`'sha256-${digest}'`);
@@ -220,7 +222,7 @@ test('the sample gets allow-scripts and the same script hash', async () => {
     expect(csp).toContain('sandbox allow-top-navigation-by-user-activation allow-scripts');
     expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
     const body = await response.text();
-    expect(body.match(/<script>/g)?.length).toBe(1);
+    expect(body.split('<script>').length - 1).toBe(1);
     expect(body).toContain('Make your own plan');
   } finally {
     t.cleanup();
