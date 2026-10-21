@@ -190,3 +190,14 @@ test('the templates use a small set of inline Heroicons', () => {
   expect(used).toBeGreaterThanOrEqual(2);
   expect(used).toBeLessThanOrEqual(3);
 });
+
+test('each template numbers its four task sections 01 to 04 in order', () => {
+  for (const path of templatePaths) {
+    const source = read(path);
+    const numbers = [...source.matchAll(/<span class="spine-num">(\d\d)<\/span>/g)].map((match) => match[1]);
+    expect(numbers).toEqual(['01', '02', '03', '04']);
+    for (const [index, number] of numbers.entries()) {
+      expect(source).toContain(`<div class="eyebrow">${number} `);
+    }
+  }
+});
