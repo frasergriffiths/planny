@@ -8,8 +8,8 @@ function read(path: string): string {
   return readFileSync(join(root, path), 'utf8');
 }
 
-// The editorial template contract: compact type, wrapped tables and Gantt,
-// quiet chart cards, and HTML/CSS chart labels whose px size never scales.
+// The editorial template contract: compact type, wrapped tables and a vertical
+// milestone timeline, quiet chart cards, and HTML/CSS chart labels that never scale.
 const template = read('skills/planny/template.html');
 const sample = read('public/sample/index.html');
 const reference = read('skills/planny/reference/components.md');
@@ -25,16 +25,13 @@ test('the template uses the editorial type scale with a centred 1240px page', ()
   }
 });
 
-test('tables and the Gantt scroll inside their region on phones', () => {
+test('tables scroll inside their region on phones', () => {
   for (const source of [template, sample]) {
     expect(rule(source, '.table-wrap')).toContain('overflow-x: auto');
-    expect(rule(source, '.gantt-wrap')).toContain('overflow-x: auto');
-    expect(rule(source, '.gantt')).toContain('min-width: 640px');
     expect(rule(source, '.table-wrap table')).toContain('min-width: 520px');
   }
   expect(sample).toMatch(/<div class="table-wrap">\s*<table>/g);
-  expect(sample.match(/<div class="table-wrap">/g)?.length).toBe(3);
-  expect(sample).toContain('<div class="gantt-wrap">');
+  expect(sample.match(/<div class="table-wrap">/g)?.length).toBe(2);
 });
 
 test('charts are quiet cards and chart labels are fixed CSS pixels', () => {
@@ -58,18 +55,22 @@ test('stretchable SVG charts carry no SVG text; the fixed-size donut keeps it', 
   expect(sample).toContain('plan versus pay-as-you-go');
 });
 
-test('line labels sit in one row under the plot; the mobile Gantt stacks without clipped text', () => {
+test('line labels sit in one row under the plot', () => {
   for (const source of [template, sample]) {
     expect(rule(source, '.x-labels')).toContain('grid-template-columns: repeat(9, minmax(0, 1fr))');
-    expect(source).toContain('.gantt-head { display: none; }');
-    expect(source).toContain('.gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }');
-    expect(source).toContain('repeating-linear-gradient');
-    expect(source).toContain('.gantt-row .bar { height: 16px; padding: 0; font-size: 0; }');
-    expect(source).toContain('.gantt-note { display: block;');
-    expect(source.match(/class="gantt-note"/g)?.length).toBeGreaterThanOrEqual(5);
   }
-  for (const path of templatePaths) {
-    expect(read(path).match(/class="gantt-note"/g)?.length).toBe(5);
+});
+
+test('templates use the vertical milestone timeline, not a Gantt', () => {
+  for (const path of [...templatePaths, 'public/sample/index.html']) {
+    const source = read(path);
+    expect(source).toContain('<ol class="timeline"');
+    expect(source).not.toContain('gantt');
+    const items = source.match(/<li><span class="dot" aria-hidden="true"><\/span>/g) ?? [];
+    expect(items.length).toBeGreaterThanOrEqual(4);
+    expect(items.length).toBeLessThanOrEqual(6);
+    expect(rule(source, '.timeline li')).toContain('padding');
+    expect(rule(source, '.timeline .dot')).toContain('border-radius: 50%');
   }
 });
 

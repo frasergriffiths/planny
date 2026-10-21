@@ -178,25 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
-  .gantt-note { display: none; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -411,17 +400,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      min-height: 16px;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
-    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
-    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -437,7 +415,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -610,35 +587,14 @@
           </span>
           <div><div class="eyebrow">03 Timetable</div><h2>Set the timetable and prove the kiln</h2></div></div>
         <p class="spine-lead">Fourteen weeks from the lease decision to the first class. The fit-out owns the middle eight.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Build</span>
-          <span><span class="swatch alt"></span>Verify</span>
-          <span><span class="swatch soft"></span>Buffer</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Fourteen week plan with five workstreams: lease in weeks 1 to 2, fit-out weeks 3 to 10, kiln schedule weeks 8 to 11, teaching plan weeks 6 to 12, first class and review weeks 13 to 14">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Lease and cover</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Terms, deposit, insurance</div></div><p class="gantt-note">Terms, deposit, insurance</p></div>
-            <div class="gantt-row"><div class="label">Fit-out</div><div class="track"><div class="bar" style="grid-column: 3 / span 8;">Wheels, sink, drying, entry</div></div><p class="gantt-note">Wheels, sink, drying, entry</p></div>
-            <div class="gantt-row"><div class="label">Kiln schedule</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Two firings a week</div></div><p class="gantt-note">Two firings a week</p></div>
-            <div class="gantt-row"><div class="label">Teaching plan</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 6;">Timetable, induction</div></div><p class="gantt-note">Timetable, induction</p></div>
-            <div class="gantt-row"><div class="label">First class</div><div class="track"><div class="bar soft" style="grid-column: 12 / span 2;">Run, observe, fix</div></div><p class="gantt-note">Run, observe, fix</p></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows the fourteen-week horizon in eight columns; later weeks share the last column. Phones stack each row.</p>
-        <h3 class="sub">Milestones</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-            <tbody>
-              <tr><td>14 Nov</td><td>Lease signed and deposit paid</td><td>Dev</td><td>Decision due</td></tr>
-              <tr><td>28 Nov</td><td>Electrician booked and wheels ordered</td><td>Mara</td><td>Planned</td></tr>
-              <tr><td>09 Jan</td><td>Fit-out complete and sink tested</td><td>Mara</td><td>Planned</td></tr>
-              <tr><td>16 Jan</td><td>Kiln schedule proven for four weeks</td><td>Tom</td><td>Planned</td></tr>
-              <tr><td>23 Jan</td><td>First class in studio two</td><td>Ines</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <ol class="timeline" aria-label="Project milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">14 Nov 2026</span><strong>Lease signed</strong><p>Dev signs and pays the deposit.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">28 Nov 2026</span><strong>Electrician and wheels booked</strong><p>Mara confirms both orders.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">09 Jan 2027</span><strong>Fit-out complete</strong><p>Sink tested and six wheels wired.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">16 Jan 2027</span><strong>Kiln schedule proven</strong><p>Four weeks of two firings a week.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">23 Jan 2027</span><strong>First class</strong><p>30 students, Ines teaching.</p></li>
+        </ol>
+
         <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>

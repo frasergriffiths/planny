@@ -178,25 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
-  .gantt-note { display: none; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -409,17 +398,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      min-height: 16px;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
-    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
-    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -435,7 +413,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -590,22 +567,14 @@
       <section class="spine-section">
         <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">03 Trial</div><h2>Trial the top two for two weeks</h2></div></div>
         <p class="spine-lead">Trial in weeks three and four. Decision on 20 November. Setup finishes before the January renewal.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Trial</span>
-          <span><span class="swatch alt"></span>Decide</span>
-          <span><span class="swatch soft"></span>Setup</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Eight week decision plan: criteria and demos weeks 1 to 2, trial weeks 3 to 4, scoring and decision weeks 5 to 6, setup and training weeks 6 to 8">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Criteria and demos</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Weights, two demos</div></div><p class="gantt-note">Weights, two demos</p></div>
-            <div class="gantt-row"><div class="label">Trial</div><div class="track"><div class="bar" style="grid-column: 3 / span 2;">Roombook, Stayline</div></div><p class="gantt-note">Roombook, Stayline</p></div>
-            <div class="gantt-row"><div class="label">Score and decide</div><div class="track"><div class="bar alt" style="grid-column: 5 / span 2;">Scorecard, contract</div></div><p class="gantt-note">Scorecard, contract</p></div>
-            <div class="gantt-row"><div class="label">Setup</div><div class="track"><div class="bar soft" style="grid-column: 6 / span 3;">Rooms, rates, export</div></div><p class="gantt-note">Rooms, rates, export</p></div>
-            <div class="gantt-row"><div class="label">Training</div><div class="track"><div class="bar soft" style="grid-column: 7 / span 2;">Two shifts, one guide</div></div><p class="gantt-note">Two shifts, one guide</p></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows eight weeks in eight columns. Phones stack each row.</p>
+        <ol class="timeline" aria-label="Decision milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">23 Oct 2026</span><strong>Criteria weights agreed</strong><p>Frozen before the demos.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">06 Nov 2026</span><strong>Trial complete</strong><p>Two busy Saturdays scored.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">20 Nov 2026</span><strong>System chosen</strong><p>Contract signed with an exit clause.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">11 Dec 2026</span><strong>Rooms and rates loaded</strong><p>Full export tested.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">18 Dec 2026</span><strong>Reception live</strong><p>Both shifts trained.</p></li>
+        </ol>
+
         <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>

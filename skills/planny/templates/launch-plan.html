@@ -178,25 +178,14 @@
     text-transform: uppercase;
   }
   tr:last-child td { border-bottom: 0; }
-  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
-  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
-  .gantt-head, .gantt-row {
-    display: grid;
-    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .gantt-head div {
-    padding-bottom: 4px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .gantt-row .label { padding-right: 8px; font-weight: 650; }
-  .gantt-note { display: none; }
+  .timeline { list-style: none; margin: 18px 0 24px; padding: 0 0 0 2px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 22px 22px; break-inside: avoid; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline .dot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .timeline strong { display: block; margin: 3px 0 2px; font-size: 15px; line-height: 1.35; }
+  .timeline p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  @media (max-width: 420px) { .timeline li { padding-left: 18px; } }
   .track {
     grid-column: 2 / -1;
     display: grid;
@@ -409,17 +398,6 @@
     .table-wrap table { font-size: 13px; }
     th, td { padding: 9px 8px; }
     .chart-caption { font-size: 12px; }
-    .gantt { min-width: 0; }
-    .gantt-head { display: none; }
-    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
-    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    .track {
-      grid-column: 1 / -1;
-      min-height: 16px;
-      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
-    }
-    .gantt-row .bar { height: 16px; padding: 0; font-size: 0; }
-    .gantt-note { display: block; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
   }
   @media (max-width: 700px) {
     .x-labels span:nth-child(2n) { visibility: hidden; }
@@ -435,7 +413,6 @@
   @media print {
     .page { padding: 0; }
     .box, tr, .kpi, .chart-card { break-inside: avoid; }
-    .gantt { break-inside: avoid; }
   }
 </style>
 </head>
@@ -595,35 +572,14 @@
       <section class="spine-section">
         <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">04 Demo</div><h2>Run five demo days</h2></div></div>
         <p class="spine-lead">Order in week two, build in weeks six to nine, demos in weeks eleven and twelve.</p>
-        <div class="legend">
-          <span><span class="swatch"></span>Build</span>
-          <span><span class="swatch alt"></span>Verify</span>
-          <span><span class="swatch soft"></span>Buffer</span>
-        </div>
-        <div class="gantt-wrap">
-          <div class="gantt" role="img" aria-label="Twelve week launch plan: frame order weeks 1 to 2, parts and racks weeks 2 to 5, build and test weeks 6 to 9, dealer agreements weeks 2 to 8, demo days weeks 11 to 12">
-            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
-            <div class="gantt-row"><div class="label">Frame order</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Deposit, delivery date</div></div><p class="gantt-note">Deposit, delivery date</p></div>
-            <div class="gantt-row"><div class="label">Parts and racks</div><div class="track"><div class="bar" style="grid-column: 2 / span 4;">Wheels, racks, spares</div></div><p class="gantt-note">Wheels, racks, spares</p></div>
-            <div class="gantt-row"><div class="label">Build and test</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Ten bikes, 50 km each</div></div><p class="gantt-note">Ten bikes, 50 km each</p></div>
-            <div class="gantt-row"><div class="label">Dealers</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 6;">Agreements, demo dates</div></div><p class="gantt-note">Agreements, demo dates</p></div>
-            <div class="gantt-row"><div class="label">Demo days</div><div class="track"><div class="bar soft" style="grid-column: 11 / span 2;">Five shops, two weeks</div></div><p class="gantt-note">Five shops, two weeks</p></div>
-          </div>
-        </div>
-        <p class="chart-caption">The Gantt shows twelve weeks in eight columns; weeks nine to twelve share the later columns. Phones stack each row.</p>
-        <h3 class="sub">Milestones</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
-            <tbody>
-              <tr><td>04 Dec</td><td>Frame order placed and second supplier quoted</td><td>Ben</td><td>Decision due</td></tr>
-              <tr><td>15 Jan</td><td>Frames and parts in the workshop</td><td>Owen</td><td>Planned</td></tr>
-              <tr><td>12 Feb</td><td>Ten demo bikes pass the 50 km test</td><td>Owen</td><td>Planned</td></tr>
-              <tr><td>26 Feb</td><td>Five dealer agreements signed</td><td>Cass</td><td>Planned</td></tr>
-              <tr><td>05 Mar</td><td>Demo days run in five shops</td><td>Cass</td><td>Planned</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <ol class="timeline" aria-label="Launch milestones">
+          <li><span class="dot" aria-hidden="true"></span><span class="when">04 Dec 2026</span><strong>Frame order placed</strong><p>Second supplier quoted.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">15 Jan 2027</span><strong>Frames and parts arrive</strong><p>Owen checks the batch.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">12 Feb 2027</span><strong>Ten demo bikes pass</strong><p>50 km test on each bike.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">26 Feb 2027</span><strong>Five dealer agreements</strong><p>Spring demo dates fixed.</p></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="when">05 Mar 2027</span><strong>Demo days</strong><p>Five shops over two weeks.</p></li>
+        </ol>
+
         <h3 class="sub">Dependencies</h3>
         <div class="table-wrap">
           <table>
