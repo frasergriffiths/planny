@@ -162,7 +162,11 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     expect(page.status).toBe(200);
     const raw = await t.app.fetch(new Request(json.url), { address: ADDRESS });
     const rawBody = await raw.text();
-    for (const bad of ['alert(1)', 'href=', 'onclick']) expect(rawBody).not.toContain(bad);
+    // Plan-authored links are stripped. The viewer's own attribution link is the only
+    // anchor a served plan carries (see attribution.test.ts).
+    for (const bad of ['alert(1)', 'onclick', 'evil.example']) expect(rawBody).not.toContain(bad);
+    expect(rawBody.split('href=').length - 1).toBe(1);
+    expect(rawBody).toContain('href="https://use-planny.vercel.app"');
     expect(rawBody.split('<script>').length - 1).toBe(1);
     expect(rawBody).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);

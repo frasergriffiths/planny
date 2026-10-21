@@ -18,16 +18,25 @@ import {
 } from './util.js';
 import { z } from 'zod';
 import { PLAN_SCRIPT_HASH, PLAN_SCRIPT_TAG } from './plan-script.js';
+import { withPlanAttribution, withPublishInvite } from './attribution.js';
 
 const NEVER = Number.MAX_SAFE_INTEGER;
-const PLAN_CSP = "sandbox allow-scripts; default-src 'none'; "
+// A served plan is the only page a reader reaches from someone else's link, so it carries
+// the viewer's footer. Plan-authored links are stripped, so that footer is the only anchor
+// in the document; sandboxing blocks top-level navigation, and this one narrow permission
+// lets a click on it work. It needs a user gesture, and it grants no scripts, fetches or
+// frames. The sample stays stricter because it has no link.
+const PLAN_SANDBOX = 'sandbox allow-scripts';
+const PLAN_CSP_RULES = "default-src 'none'; "
   + `script-src 'sha256-${PLAN_SCRIPT_HASH}'; `
   + "img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
+const PLAN_CSP = `${PLAN_SANDBOX} allow-top-navigation-by-user-activation; ${PLAN_CSP_RULES}`;
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-// The sample is a plan, not a landing page: same CSP as a published plan, no CTA link.
-const SAMPLE_CSP = PLAN_CSP;
+// The sample is a plan, not a landing page: the plan CSP without the footer's
+// user-activated navigation, and no CTA link.
+const SAMPLE_CSP = `${PLAN_SANDBOX}; ${PLAN_CSP_RULES}`;
 
 function withPlanScript(html: string): string {
   const end = html.lastIndexOf('</body>');
@@ -97,6 +106,10 @@ export function createApp(deps: AppDeps): App {
   const records = createRecords(store.redis);
   const app = new Hono<AppEnv>();
   const mib = (bytes: number): string => `${bytes / MiB} MiB`;
+  // A missing or removed plan is warm traffic: the same footer sales line goes on the
+  // viewer's 404 and 410 pages, whichever build renders them.
+  const invite = (html: string): string => withPublishInvite(html, config.attribution);
+  const planPage = (html: string): string => withPlanAttribution(html, config.attribution);
 
   function background(task: Promise<unknown>): void {
     const safe = task.catch((error: unknown) => log.error('planny: background task failed', error));
@@ -367,15 +380,15 @@ export function createApp(deps: AppDeps): App {
   function unavailable(record: PlanRecord): Response {
     const gone = { 'x-robots-tag': 'noindex' };
     if (record.hidden || record.reason === 'takedown') {
-      return page(410, build === 'vercel' ? PAGES.gone : pages.takedown({ build, removedAt: record.removedAt }), gone);
+      return page(410, invite(build === 'vercel' ? PAGES.gone : pages.takedown({ build, removedAt: record.removedAt })), gone);
     }
     if (record.reason === 'deleted') {
-      return page(410, build === 'vercel' ? PAGES.gone : pages.deleted({ build, removedAt: record.removedAt }), gone);
+      return page(410, invite(build === 'vercel' ? PAGES.gone : pages.deleted({ build, removedAt: record.removedAt })), gone);
     }
     if (record.reason === 'expired' || record.state === 'live') {
-      return page(410, build === 'vercel' ? PAGES.gone : pages.expired({ build, expiresAt: record.expiresAt, name: record.name }), gone);
+      return page(410, invite(build === 'vercel' ? PAGES.gone : pages.expired({ build, expiresAt: record.expiresAt, name: record.name })), gone);
     }
-    return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
+    return page(404, invite(build === 'vercel' ? PAGES.notFound : pages.notFound({ build })));
   }
 
   async function view(rawId: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
@@ -385,9 +398,9 @@ export function createApp(deps: AppDeps): App {
     if (!limit.allowed) {
       return page(429, build === 'vercel' ? PAGES.gone : pages.rateLimited({ build, retryAfter: limit.retryAfter }), { 'retry-after': String(limit.retryAfter) });
     }
-    if (withQuery || !isPlanId(id)) return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
+    if (withQuery || !isPlanId(id)) return page(404, invite(build === 'vercel' ? PAGES.notFound : pages.notFound({ build })));
     const record = await records.get(id);
-    if (!record || record.state === 'pending') return page(404, build === 'vercel' ? PAGES.notFound : pages.notFound({ build }));
+    if (!record || record.state === 'pending') return page(404, invite(build === 'vercel' ? PAGES.notFound : pages.notFound({ build })));
     if (record.state === 'live' && !record.hidden && record.expiresAt > at) {
       const result = await records.view({
         id,
@@ -420,7 +433,7 @@ export function createApp(deps: AppDeps): App {
         log.error(`planny: plan ${id} has a record but no file`);
         return page(500, pages.serverError({ build }));
       }
-      const html = withPlanScript(new TextDecoder().decode(stored));
+      const html = planPage(withPlanScript(new TextDecoder().decode(stored)));
       const ttl = Math.max(1, Math.min(config.cacheTtlSeconds, Math.floor((record.expiresAt - at) / 1000)));
       const body = new TextEncoder().encode(html);
       return new Response(request.method === 'HEAD' ? null : new Uint8Array(body), { status: 200, headers: rawHeaders(id, ttl) });

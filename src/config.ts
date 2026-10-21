@@ -44,6 +44,8 @@ export interface AppConfig {
   cacheTtlSeconds: number;
   sweepBatch: number;
   planReadAlert: PlanReadAlert;
+  /** Show the viewer footer on plans and the publish invitation on 404/410 pages. */
+  attribution: boolean;
 }
 
 export type Env = Record<string, string | undefined>;
@@ -52,6 +54,16 @@ function setting(value: string | undefined, fallback: number): number {
   if (value === undefined || value === '') return fallback;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : fallback;
+}
+
+// Switch settings default on and accept the usual off words, so a self-hoster can
+// disable a viewer feature with PLANNY_*=off without guessing the exact spelling.
+function flag(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined || value === '') return fallback;
+  const word = value.trim().toLowerCase();
+  if (['0', 'false', 'no', 'off', 'disabled'].includes(word)) return false;
+  if (['1', 'true', 'yes', 'on', 'enabled'].includes(word)) return true;
+  return fallback;
 }
 
 export function loadConfig(env: Env = process.env): AppConfig {
@@ -88,5 +100,6 @@ export function loadConfig(env: Env = process.env): AppConfig {
       monthlyWarningFraction: 0.5,
       counterTtlSeconds: 7200,
     },
+    attribution: flag(env.PLANNY_ATTRIBUTION, true),
   };
 }

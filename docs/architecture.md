@@ -75,7 +75,7 @@ The record's content licence survives deletion; the plan HTML licence ends when 
 
 ## Rendering and safety
 
-Plans are untrusted. The sanitiser uses parse5 for HTML and PostCSS for CSS, with allowlists for elements, attributes, properties and at-rules. It removes plan-authored scripts, links, forms, frames, remote URLs, event handlers and unsafe CSS. The served plan uses a sandboxed CSP with one hash-pinned copy script (no plan-authored scripts; one fixed copy script is injected by the viewer), no remote images and no navigation. The sample route keeps the plan CSP and adds only user-activated top-level navigation for its CTA.
+Plans are untrusted. The sanitiser uses parse5 for HTML and PostCSS for CSS, with allowlists for elements, attributes, properties and at-rules. It removes plan-authored scripts, links, forms, frames, remote URLs, event handlers and unsafe CSS. The served plan uses a sandboxed CSP with one hash-pinned copy script (no plan-authored scripts; one fixed copy script is injected by the viewer), no remote images and no navigation. A served plan carries one viewer anchor, the "Made with Planny" footer, because plan-authored links are stripped; the sandbox therefore grants `allow-top-navigation-by-user-activation`, which needs a click and allows no script, fetch or frame. 404 and 410 plan pages carry a publish line instead. Both come from `src/attribution.ts` after sanitising, so neither is stored with the plan, and `PLANNY_ATTRIBUTION=off` removes both.
 
 The site pages are React, built by Vite into single files and embedded into the function by `scripts/generate-pages.ts`. The function never reads `dist/` at runtime. The plan template is plain HTML and CSS with no scripts.
 

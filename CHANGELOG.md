@@ -4,6 +4,21 @@ All notable changes to planny are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Every published plan ends with one restrained viewer line, "Made with Planny",
+  linking to https://use-planny.vercel.app. It is added after the sanitiser, never
+  stored with the plan, and plan CSS cannot style, hide or cover it.
+- 404 and 410 plan pages invite the reader to publish their own plan.
+- `PLANNY_ATTRIBUTION` (default `on`) removes both lines for self-hosters.
+
+### Changed
+
+- The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
+  footer link works without scripts, fetches or any other sandbox permission.
+
 ## 1.2.0 — 2026-10-20
 
 ### Changed
