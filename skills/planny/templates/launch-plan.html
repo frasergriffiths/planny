@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Cargo line launch plan</title>
+<!--
+  planny plan template: Cargo line launch plan.
+
+  Replace the copy, keep the structure. This file is safe for planny:
+  no scripts, links, forms, frames or external files. Charts are HTML/CSS
+  or inline SVG (fixed size). Fonts are the system stack. Images, if you
+  add any, must be data:image/png, jpeg, gif, webp or avif. Keep the file
+  under 4 MiB.
+
+  The plan is public to anyone with the link. Do not put secrets in it.
+-->
+<style>
+  :root {
+    /* TOKENS */
+    --radius-card: 12px;
+    --radius-bar: 4px;
+    --radius-swatch: 3px;
+    --line: #262626;
+    --accent: #3291FF;
+    --panel: #0a0a0a;
+    --inset-card: 16px;
+    --border-card: 2px;
+    --pad-card: 14px;
+    /* /TOKENS */
+    color-scheme: dark;
+    --line-strong: #3f3f3f;
+    --paper: #000000;
+    --ink: #f5f5f5;
+    --muted: #a1a1a1;
+    --accent-soft: #0b1b33;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--paper);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vw, 52px);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: end;
+    padding: clamp(24px, 4vw, 48px) 0 clamp(20px, 3vw, 36px);
+  }
+  h1 {
+    margin: 12px 0 16px;
+    max-width: 18ch;
+    font-size: clamp(34px, 5.5vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -.03em;
+    font-weight: 750;
+    text-wrap: balance;
+  }
+  .lede {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(16px, 1.6vw, 20px);
+    line-height: 1.55;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: clamp(24px, 3.5vw, 48px);
+    align-items: start;
+    padding: clamp(16px, 2.5vw, 32px) 0;
+  }  .measure { max-width: 70ch; }
+  .box {
+    box-sizing: border-box;
+    margin: 24px 0;
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
+    background: transparent;
+  }
+  .box.outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: calc(var(--inset-card) - 1px);
+  }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 20px 0 0;
+  }
+  .kpi {
+    box-sizing: border-box;
+    height: 100%;
+    padding: var(--pad-card);
+    border: 0;
+    border-left: var(--border-card) solid var(--accent);
+    border-radius: 0;
+    background: transparent;
+  }
+  .kpi.outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: calc(var(--inset-card) - 1px);
+  }
+  .kpi strong {
+    display: block;
+    margin: 6px 0 3px;
+    font-size: clamp(24px, 2.4vw, 30px);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+  }
+  .kpi span:last-child {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+  h2 {
+    margin: 34px 0 12px;
+    font-size: clamp(22px, 2.8vw, 30px);
+    line-height: 1.15;
+    letter-spacing: -.02em;
+  }
+  h3 { margin: 22px 0 8px; font-size: 17px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 20px; }
+  li { margin: 6px 0; }
+  .table-wrap { overflow-x: auto; margin: 12px 0 24px; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { width: 100%; min-width: 520px; margin: 0; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th {
+    background: var(--panel);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  .gantt-wrap { overflow-x: auto; margin: 16px 0 24px; -webkit-overflow-scrolling: touch; }
+  .gantt { min-width: 640px; margin: 0; font-size: 12px; }
+  .gantt-head, .gantt-row {
+    display: grid;
+    grid-template-columns: 150px repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .gantt-head div {
+    padding-bottom: 4px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .gantt-row .label { padding-right: 8px; font-weight: 650; }
+  .track {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 26px;
+  }
+  .bar {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 0 9px;
+    border-radius: var(--radius-bar);
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .bar.alt { background: var(--line-strong); }
+  .bar.soft { background: var(--accent-soft); color: var(--accent); border: 1px solid #2b4a7a; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+  .swatch { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: var(--radius-swatch); background: var(--accent); vertical-align: middle; }
+  .swatch.alt { background: var(--ink); }
+  .swatch.soft { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .risk-high { color: var(--danger); font-weight: 700; }
+  .risk-med { color: var(--warn); font-weight: 700; }
+  .risk-low { color: var(--ok); font-weight: 700; }
+  .check { list-style: none; padding-left: 0; }
+  .check li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .check li::before { content: "□"; color: var(--muted); font-size: 16px; line-height: 1.2; }
+  .donut { display: flex; align-items: center; gap: 16px; }
+  .donut svg { flex: 0 0 auto; }
+  .donut p { margin: 0; font-size: 13px; color: var(--muted); }
+  .aside-list { margin: 0; padding-left: 18px; font-size: 14px; }
+
+  /* The plan spine: Who, Why, What, When, in that order. */
+  .spine {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 4px;
+    padding: 16px 0 6px;
+    border-top: 1px solid var(--line);
+  }
+  .spine div {
+    padding-top: 9px;
+    border-top: 2px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .spine div.active { border-top-color: var(--accent); color: var(--ink); }
+  .spine span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; }
+  .spine-section { padding: 4px 0; }
+  .spine-head { display: flex; gap: 12px; align-items: baseline; margin: 30px 0 8px; }
+  .spine-head .eyebrow { flex: 0 0 auto; }
+  .spine-num { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
+  .spine-head h2 { margin: 4px 0 0; }
+  .spine-lead { max-width: 70ch; margin: 0 0 6px; color: var(--muted); }
+  h3.sub { margin: 20px 0 6px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 700px) {
+    .spine { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* Charts: HTML/CSS bars and HTML-labelled lines are the default. SVG <text>
+     scales with the viewBox, so labels and values stay in HTML with fixed px. */
+  .chart-card {
+    margin: 16px 0 14px;
+    padding: calc(var(--inset-card) - 1px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: transparent;
+  }
+  .chart-title { margin: 0 0 12px; font-size: 13px; font-weight: 650; }
+  .hbars { display: grid; gap: 2px; }
+  .hbar {
+    display: grid;
+    grid-template-columns: minmax(84px, 116px) minmax(0, 1fr) 52px;
+    gap: 10px;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .hbar .bar-track { display: flex; align-items: center; height: 20px; border-radius: var(--radius-bar); background: var(--panel); overflow: hidden; }
+  .hbar .bar-track.group { height: 44px; flex-direction: column; justify-content: center; gap: 3px; }
+  .hbar .fill { display: block; height: 100%; border-radius: var(--radius-bar); background: var(--accent); transform-origin: left; animation: bar-grow .7s ease-out both; }
+  .hbar .fill.slim { height: 9px; }
+  .hbar .fill.alt { background: var(--line-strong); }
+  .hbar .fill.soft { background: #8ab8ff; }
+  .hbar .val { color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+  .line-chart { position: relative; margin: 4px 0 0; }
+  .line-plot { position: relative; height: 200px; margin-left: 40px; }
+  .line-plot svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+  .gridline.dim { background: #1f1f1f; }
+  .y-label {
+    position: absolute;
+    right: 100%;
+    transform: translateY(-50%);
+    padding-right: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .x-labels { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); margin-left: 40px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .x-labels span { padding-top: 8px; text-align: center; white-space: nowrap; }
+  .x-labels span:first-child { text-align: left; }
+  .x-labels span:last-child { text-align: right; }
+  .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-swatch); }
+
+  .chart-line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.1s ease-out both; }
+  .donut-seg { animation: draw-donut 1.1s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  @keyframes draw-donut { from { stroke-dashoffset: 1; } }
+  @keyframes bar-grow { from { transform: scaleX(0); } }
+  @keyframes stack-grow { from { transform: scaleX(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
+  }
+  @media print {
+    .chart-line, .donut-seg, .fill, .stacked span { animation: none; }
+  }
+  .budget-total { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .budget-total span { margin-left: 6px; color: var(--muted); font-family: var(--sans); font-size: 11px; }
+  .stacked { display: flex; height: 10px; overflow: hidden; border-radius: var(--radius-bar); background: var(--line); gap: 2px; }
+  .stacked span { display: block; height: 100%; transform-origin: left; animation: stack-grow .8s ease-out both; }
+  .stack-coffee { background: #3291FF; }
+  .stack-packaging { background: #8ab8ff; }
+  .stack-marketing { background: #5f6368; }
+  .stack-ops { background: #3f3f3f; }
+  .budget-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+  .budget-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .budget-legend i { display: inline-block; width: 6px; height: 6px; border-radius: var(--radius-swatch); }
+  @media (max-width: 900px) {
+    .hero, .layout { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hbar { grid-template-columns: minmax(76px, 96px) minmax(0, 1fr) 48px; }
+    .line-plot, .x-labels { margin-left: 34px; }
+    .line-plot { height: 180px; }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 9px 8px; }
+    .chart-caption { font-size: 12px; }
+    .gantt { min-width: 0; }
+    .gantt-head { display: none; }
+    .gantt-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
+    .gantt-row .label { padding: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .track {
+      grid-column: 1 / -1;
+      background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px calc(100% / 8));
+    }
+  }
+  @media (max-width: 700px) {
+    .x-labels span:nth-child(2n) { visibility: hidden; }
+  }
+  @media (max-width: 420px) {
+    .page { padding: 16px; }
+    .kpis { gap: 8px; }
+    .box { padding: var(--pad-card); }
+    .kpi { padding: var(--pad-card); }
+    .table-wrap table { font-size: 13px; }
+    th, td { padding: 8px 6px; }
+  }
+  @media print {
+    .page { padding: 0; }
+    .box, tr, .kpi, .chart-card { break-inside: avoid; }
+    .gantt { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Launch plan / Cargo line / Marlow Bikes</div>
+      <h1>Launch the cargo line with five dealers, not fifty.</h1>
+      <p class="lede">Marlow Bikes has one cargo frame and a queue of shops asking to see it. This plan puts two models into five dealers for spring, and holds the wider launch until the first batch proves it can be built on time.</p>
+      <div class="meta">
+        <span>Owner: Priya Nair</span>
+        <span>Decision maker: Ben Marlow</span>
+        <span>Updated: 20 Oct 2026</span>
+        <span>Horizon: 12 weeks</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="spine" aria-label="Plan sections">
+    <div class="active"><span>01</span>Who</div>
+    <div><span>02</span>Why</div>
+    <div><span>03</span>What</div>
+    <div><span>04</span>When</div>
+  </div>
+
+  <section class="box">
+    <div class="eyebrow">In short</div>
+    <ul>
+      <li>Two cargo models, five dealers, one batch of 40 bikes.</li>
+      <li>We stop at 40 until the first batch ships within two weeks of the promised date.</li>
+      <li>If the frame supplier slips again, the launch moves to autumn rather than shipping a half-built line.</li>
+    </ul>
+  </section>
+
+  <div class="layout">
+    <main>
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">01</span><div><div class="eyebrow">Who</div><h2>Who signs off, who builds, who sells</h2></div></div>
+        <p class="spine-lead">Five dealers get the first bikes. Ben can stop the launch up to the day the batch is ordered.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Role</th><th scope="col">Name</th><th scope="col">What they need from this plan</th></tr></thead>
+            <tbody>
+              <tr><td>Owner</td><td>Priya Nair</td><td>Runs the launch, owns the dealer list and the weekly update.</td></tr>
+              <tr><td>Decision maker</td><td>Ben Marlow</td><td>Approves the batch cost and decides whether a slip is worth another delay.</td></tr>
+              <tr><td>Stakeholders</td><td>Owen Pike, Cass Reed</td><td>Owen runs the workshop. Cass handles dealer orders and demo bikes.</td></tr>
+              <tr><td>Readers</td><td>Five dealer owners and the frame supplier</td><td>Need build dates, demo dates and what each shop must commit to.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">02</span><div><div class="eyebrow">Why</div><h2>Why a small launch now</h2></div></div>
+        <p class="spine-lead">Dealers are asking for a cargo bike we cannot supply. A small batch answers that without betting the workshop on a warehouse of frames.</p>
+        <p>The commuter line pays the bills and has no room to grow. Five dealers have asked for a cargo demo since July, and we have sent one borrowed bike around all five. Each asked for stock, not another demo. A 40-bike batch covers those shops and gives us real warranty data before a wider run.</p>
+        <h3 class="sub">Outcome</h3>
+        <p>Two models in five shops by the first week of March. Every demo bike is sold or returned by April, and we know the build hours per bike before ordering a second batch.</p>
+        <h3 class="sub">Why now</h3>
+        <p>The frame supplier has a production slot in January and we lose it if we do not commit by 4 December. Spring is when shops plan demo days. Waiting until summer means another season of sending customers to a competitor.</p>
+        <h3 class="sub">How we will know it worked</h3>
+        <div class="kpis">
+          <div class="kpi"><span class="eyebrow">Batch</span><strong>40</strong><span>bikes, two models</span></div>
+          <div class="kpi"><span class="eyebrow">Dealers</span><strong>5</strong><span>signed for spring</span></div>
+          <div class="kpi"><span class="eyebrow">Build</span><strong>&lt; 6 h</strong><span>per bike, workshop time</span></div>
+          <div class="kpi"><span class="eyebrow">Demo</span><strong>1</strong><span>bike per dealer, sold by April</span></div>
+        </div>
+        <div class="chart-card">
+          <p class="chart-title">Cargo demo requests, by month</p>
+          <div class="hbars" role="img" aria-label="Cargo demo requests by month: July 2 requests, August 4 requests, September 5 requests">
+            <div class="hbar"><span>July</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:40%"></div></div><span class="val">2</span></div>
+            <div class="hbar"><span>August</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:80%"></div></div><span class="val">4</span></div>
+            <div class="hbar"><span>September</span><div class="bar-track" aria-hidden="true"><div class="fill" style="width:100%"></div></div><span class="val">5</span></div>
+          </div>
+          <p class="chart-caption">One series. Shops that asked for a cargo demo, from Cass's call log. September counts the two shops that asked twice.</p>
+        </div>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">03</span><div><div class="eyebrow">What</div><h2>Two models, five shops, one batch</h2></div></div>
+        <p class="spine-lead">The launch is a stock order and a demo programme. It is not a new website or a dealer network.</p>
+        <h3 class="sub">In scope</h3>
+        <ul>
+          <li>Long-tail and short-tail cargo frames, both on the same rear rack.</li>
+          <li>40 bikes: 30 for stock, 10 for demos and press.</li>
+          <li>Five dealer agreements with a 90-day payment term.</li>
+          <li>One service guide and a spare-parts kit per shop.</li>
+        </ul>
+        <h3 class="sub">Out of scope</h3>
+        <ul>
+          <li>An e-cargo model. The motor supplier cannot commit to spring.</li>
+          <li>Online direct sales. All first-batch bikes go through dealers.</li>
+          <li>New colours. The two current powder coats only.</li>
+        </ul>
+        <h3 class="sub">Workstreams</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Workstream</th><th scope="col">Lead</th><th scope="col">Done when</th></tr></thead>
+            <tbody>
+              <tr><td>Frames and parts</td><td>Ben Marlow</td><td>Batch ordered and delivery date confirmed in writing</td></tr>
+              <tr><td>Build and test</td><td>Owen Pike</td><td>Ten bikes built and ridden for 50 km each</td></tr>
+              <tr><td>Dealers</td><td>Cass Reed</td><td>Five agreements signed with demo dates</td></tr>
+              <tr><td>Launch pack</td><td>Priya Nair</td><td>Service guide, spares list and dealer one-pager approved</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 class="sub">Deliverables</h3>
+        <ul class="check">
+          <li><span>Frame order placed with a written delivery date.</span></li>
+          <li><span>Ten demo bikes that pass the 50 km test.</span></li>
+          <li><span>Five dealer agreements and a spring demo calendar.</span></li>
+          <li><span>A service guide a shop mechanic can follow without calling us.</span></li>
+        </ul>
+        <h3 class="sub">Budget</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Line</th><th scope="col">Cost</th><th scope="col">Note</th></tr></thead>
+            <tbody>
+              <tr><td>Frames and forks</td><td>22,000</td><td>40 sets, 30 percent deposit</td></tr>
+              <tr><td>Wheels and racks</td><td>9,400</td><td>Cargo-rated wheels, two rack lengths</td></tr>
+              <tr><td>Demo freight</td><td>1,800</td><td>Five bikes to five shops, insured</td></tr>
+              <tr><td>Launch pack</td><td>900</td><td>Print and photography</td></tr>
+              <tr><td>Contingency</td><td>1,900</td><td>Held for a frame or freight increase</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="budget-total">Total 36,000 pounds<span>Working capital, recovered across the first batch</span></p>
+        <h3 class="sub">Risks</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Risk</th><th scope="col">Likelihood</th><th scope="col">Impact</th><th scope="col">Mitigation</th><th scope="col">Owner</th></tr></thead>
+            <tbody>
+              <tr><td>The frame supplier slips past February</td><td class="risk-high">High</td><td class="risk-high">High</td><td>Penalty clause in the order and a second supplier quoted before 4 December.</td><td>Ben</td></tr>
+              <tr><td>Dealers order fewer than ten bikes each</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Ask for a minimum of six with a demo bike; hold the rest as stock.</td><td>Cass</td></tr>
+              <tr><td>Build takes longer than six hours</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Time the first five builds and rewrite the jig before the main batch.</td><td>Owen</td></tr>
+              <tr><td>A demo bike fails in use</td><td class="risk-low">Low</td><td class="risk-high">High</td><td>50 km test, torque log and a spare bike held at the workshop.</td><td>Owen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="spine-section">
+        <div class="spine-head"><span class="spine-num">04</span><div><div class="eyebrow">When</div><h2>Twelve weeks from order to demo day</h2></div></div>
+        <p class="spine-lead">Order in week two, build in weeks six to nine, demos in weeks eleven and twelve.</p>
+        <div class="legend">
+          <span><span class="swatch"></span>Build</span>
+          <span><span class="swatch alt"></span>Verify</span>
+          <span><span class="swatch soft"></span>Buffer</span>
+        </div>
+        <div class="gantt-wrap">
+          <div class="gantt" role="img" aria-label="Twelve week launch plan: frame order weeks 1 to 2, parts and racks weeks 2 to 5, build and test weeks 6 to 9, dealer agreements weeks 2 to 8, demo days weeks 11 to 12">
+            <div class="gantt-head"><div>Workstream</div><div>W1</div><div>W2</div><div>W3</div><div>W4</div><div>W5</div><div>W6</div><div>W7</div><div>W8</div></div>
+            <div class="gantt-row"><div class="label">Frame order</div><div class="track"><div class="bar" style="grid-column: 1 / span 2;">Deposit, delivery date</div></div></div>
+            <div class="gantt-row"><div class="label">Parts and racks</div><div class="track"><div class="bar" style="grid-column: 2 / span 4;">Wheels, racks, spares</div></div></div>
+            <div class="gantt-row"><div class="label">Build and test</div><div class="track"><div class="bar alt" style="grid-column: 6 / span 4;">Ten bikes, 50 km each</div></div></div>
+            <div class="gantt-row"><div class="label">Dealers</div><div class="track"><div class="bar alt" style="grid-column: 2 / span 6;">Agreements, demo dates</div></div></div>
+            <div class="gantt-row"><div class="label">Demo days</div><div class="track"><div class="bar soft" style="grid-column: 11 / span 2;">Five shops, two weeks</div></div></div>
+          </div>
+        </div>
+        <p class="chart-caption">The Gantt shows twelve weeks in eight columns; weeks nine to twelve share the later columns. Phones stack each row.</p>
+        <h3 class="sub">Milestones</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Date</th><th scope="col">Milestone</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><td>04 Dec</td><td>Frame order placed and second supplier quoted</td><td>Ben</td><td>Decision due</td></tr>
+              <tr><td>15 Jan</td><td>Frames and parts in the workshop</td><td>Owen</td><td>Planned</td></tr>
+              <tr><td>12 Feb</td><td>Ten demo bikes pass the 50 km test</td><td>Owen</td><td>Planned</td></tr>
+              <tr><td>26 Feb</td><td>Five dealer agreements signed</td><td>Cass</td><td>Planned</td></tr>
+              <tr><td>05 Mar</td><td>Demo days run in five shops</td><td>Cass</td><td>Planned</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 class="sub">Dependencies</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Dependency</th><th scope="col">Needed by</th><th scope="col">Owner</th><th scope="col">If late</th></tr></thead>
+            <tbody>
+              <tr><td>Frame delivery date in writing</td><td>04 Dec</td><td>Ben</td><td>Hold the launch until autumn</td></tr>
+              <tr><td>Cargo-rated wheels</td><td>20 Dec</td><td>Owen</td><td>Build ten demos only, delay stock</td></tr>
+              <tr><td>Dealer minimum order</td><td>26 Feb</td><td>Cass</td><td>Keep the unsold batch as summer stock</td></tr>
+              <tr><td>Service guide approved</td><td>12 Feb</td><td>Priya</td><td>Ship bikes with a one-page safety card</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 class="sub">Review cadence</h3>
+        <ul>
+          <li>Monday, 15 minutes: Priya, Owen and Cass on build hours, parts and dealer commitments.</li>
+          <li>Fortnightly: Ben joins for the frame order and any cost change above 1,000 pounds.</li>
+          <li>After demo week: a one-page read on orders, test rides and the first warranty calls.</li>
+        </ul>
+      </section>
+    </main>
+
+    <aside>
+      <section class="box outline">
+        <div class="eyebrow">Done means</div>
+        <ul class="aside-list">
+          <li>40 bikes ordered and 10 built to the test standard.</li>
+          <li>Five dealers have stock and a demo date.</li>
+          <li>Build time per bike is measured, not guessed.</li>
+          <li>The service guide answers the first ten questions.</li>
+        </ul>
+      </section>
+      <section class="box outline">
+        <div class="eyebrow">Open questions</div>
+        <ul class="aside-list">
+          <li>Do we hold the second supplier quote or place a split order?</li>
+          <li>Who pays freight if a dealer returns a demo bike?</li>
+          <li>Is six bikes per shop enough to justify the dealer terms?</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+</div>
+</body>
