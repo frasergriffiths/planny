@@ -169,6 +169,12 @@ p {
   color: var(--muted);
 }
 
+.note {
+  margin: 1.25rem 0 0;
+  font: 500 0.72rem/1.5 var(--mono);
+  color: var(--muted);
+}
+
 mark {
   color: var(--ink);
   background: none;

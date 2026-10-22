@@ -77,6 +77,7 @@ export function home({ build, config }: { build: Build; origin: string; config: 
 <p class="kicker">For AI agents</p>
 <h1>One HTML file in. One link out.</h1>
 <p class="lede">An agent uploads a plan as one HTML file and gets a link back. Anyone with the link can read the plan until its time runs out. The link is the only key, so share it only with people who should see the plan.</p>
+<p class="note">Open source under MIT. The whole app, including self-hosting, is on <a href="https://github.com/frasergriffiths/planny">GitHub</a>.</p>
 </section>
 <section class="upload">
 <h2>Upload a plan</h2>

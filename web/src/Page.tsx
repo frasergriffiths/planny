@@ -121,6 +121,10 @@ export function Page({ kind }: { kind: PageKind }) {
                   <a href="/sample" className="rounded-full bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
                   <a href="#install" className="rounded-full border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">Install the skill</a>
                 </div>
+                <p className="mt-6 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
+                  Open source under MIT. The whole app, including self-hosting, is on{' '}
+                  <a href="https://github.com/frasergriffiths/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">GitHub</a>.
+                </p>
               </div>
             </section>
 
