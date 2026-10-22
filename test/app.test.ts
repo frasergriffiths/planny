@@ -238,17 +238,19 @@ test('HEAD returns the plan headers with no body', async () => {
   }
 });
 
-test('the sample gets allow-scripts and the same script hash', async () => {
+test('the sample gets the plan policy, the same script hash and the footer', async () => {
   const t = setup();
   try {
     const response = await t.app.fetch(new Request(`${ORIGIN}/sample`), { address: ADDRESS });
     const csp = response.headers.get('content-security-policy') ?? '';
     expect(csp).toContain('sandbox allow-scripts');
-    expect(csp).not.toContain('allow-top-navigation');
+    expect(csp).toContain('allow-top-navigation-by-user-activation');
     expect(csp).toContain(`script-src 'sha256-${PLAN_SCRIPT_HASH}'`);
     const body = await response.text();
     expect(body.split('<script>').length - 1).toBe(1);
     expect(body).not.toContain('Make your own plan');
+    expect(body).toContain('<footer data-planny-attribution');
+    expect(body).toContain('href="https://use-planny.vercel.app"');
   } finally {
     t.cleanup();
   }

@@ -25,26 +25,22 @@ const NEVER = Number.MAX_SAFE_INTEGER;
 // the viewer's footer. Plan-authored links are stripped, so that footer is the only anchor
 // in the document; sandboxing blocks top-level navigation, and this one narrow permission
 // lets a click on it work. It needs a user gesture, and it grants no scripts, fetches or
-// frames. The sample stays stricter because it has no link.
-const PLAN_SANDBOX = 'sandbox allow-scripts';
-const PLAN_CSP_RULES = "default-src 'none'; "
+// frames. The sample carries the same footer, so it uses the same policy.
+const PLAN_CSP = 'sandbox allow-scripts allow-top-navigation-by-user-activation; '
+  + "default-src 'none'; "
   + `script-src 'sha256-${PLAN_SCRIPT_HASH}'; `
   + "img-src data:; style-src 'unsafe-inline'; base-uri 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
-const PLAN_CSP = `${PLAN_SANDBOX} allow-top-navigation-by-user-activation; ${PLAN_CSP_RULES}`;
 const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-// The sample is a plan, not a landing page: the plan CSP without the footer's
-// user-activated navigation, and no CTA link.
-const SAMPLE_CSP = `${PLAN_SANDBOX}; ${PLAN_CSP_RULES}`;
 
 function withPlanScript(html: string): string {
   const end = html.lastIndexOf('</body>');
   return end === -1 ? html + PLAN_SCRIPT_TAG : `${html.slice(0, end)}${PLAN_SCRIPT_TAG}\n${html.slice(end)}`;
 }
 
-function samplePage(): string {
-  return withPlanScript(PAGES.sample);
+function samplePage(attribution: boolean): string {
+  return withPlanAttribution(withPlanScript(PAGES.sample), attribution);
 }
 
 export interface Logger {
@@ -568,7 +564,7 @@ export function createApp(deps: AppDeps): App {
   });
   app.on(['HEAD'], '/', (c) => c.body(null, 200, { 'content-type': 'text/html; charset=utf-8' }));
 
-  app.get('/sample', () => page(200, samplePage(), { 'content-security-policy': SAMPLE_CSP }));
+  app.get('/sample', () => page(200, samplePage(config.attribution), { 'content-security-policy': PLAN_CSP }));
   app.get('/terms-of-use', () => page(301, '', { location: 'https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md' }));
   app.get('/robots.txt', (c) => c.text(PAGES.robots, 200, {
     'cache-control': `public, max-age=0, s-maxage=${config.cacheTtlSeconds}, must-revalidate`,

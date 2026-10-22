@@ -27,7 +27,8 @@ function important(declarations: readonly string[]): string {
 // Plan pages. Inline !important declarations keep the footer visible and un-themed
 // whatever the plan's stylesheet does; the style block adds hover, focus and print.
 const FOOTER_STYLE = important([
-  'display:block',
+  // display stays out of the inline set: an inline !important declaration outranks
+  // the print rule, and the footer must be invisible in print.
   'box-sizing:border-box',
   'width:100%',
   'max-width:1240px',
@@ -83,10 +84,14 @@ const FOOTER_LINK_STYLE = important([
   'opacity:1',
 ]);
 
+// `html body` keeps the display rules above any plain plan selector; the print rule
+// repeats the selector so it wins over the screen rule on source order.
+const FOOTER_SELECTOR = 'html body [data-planny-attribution]';
 const FOOTER_CSS = '<style data-planny-attribution-style>'
+  + `${FOOTER_SELECTOR}{display:block!important}`
   + `[data-planny-attribution] a:hover{color:${INK}!important;border-bottom-color:${LINE_STRONG}!important}`
   + `[data-planny-attribution] a:focus-visible{outline:2px solid ${ACCENT};outline-offset:3px}`
-  + '@media print{[data-planny-attribution]{display:none!important}}'
+  + `@media print{${FOOTER_SELECTOR}{display:none!important}}`
   + '</style>';
 
 export function planFooter(): string {

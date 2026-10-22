@@ -257,10 +257,11 @@ test('/sample is served with the plan CSP and a CTA', async () => {
     const csp = response.headers.get('content-security-policy') ?? '';
     expect(csp).toContain("default-src 'none'");
     expect(csp).toContain('sandbox allow-scripts');
-    expect(csp).not.toContain('allow-top-navigation');
+    expect(csp).toContain('allow-top-navigation-by-user-activation');
     const body = await response.text();
     expect(body).toContain('Harbor Coffee Roasters');
     expect(body).not.toContain('Make your own plan');
+    expect(body).toContain('<footer data-planny-attribution');
   } finally {
     app.cleanup();
   }

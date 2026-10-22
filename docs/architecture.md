@@ -31,7 +31,7 @@ POST /admin/plans/<uuid>/remove
   -> mark the record hidden, remove the plan blob, purge the tag
 ```
 
-`HEAD` follows the view path and returns the same headers without a body. `/p/<uuid>/raw` redirects to `/p/<uuid>`. `/sample` is generated from the template and the sample body and is served with the plan CSP plus the publish CTA. Query strings on a plan are a 404 and are not counted as reads.
+`HEAD` follows the view path and returns the same headers without a body. `/p/<uuid>/raw` redirects to `/p/<uuid>`. `/sample` is generated from the template and the sample body and is served with the same plan CSP and footer as a plan. Query strings on a plan are a 404 and are not counted as reads.
 
 ## Storage
 

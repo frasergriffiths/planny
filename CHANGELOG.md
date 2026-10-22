@@ -12,6 +12,7 @@ All notable changes to planny are recorded here. The format follows
   linking to https://use-planny.vercel.app. It is added after the sanitiser, never
   stored with the plan, and plan CSS cannot style, hide or cover it.
 - 404 and 410 plan pages invite the reader to publish their own plan.
+- `/sample` carries the same footer, so the demo page advertises planny too.
 - `PLANNY_ATTRIBUTION` (default `on`) removes both lines for self-hosters.
 
 ### Changed

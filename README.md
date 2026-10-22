@@ -40,7 +40,7 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 4. `GET /p/<uuid>` checks the record, reads the plan from the store, and returns it with a sandboxed CSP and a cache tag.
 5. `DELETE /p/<uuid>` compares the hashed delete key, removes the plan file, marks the record deleted and purges the cache tag. An operator takedown uses the same removal path.
 
-The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No plan-authored links, forms, remote images or external requests. Each plan ends with one viewer line, "Made with Planny", which links to the hosted service; 404 and 410 plan pages invite the reader to publish their own. The sample at `/sample` uses the plan CSP with a user-activated top-level CTA.
+The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No plan-authored links, forms, remote images or external requests. Each plan ends with one viewer line, "Made with Planny", which links to the hosted service; 404 and 410 plan pages invite the reader to publish their own. The sample at `/sample` uses the same plan CSP and carries the same footer, so the demo advertises planny too.
 
 The footer is the viewer's markup, added after the sanitiser, so it never enters the stored plan, and plan CSS cannot restyle, hide or cover it. Set `PLANNY_ATTRIBUTION=off` for a self-hosted instance that should not show it.
 
@@ -69,7 +69,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | Route | What it does |
 | --- | --- |
 | `GET /` | Home page. |
-| `GET /sample` | The generated sample plan, with the plan CSP and a publish CTA. |
+| `GET /sample` | The generated sample plan, with the plan CSP and the footer. |
 | `POST /plans?name=&duration=` | Upload raw `text/html`. Returns `url`, `expiresAt`, `deleteKey` and `removed`. |
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
@@ -183,7 +183,7 @@ On a production check:
 - A repeat view shows `x-vercel-cache: HIT`; 404s and 410s show `MISS`.
 - A takedown purges its cache tag.
 - `/health` reports the runtime it is actually using (Node 24 today) and the production environment.
-- `/sample` is 200 with the plan CSP and the CTA.
+- `/sample` is 200 with the plan CSP and the footer.
 
 Keep the cache TTL at one hour as the fallback while those checks are proving out.
 

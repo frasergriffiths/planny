@@ -113,6 +113,47 @@ test('the footer is never inside the stored or sanitised plan', async () => {
   }
 });
 
+test('the sample carries the same footer and the plan policy', async () => {
+  const t = setup();
+  try {
+    const response = await view(t, '/sample');
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(footerCount(body)).toBe(1);
+    expect(body).toContain(`href="${PLUR}"`);
+    expect(body.split('<script>').length - 1).toBe(1);
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('sandbox allow-scripts allow-top-navigation-by-user-activation');
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the sample footer follows the flag', async () => {
+  const t = setup({ PLANNY_ATTRIBUTION: 'off' });
+  try {
+    const body = await (await view(t, '/sample')).text();
+    expect(footerCount(body)).toBe(0);
+    expect(body).not.toContain('use-planny.vercel.app');
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the footer keeps display out of its inline style so print can hide it', async () => {
+  const t = setup();
+  try {
+    const json = await uploaded(t);
+    const body = await (await view(t, new URL(json.url).pathname)).text();
+    const footer = /<footer data-planny-attribution style="([^"]*)">/.exec(body)?.[1] ?? '';
+    expect(footer).not.toContain('display:');
+    expect(body).toContain('html body [data-planny-attribution]{display:block!important}');
+    expect(body).toContain('@media print{html body [data-planny-attribution]{display:none!important}}');
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('the 404 and 410 plan pages invite the reader to publish', async () => {
   const t = setup();
   try {
