@@ -147,7 +147,10 @@ test('the footer keeps display out of its inline style so print can hide it', as
     const body = await (await view(t, new URL(json.url).pathname)).text();
     const footer = /<footer data-planny-attribution style="([^"]*)">/.exec(body)?.[1] ?? '';
     expect(footer).not.toContain('display:');
-    expect(body).toContain('html body [data-planny-attribution]{display:block!important}');
+    // Padding moved into the stylesheet so the 420px rule is not dead.
+    expect(footer).not.toContain('padding:20px');
+    expect(body).toContain('html body [data-planny-attribution]{display:block!important;padding:20px');
+    expect(body).toContain('@media (max-width:420px){html body [data-planny-attribution]{padding-left:16px!important;padding-right:16px!important}}');
     expect(body).toContain('@media print{html body [data-planny-attribution]{display:none!important}}');
   } finally {
     t.cleanup();
@@ -210,7 +213,7 @@ test('the built 404 and 410 pages carry the attribution flag and the invite copy
     const missing = await view(t, new URL(MISSING).pathname);
     expect(missing.status).toBe(404);
     const missingBody = await missing.text();
-    expect(htmlTag(missingBody)).toContain('data-planny-attribution="on"');
+    expect(htmlTag(missingBody)).toContain('data-planny-invite="on"');
     expect(missingBody).toContain('Publish it with Planny');
     expect(missingBody.trimEnd().endsWith('</html>')).toBe(true);
 
@@ -223,7 +226,7 @@ test('the built 404 and 410 pages carry the attribution flag and the invite copy
     const gone = await view(t, new URL(json.url).pathname);
     expect(gone.status).toBe(410);
     const goneBody = await gone.text();
-    expect(htmlTag(goneBody)).toContain('data-planny-attribution="on"');
+    expect(htmlTag(goneBody)).toContain('data-planny-invite="on"');
     expect(goneBody).toContain('Publish it with Planny');
     expect(goneBody.trimEnd().endsWith('</html>')).toBe(true);
   } finally {
@@ -231,14 +234,37 @@ test('the built 404 and 410 pages carry the attribution flag and the invite copy
   }
 });
 
-test('the built pages mark attribution off when the flag is off', async () => {
+test('the built plan 404/410 mark the invite off when the flag is off', async () => {
   const t = setup({ PLANNY_ATTRIBUTION: 'off' }, 'vercel');
   try {
     const missing = await view(t, new URL(MISSING).pathname);
     expect(missing.status).toBe(404);
-    expect(htmlTag(await missing.text())).toContain('data-planny-attribution="off"');
+    expect(htmlTag(await missing.text())).toContain('data-planny-invite="off"');
   } finally {
     t.cleanup();
+  }
+});
+
+test('the built generic 404 and the built 429 never advertise', async () => {
+  for (const env of [{}, { PLANNY_ATTRIBUTION: 'off' }]) {
+    const t = setup(env, 'vercel');
+    try {
+      const nowhere = await view(t, '/nowhere');
+      expect(nowhere.status).toBe(404);
+      expect(htmlTag(await nowhere.text())).not.toContain('data-planny-invite');
+
+      const limited = setup({ ...env, PLANNY_RATE_VIEWS_MAX: '0' }, 'vercel');
+      try {
+        const json = await uploaded(limited);
+        const response = await view(limited, new URL(json.url).pathname);
+        expect(response.status).toBe(429);
+        expect(htmlTag(await response.text())).not.toContain('data-planny-invite');
+      } finally {
+        limited.cleanup();
+      }
+    } finally {
+      t.cleanup();
+    }
   }
 });
 

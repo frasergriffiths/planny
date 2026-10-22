@@ -6,10 +6,12 @@
 // sanitiser and the stored blob never contains it. Plan CSS still shares the document,
 // so the footer is a best-effort overlay: inline `!important` declarations cover the
 // properties a plan could use to restyle, hide or move it, and it sits last with the
-// maximum z-index. No finite list can beat every plan stylesheet (a fixed `body::after`
-// at the same z-index still paints over it), so the guarantee is "hard to remove",
-// not "cannot be removed". The robust fix would be a parent viewer page with the plan
-// in an iframe, which is out of scope here.
+// maximum z-index. The guarantee is best-effort: a fixed `body::after` at the same
+// z-index still paints over it, and a targeted rule such as
+// `html body footer[data-planny-attribution]{display:none!important}`, or any `@layer`
+// rule, can hide it because `display` has to stay in the stylesheet for print to win.
+// The robust fix would be a parent viewer page with the plan in an iframe, which is out
+// of scope here.
 //
 // Colours and type come from tokens.json and the plan template's token block. The
 // footer paints its own opaque background and contrast-safe text, so a light or
@@ -19,7 +21,7 @@ export const PLUR = 'https://use-planny.vercel.app';
 
 const LINE = '#262626'; // tokens.json: --line
 const BAND = '#000000'; // plan template: --paper
-const TEXT = '#d4d4d4'; // 11.6:1 on the band, above the 4.5:1 floor at 11px
+const TEXT = '#d4d4d4'; // 14.2:1 on the band, above the 4.5:1 floor at 11px
 const TEXT_STRONG = '#ffffff';
 const ACCENT = '#3291FF'; // tokens.json: --accent
 // Single quotes keep these font stacks safe inside a double-quoted style attribute.
@@ -38,7 +40,6 @@ const FOOTER_STYLE = important([
   'width:100%',
   'max-width:1240px',
   'margin:0 auto',
-  'padding:20px clamp(16px, 4vw, 52px) 32px',
   'border:0',
   `border-top:1px solid ${LINE}`,
   'border-radius:0',
@@ -128,7 +129,7 @@ const FOOTER_LINK_STYLE = important([
 // repeats the selector so it wins over the screen rule on source order.
 const FOOTER_SELECTOR = 'html body [data-planny-attribution]';
 const FOOTER_CSS = '<style data-planny-attribution-style>'
-  + `${FOOTER_SELECTOR}{display:block!important}`
+  + `${FOOTER_SELECTOR}{display:block!important;padding:20px clamp(16px, 4vw, 52px) 32px!important}`
   + `[data-planny-attribution] a:hover{color:${TEXT_STRONG}!important;border-bottom-color:${LINE}!important}`
   + `[data-planny-attribution] a:focus-visible{outline:2px solid ${ACCENT};outline-offset:3px}`
   + '@media (max-width:420px){'
@@ -170,12 +171,13 @@ export function withPublishInvite(html: string, enabled: boolean): string {
 }
 
 // The built React pages render into #root, so a server-side insertion lands outside the
-// layout. The server marks the policy on <html> and Page reads it when it renders.
-export function withAttributionFlag(html: string, enabled: boolean): string {
+// layout. Only the built plan 404/410 responses carry the invite marker, so the generic
+// 404, the 429 page and every other built page stay free of the line.
+export function withInviteFlag(html: string, enabled: boolean): string {
   const tag = /<html\b/i.exec(html);
   if (!tag) return html;
   const end = html.indexOf('>', tag.index);
   if (end === -1) return html;
   const value = enabled ? 'on' : 'off';
-  return `${html.slice(0, end)} data-planny-attribution="${value}"${html.slice(end)}`;
+  return `${html.slice(0, end)} data-planny-invite="${value}"${html.slice(end)}`;
 }

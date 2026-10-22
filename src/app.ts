@@ -18,7 +18,7 @@ import {
 } from './util.js';
 import { z } from 'zod';
 import { PLAN_SCRIPT_HASH, PLAN_SCRIPT_TAG } from './plan-script.js';
-import { withAttributionFlag, withPlanAttribution, withPublishInvite } from './attribution.js';
+import { withInviteFlag, withPlanAttribution, withPublishInvite } from './attribution.js';
 
 const NEVER = Number.MAX_SAFE_INTEGER;
 // A served plan is the only page a reader reaches from someone else's link, so it carries
@@ -109,10 +109,10 @@ export function createApp(deps: AppDeps): App {
   const planCsp = config.attribution ? PLAN_CSP : PLAN_CSP_STRICT;
   const planPage = (html: string): string => withPlanAttribution(html, config.attribution);
   // A missing or removed plan is warm traffic. The local pages take the invite inside
-  // their <main>; the built React pages render after #root, so they carry the flag on
+  // their <main>; the built React pages render after #root, so only these responses mark
   // <html> and Page renders the invite inside the visible card.
   const errorPage = (built: string, local: () => string): string => build === 'vercel'
-    ? withAttributionFlag(built, config.attribution)
+    ? withInviteFlag(built, config.attribution)
     : withPublishInvite(local(), config.attribution);
 
   function background(task: Promise<unknown>): void {

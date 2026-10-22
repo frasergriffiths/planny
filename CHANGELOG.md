@@ -11,11 +11,12 @@ All notable changes to planny are recorded here. The format follows
 - Every published plan ends with one restrained viewer line, "Made with Planny",
   linking to https://use-planny.vercel.app. It is added after the sanitiser and never
   stored with the plan. The line paints an opaque, contrast-safe band and resists plan
-  CSS on a best-effort basis; a plan stylesheet shares the document and can still cover
-  it.
+  CSS on a best-effort basis; a plan stylesheet shares the document and can still hide or
+  cover it.
 - 404 and 410 plan pages invite the reader to publish their own plan.
 - `/sample` carries the same footer, so the demo page advertises planny too.
-- `PLANNY_ATTRIBUTION` (default `on`) removes both lines for self-hosters.
+- `PLANNY_ATTRIBUTION` (default `on`); setting it to `off` removes both lines for
+  self-hosters.
 
 ### Changed
 

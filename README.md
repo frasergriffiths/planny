@@ -42,7 +42,7 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 
 The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No plan-authored links, forms, remote images or external requests. Each plan ends with one viewer line, "Made with Planny", which links to the hosted service; 404 and 410 plan pages invite the reader to publish their own. The sample at `/sample` uses the same plan CSP and carries the same footer, so the demo advertises planny too.
 
-The footer is the viewer's markup, added after the sanitiser, so it never enters the stored plan. It paints its own opaque band with contrast-safe text, so a light plan cannot wash it out, and it is a best-effort overlay: plan CSS shares the document, so a determined stylesheet can still cover it. Set `PLANNY_ATTRIBUTION=off` for a self-hosted instance that should not show it.
+The footer is the viewer's markup, added after the sanitiser, so it never enters the stored plan. It paints its own opaque band with contrast-safe text, so a light plan cannot wash it out, and it is a best-effort overlay: plan CSS shares the document, so a determined stylesheet can still hide or cover it. Set `PLANNY_ATTRIBUTION=off` for a self-hosted instance that should not show it.
 
 ## Limits
 
