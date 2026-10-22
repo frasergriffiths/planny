@@ -42,7 +42,7 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 
 The viewer is a plan, not an app: no plan-authored scripts; one fixed copy script is injected by the viewer. No plan-authored links, forms, remote images or external requests. Each plan ends with one viewer line, "Made with Planny", which links to the hosted service; 404 and 410 plan pages invite the reader to publish their own. The sample at `/sample` uses the same plan CSP and carries the same footer, so the demo advertises planny too.
 
-The footer is the viewer's markup, added after the sanitiser, so it never enters the stored plan, and plan CSS cannot restyle, hide or cover it. Set `PLANNY_ATTRIBUTION=off` for a self-hosted instance that should not show it.
+The footer is the viewer's markup, added after the sanitiser, so it never enters the stored plan. It paints its own opaque band with contrast-safe text, so a light plan cannot wash it out, and it is a best-effort overlay: plan CSS shares the document, so a determined stylesheet can still cover it. Set `PLANNY_ATTRIBUTION=off` for a self-hosted instance that should not show it.
 
 ## Limits
 
@@ -127,7 +127,7 @@ Core production settings:
 | `PLANNY_BLOB_KEY_1` | Stable HMAC key for public plan paths. Set it for a public store; if unset, the Blob token is used and rotating it breaks existing links. |
 | `PLANNY_ADDRESS_KEY` | Recommended stable keyed hash of client addresses for rates and pauses. If unset, the Blob token is used; rotating either resets every derived address and rate limit. |
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. Defaults to `https://use-planny.vercel.app`; set it for a self-hosted instance. |
-| `PLANNY_ATTRIBUTION` | `on` (default) adds the "Made with Planny" footer to each plan and the publish line to 404/410 pages. Set `off` to remove both. |
+| `PLANNY_ATTRIBUTION` | `on` (default) adds the "Made with Planny" footer to each plan and the publish line to 404/410 pages. Set `off` to remove both. Aliases: `off` also accepts `0`, `false`, `no`, `disable`, `disabled`, `none`; `on` accepts `1`, `true`, `yes`, `enabled`. Anything else keeps the default, `on`. |
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 

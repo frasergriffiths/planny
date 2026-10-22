@@ -61,7 +61,7 @@ function setting(value: string | undefined, fallback: number): number {
 function flag(value: string | undefined, fallback: boolean): boolean {
   if (value === undefined || value === '') return fallback;
   const word = value.trim().toLowerCase();
-  if (['0', 'false', 'no', 'off', 'disabled'].includes(word)) return false;
+  if (['0', 'false', 'no', 'off', 'disable', 'disabled', 'none'].includes(word)) return false;
   if (['1', 'true', 'yes', 'on', 'enabled'].includes(word)) return true;
   return fallback;
 }

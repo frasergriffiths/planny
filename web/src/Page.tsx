@@ -3,6 +3,8 @@ import { useState } from 'react';
 export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
+// Keep in step with PLUR in src/attribution.ts. The server marks the flag on <html>.
+const PLUR = 'https://use-planny.vercel.app';
 
 const stepIcon = {
   write: (
@@ -90,6 +92,10 @@ const copy: Record<PageKind, { kicker: string; title: string; body: string; code
 
 export function Page({ kind }: { kind: PageKind }) {
   const page = copy[kind];
+  // The built 404/410 shells render here, after #root, so the invite has to be part of
+  // this tree. The server sets data-planny-attribution=off when the footer is disabled.
+  const attributionOn = typeof document === 'undefined'
+    || document.documentElement.dataset.plannyAttribution !== 'off';
   return (
     <div className="min-h-screen bg-black text-zinc-100 antialiased">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
@@ -191,6 +197,12 @@ export function Page({ kind }: { kind: PageKind }) {
             <p className="mt-5 text-lg leading-relaxed text-zinc-400">{page.body}</p>
             {page.code ? <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-zinc-600">Code {page.code}</p> : null}
             <a href="/" className="rounded-bar mt-10 inline-block border border-line px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-600">Home</a>
+            {attributionOn && (kind === 'notfound' || kind === 'gone') ? (
+              <p data-planny-invite className="mt-6 text-sm leading-relaxed text-zinc-400">
+                Have a plan of your own?{' '}
+                <a href={PLUR} rel="noopener" className="text-white underline underline-offset-2 hover:text-zinc-300">Publish it with Planny</a>.
+              </p>
+            ) : null}
           </section>
         )}
       </main>

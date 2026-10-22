@@ -1,20 +1,26 @@
-// Viewer-owned attribution. Every published plan and every missing or expired plan
-// advertises planny, so a shared link can bring a reader back to publish their own.
+// Viewer-owned attribution. Every published plan, the sample, and every missing or
+// expired plan advertises planny, so a shared link can bring a reader back to publish
+// their own.
 //
 // The plan footer is the viewer's markup, not the plan's: it is added after the
 // sanitiser and the stored blob never contains it. Plan CSS still shares the document,
-// so the footer carries inline `!important` declarations for every property a plan
-// could use to restyle, hide or cover it (inline important beats any author rule, and a
-// later element with the maximum z-index paints above a plan overlay).
+// so the footer is a best-effort overlay: inline `!important` declarations cover the
+// properties a plan could use to restyle, hide or move it, and it sits last with the
+// maximum z-index. No finite list can beat every plan stylesheet (a fixed `body::after`
+// at the same z-index still paints over it), so the guarantee is "hard to remove",
+// not "cannot be removed". The robust fix would be a parent viewer page with the plan
+// in an iframe, which is out of scope here.
 //
-// Colours and type come from tokens.json and the plan template's token block.
+// Colours and type come from tokens.json and the plan template's token block. The
+// footer paints its own opaque background and contrast-safe text, so a light or
+// image-backed plan cannot wash it out.
 
 export const PLUR = 'https://use-planny.vercel.app';
 
 const LINE = '#262626'; // tokens.json: --line
-const LINE_STRONG = '#3f3f3f'; // plan template: --line-strong
-const INK = '#f5f5f5'; // plan template: --ink
-const MUTED = '#a1a1a1'; // plan template: --muted
+const BAND = '#000000'; // plan template: --paper
+const TEXT = '#d4d4d4'; // 11.6:1 on the band, above the 4.5:1 floor at 11px
+const TEXT_STRONG = '#ffffff';
 const ACCENT = '#3291FF'; // tokens.json: --accent
 // Single quotes keep these font stacks safe inside a double-quoted style attribute.
 const SANS = "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
@@ -25,31 +31,46 @@ function important(declarations: readonly string[]): string {
 }
 
 // Plan pages. Inline !important declarations keep the footer visible and un-themed
-// whatever the plan's stylesheet does; the style block adds hover, focus and print.
+// whatever the plan's stylesheet does; the style block adds display, hover, focus and
+// print. display stays out of the inline set so the print rule can win.
 const FOOTER_STYLE = important([
-  // display stays out of the inline set: an inline !important declaration outranks
-  // the print rule, and the footer must be invisible in print.
   'box-sizing:border-box',
   'width:100%',
   'max-width:1240px',
   'margin:0 auto',
-  'padding:20px clamp(20px, 4vw, 52px) 32px',
+  'padding:20px clamp(16px, 4vw, 52px) 32px',
   'border:0',
   `border-top:1px solid ${LINE}`,
   'border-radius:0',
-  'background:transparent',
-  `color:${MUTED}`,
+  `background:${BAND}`,
+  'background-image:none',
+  `color:${TEXT}`,
   `font-family:${SANS}`,
   'font-size:12px',
   'line-height:1.4',
   'text-align:left',
   'letter-spacing:normal',
   'text-transform:none',
+  'text-indent:0',
   'visibility:visible',
   'opacity:1',
   'filter:none',
   'transform:none',
+  'translate:none',
+  'rotate:none',
+  'scale:none',
+  'zoom:1',
+  'clip:auto',
+  'clip-path:none',
+  'content-visibility:visible',
+  'mask:none',
+  '-webkit-mask:none',
+  'mix-blend-mode:normal',
   'position:relative',
+  'top:auto',
+  'right:auto',
+  'bottom:auto',
+  'left:auto',
   'z-index:2147483647',
   'isolation:isolate',
   'float:none',
@@ -59,6 +80,7 @@ const FOOTER_STYLE = important([
   'max-height:none',
   'overflow:visible',
   'direction:ltr',
+  'writing-mode:horizontal-tb',
   'white-space:normal',
   'word-spacing:normal',
   'text-shadow:none',
@@ -68,20 +90,38 @@ const FOOTER_STYLE = important([
 const FOOTER_LINK_STYLE = important([
   'display:inline-block',
   'box-sizing:border-box',
-  `color:${MUTED}`,
+  `color:${TEXT}`,
   `font-family:${MONO}`,
   'font-size:11px',
   'line-height:1.3',
   'letter-spacing:.14em',
   'text-transform:uppercase',
   'text-decoration:none',
-  `border:0`,
+  'text-indent:0',
+  'border:0',
   `border-bottom:1px solid ${LINE}`,
   'border-radius:0',
   'padding:0 0 2px',
   'background:transparent',
   'visibility:visible',
   'opacity:1',
+  'filter:none',
+  'transform:none',
+  'translate:none',
+  'rotate:none',
+  'scale:none',
+  'zoom:1',
+  'clip:auto',
+  'clip-path:none',
+  'content-visibility:visible',
+  'mask:none',
+  '-webkit-mask:none',
+  'mix-blend-mode:normal',
+  'position:static',
+  'writing-mode:horizontal-tb',
+  'white-space:nowrap',
+  '-webkit-text-fill-color:currentColor',
+  'pointer-events:auto',
 ]);
 
 // `html body` keeps the display rules above any plain plan selector; the print rule
@@ -89,8 +129,11 @@ const FOOTER_LINK_STYLE = important([
 const FOOTER_SELECTOR = 'html body [data-planny-attribution]';
 const FOOTER_CSS = '<style data-planny-attribution-style>'
   + `${FOOTER_SELECTOR}{display:block!important}`
-  + `[data-planny-attribution] a:hover{color:${INK}!important;border-bottom-color:${LINE_STRONG}!important}`
+  + `[data-planny-attribution] a:hover{color:${TEXT_STRONG}!important;border-bottom-color:${LINE}!important}`
   + `[data-planny-attribution] a:focus-visible{outline:2px solid ${ACCENT};outline-offset:3px}`
+  + '@media (max-width:420px){'
+  + `${FOOTER_SELECTOR}{padding-left:16px!important;padding-right:16px!important}`
+  + '}'
   + `@media print{${FOOTER_SELECTOR}{display:none!important}}`
   + '</style>';
 
@@ -100,12 +143,12 @@ export function planFooter(): string {
     + '</footer>';
 }
 
-// 404 and 410 pages. These are site pages, so they keep the site CSP and the site
-// font stack; the line is inline-styled so it fits both the local strings and the
-// built React pages without a stylesheet change.
+// 404 and 410 pages rendered by the server as plain strings (the local build). They are
+// site pages, so they keep the site CSP and the site font stack; the line is
+// inline-styled to fit that layout without a stylesheet change.
 const INVITE_STYLE = 'margin:28px 0 0;font-family:' + SANS
-  + `;font-size:14px;line-height:1.5;color:${MUTED}`;
-const INVITE_LINK_STYLE = `color:${INK};text-decoration:underline;text-underline-offset:2px`;
+  + `;font-size:14px;line-height:1.5;color:${TEXT}`;
+const INVITE_LINK_STYLE = `color:${TEXT_STRONG};text-decoration:underline;text-underline-offset:2px`;
 
 export function publishInvite(): string {
   return `<p data-planny-invite style="${INVITE_STYLE}">Have a plan of your own? `
@@ -121,6 +164,18 @@ export function withPlanAttribution(html: string, enabled: boolean): string {
   return enabled ? insertBefore(html, '</body>', planFooter()) : html;
 }
 
+// The local string pages carry their own <main>, so the invite can go inside it.
 export function withPublishInvite(html: string, enabled: boolean): string {
   return enabled ? insertBefore(html, '</main>', publishInvite()) : html;
+}
+
+// The built React pages render into #root, so a server-side insertion lands outside the
+// layout. The server marks the policy on <html> and Page reads it when it renders.
+export function withAttributionFlag(html: string, enabled: boolean): string {
+  const tag = /<html\b/i.exec(html);
+  if (!tag) return html;
+  const end = html.indexOf('>', tag.index);
+  if (end === -1) return html;
+  const value = enabled ? 'on' : 'off';
+  return `${html.slice(0, end)} data-planny-attribution="${value}"${html.slice(end)}`;
 }

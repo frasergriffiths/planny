@@ -43,6 +43,19 @@ test('numeric settings fall back on unset, empty, negative, NaN and Infinity, an
   }
 });
 
+test('the attribution flag takes on/off and their documented aliases', () => {
+  for (const value of ['0', 'false', 'no', 'off', 'disable', 'disabled', 'none', 'OFF', ' Off ']) {
+    expect(loadConfig({ PLANNY_ATTRIBUTION: value }).attribution, value).toBe(false);
+  }
+  for (const value of ['1', 'true', 'yes', 'on', 'enabled', 'ON']) {
+    expect(loadConfig({ PLANNY_ATTRIBUTION: value }).attribution, value).toBe(true);
+  }
+  expect(loadConfig({}).attribution).toBe(true);
+  expect(loadConfig({ PLANNY_ATTRIBUTION: '' }).attribution).toBe(true);
+  // Anything unrecognised keeps the default, which is on.
+  expect(loadConfig({ PLANNY_ATTRIBUTION: 'maybe' }).attribution).toBe(true);
+});
+
 test('the derived plan windows and defaults follow their sources', () => {
   const two = loadConfig({ PLANNY_MAX_PLAN_YEARS: '2' });
   expect(two.maxPlanMs).toBe(2 * YEAR_MS);

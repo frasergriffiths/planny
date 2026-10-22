@@ -163,6 +163,10 @@ test('the 404 and 410 plan pages invite the reader to publish', async () => {
     expect(missingBody).toContain('data-planny-invite');
     expect(missingBody).toContain(`href="${PLUR}"`);
     expect(missingBody).toContain('Publish it with Planny');
+    // Inside <main>, before </body>: visible in the page, not appended after </html>.
+    expect(missingBody.indexOf('<main>')).toBeLessThan(missingBody.indexOf('data-planny-invite'));
+    expect(missingBody.indexOf('data-planny-invite')).toBeLessThan(missingBody.indexOf('</main>'));
+    expect(missingBody.indexOf('data-planny-invite')).toBeLessThan(missingBody.indexOf('</body>'));
 
     const json = await uploaded(t);
     const removed = await t.app.fetch(new Request(`${ORIGIN}${new URL(json.url).pathname}`, {
@@ -175,6 +179,7 @@ test('the 404 and 410 plan pages invite the reader to publish', async () => {
     const goneBody = await gone.text();
     expect(goneBody).toContain('data-planny-invite');
     expect(goneBody).toContain('Publish it with Planny');
+    expect(goneBody.indexOf('data-planny-invite')).toBeLessThan(goneBody.indexOf('</body>'));
   } finally {
     t.cleanup();
   }
@@ -193,15 +198,60 @@ test('the invitation follows the same flag', async () => {
   }
 });
 
-test('the built 404 page takes the invitation too', async () => {
+// The built pages render in the browser after #root, so the server marks the flag on
+// <html> and the React page renders the invite inside its card. These tests check the
+// marker and that the shipped bundle carries the copy; placement is checked in the
+// browser (see the report).
+const htmlTag = (html: string) => /<html[^>]*>/i.exec(html)?.[0] ?? '';
+
+test('the built 404 and 410 pages carry the attribution flag and the invite copy', async () => {
   const t = setup({}, 'vercel');
   try {
     const missing = await view(t, new URL(MISSING).pathname);
     expect(missing.status).toBe(404);
-    const body = await missing.text();
-    expect(body).toContain('data-planny-invite');
-    expect(body).toContain('Publish it with Planny');
-    expect(body).toContain(`href="${PLUR}"`);
+    const missingBody = await missing.text();
+    expect(htmlTag(missingBody)).toContain('data-planny-attribution="on"');
+    expect(missingBody).toContain('Publish it with Planny');
+    expect(missingBody.trimEnd().endsWith('</html>')).toBe(true);
+
+    const json = await uploaded(t);
+    const removed = await t.app.fetch(new Request(`${ORIGIN}${new URL(json.url).pathname}`, {
+      method: 'DELETE',
+      headers: { authorization: `Bearer ${json.deleteKey}` },
+    }), { address: ADDRESS });
+    expect(removed.status).toBe(200);
+    const gone = await view(t, new URL(json.url).pathname);
+    expect(gone.status).toBe(410);
+    const goneBody = await gone.text();
+    expect(htmlTag(goneBody)).toContain('data-planny-attribution="on"');
+    expect(goneBody).toContain('Publish it with Planny');
+    expect(goneBody.trimEnd().endsWith('</html>')).toBe(true);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the built pages mark attribution off when the flag is off', async () => {
+  const t = setup({ PLANNY_ATTRIBUTION: 'off' }, 'vercel');
+  try {
+    const missing = await view(t, new URL(MISSING).pathname);
+    expect(missing.status).toBe(404);
+    expect(htmlTag(await missing.text())).toContain('data-planny-attribution="off"');
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('attribution off drops the navigation token from the plan policy', async () => {
+  const t = setup({ PLANNY_ATTRIBUTION: 'off' });
+  try {
+    const json = await uploaded(t);
+    const response = await view(t, new URL(json.url).pathname);
+    const csp = response.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('sandbox allow-scripts');
+    expect(csp).not.toContain('allow-top-navigation');
+    const sample = await view(t, '/sample');
+    expect(sample.headers.get('content-security-policy') ?? '').not.toContain('allow-top-navigation');
   } finally {
     t.cleanup();
   }
