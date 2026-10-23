@@ -158,20 +158,86 @@ test('the upload gate reports daily and monthly caps without counting', async ()
   const f = fixture();
   const owner = 'owner-gated';
   const now = Date.UTC(2026, 9, 20, 12);
-  const limits = { spacingSeconds: 0, perDay: 0, perMonth: 500 };
-  const daily = await f.records.uploadGate(owner, now, limits);
+  const daily = await f.records.uploadGate(owner, now, { spacingSeconds: 0, perDay: 0, perMonth: 500 }, newClaimId());
   expect(daily.ok).toBe(false);
   expect(daily.code).toBe('address_upload_daily_limit');
   expect(daily.retryAfter).toBeGreaterThan(0);
   expect(daily.retryAfter).toBeLessThanOrEqual(24 * 60 * 60);
 
-  // The gate is read-only: nothing was counted for the address or the day.
+  // A refusal never claims a slot: nothing was counted for the address or the day.
   expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(0);
 
-  const monthly = await f.records.uploadGate(owner, now, { spacingSeconds: 0, perDay: 50, perMonth: 0 });
+  const monthly = await f.records.uploadGate(owner, now, { spacingSeconds: 0, perDay: 50, perMonth: 0 }, newClaimId());
   expect(monthly.ok).toBe(false);
   expect(monthly.code).toBe('address_upload_monthly_limit');
   expect(monthly.retryAfter).toBeGreaterThan(0);
+});
+
+test('the upload gate claims the slot and holds the spacing window', async () => {
+  const f = fixture();
+  const owner = 'owner-claimed';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const first = newClaimId();
+  expect(await f.records.uploadGate(owner, now, { spacingSeconds: 120, perDay: 50, perMonth: 500 }, first)).toEqual({ ok: true });
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(1);
+  expect(await f.counter(`planny:upload:month:${owner}:2026-10`)).toBe(1);
+  expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(now);
+
+  // A second gate inside the spacing window waits, because the first claim owns the slot.
+  const second = await f.records.uploadGate(owner, now + 1000, { spacingSeconds: 120, perDay: 50, perMonth: 500 }, newClaimId());
+  expect(second.ok).toBe(false);
+  expect(second.code).toBe('address_upload_rate_limited');
+  expect(second.retryAfter).toBeGreaterThan(100);
+  expect(second.retryAfter).toBeLessThanOrEqual(120);
+});
+
+test('release refunds a claimed slot and answers twice with nothing', async () => {
+  const f = fixture();
+  const owner = 'owner-refund';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const values = { spacingSeconds: 120, perDay: 50, perMonth: 500 };
+  const claim = newClaimId();
+  expect(await f.records.uploadGate(owner, now, values, claim)).toEqual({ ok: true });
+
+  // A refund from an unknown claim is an unanswered no-op.
+  expect(await f.records.releaseUploadClaim(owner, newClaimId())).toBe('unknown');
+
+  expect(await f.records.releaseUploadClaim(owner, claim)).toBe('ok');
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(0);
+  expect(await f.counter(`planny:upload:month:${owner}:2026-10`)).toBe(0);
+  expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(0);
+
+  // A second release of the same claim is neutral, the record is gone.
+  expect(await f.records.releaseUploadClaim(owner, claim)).toBe('unknown');
+
+  // The refunded slot is claimable again, and a new claim has fresh values.
+  const next = newClaimId();
+  expect(await f.records.uploadGate(owner, now + 1000, values, next)).toEqual({ ok: true });
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(1);
+  expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(now + 1000);
+  // A released claim cannot refund twice: the newer claim's slot stays intact.
+  expect(await f.records.releaseUploadClaim(owner, claim)).toBe('unknown');
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(1);
+  expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(now + 1000);
+});
+
+test('claims respect the daily cap, then the refunded slot frees the room', async () => {
+  const f = fixture();
+  const owner = 'owner-daily';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const values = { spacingSeconds: 0, perDay: 2, perMonth: 50 };
+  const a = newClaimId();
+  const b = newClaimId();
+  const c = newClaimId();
+  expect(await f.records.uploadGate(owner, now, values, a)).toEqual({ ok: true });
+  expect(await f.records.uploadGate(owner, now, values, b)).toEqual({ ok: true });
+  const refused = await f.records.uploadGate(owner, now, values, c);
+  expect(refused.ok).toBe(false);
+  expect(refused.code).toBe('address_upload_daily_limit');
+
+  expect(await f.records.releaseUploadClaim(owner, a)).toBe('ok');
+  // Without the spacing floor the freed slot is claimable at once.
+  expect(await f.records.uploadGate(owner, now, values, c)).toEqual({ ok: true });
 });
 
 test('a second concurrent claim loses the race and answers busy', async () => {
