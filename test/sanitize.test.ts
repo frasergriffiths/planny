@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { SanitizeTooDeepError, checkCss, sanitize } from '../src/sanitize.js';
+import { MAX_ATTRIBUTES_PER_TAG, MAX_ATTRIBUTES_TOTAL, SanitizeTooDeepError, SanitizeTooManyAttributesError, checkCss, sanitize } from '../src/sanitize.js';
 
 const LEFTOVERS = [
   /<\/?(script|iframe|frame|frameset|object|embed|base|link|form|input|button|select|textarea|template|noscript|math|a|use|image|animate|set|foreignobject|video|audio|source)\b/i,
@@ -84,6 +84,45 @@ test('a plan is unchanged when sanitised twice', () => {
 
 test('deep nesting is refused', () => {
   expect(() => sanitize('<div>'.repeat(5000))).toThrow(SanitizeTooDeepError);
+});
+
+// parse5 spends super-linear time per attribute, so the attribute guard decides before
+// the parser runs. The timing bounds are generous tripwires: every parse below takes
+// single-digit milliseconds with the guard, and minutes without it.
+test('attribute counts are bounded before parsing', () => {
+  const attrs = (n: number): string => Array.from({ length: n }, (_, i) => `a${i}=1`).join(' ');
+  const timed = (work: () => void, limit: number): void => {
+    const start = Date.now();
+    work();
+    expect(Date.now() - start).toBeLessThan(limit);
+  };
+
+  timed(() => sanitize(`<div ${attrs(MAX_ATTRIBUTES_PER_TAG)}>x</div>`), 2000);
+  expect(() => sanitize(`<div ${attrs(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`)).toThrow(SanitizeTooManyAttributesError);
+  // end tags carry the same budget: parse5 tokenizes their attributes before dropping them
+  timed(() => sanitize(`<p>x</div ${attrs(MAX_ATTRIBUTES_PER_TAG)}>ok`), 2000);
+  expect(() => sanitize(`<p>x</div ${attrs(MAX_ATTRIBUTES_PER_TAG + 1)}>ok`)).toThrow(SanitizeTooManyAttributesError);
+
+  const tags = (n: number): string => `<p ${attrs(100)}>x</p>`.repeat(n / 100);
+  timed(() => sanitize(tags(MAX_ATTRIBUTES_TOTAL)), 2000);
+  expect(() => sanitize(tags(MAX_ATTRIBUTES_TOTAL + 1000))).toThrow(SanitizeTooManyAttributesError);
+
+  // separate attr-name entries without whitespace cannot dodge the count
+  expect(() => sanitize(`<div a="1"${'b="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<div${'/a="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  // an unquoted value swallows `/` and `=` as value characters, exactly like the parser
+  expect(sanitize(`<div${'/title=1'.repeat(MAX_ATTRIBUTES_TOTAL)}>`).html).toContain('title="1/title=');
+  expect(() => sanitize(`<div a==${' =x="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  // svg style content is markup, not raw text, so hidden tags are still counted
+  expect(() => sanitize(`<svg><style><div${' a=1'.repeat(9000)}></style></svg>`)).toThrow(SanitizeTooManyAttributesError);
+
+  const table = (rows: number): string =>
+    `<table>${'<tr><td a="1" b="2" c="3" d="4">x</td></tr>'.repeat(rows)}</table>`;
+  let once = '';
+  timed(() => { once = sanitize(table(3000)).html; }, 2000); // 12,000 attributes
+  expect(sanitize(once).html).toBe(once);
+  timed(() => sanitize('<br />'.repeat(20000)), 2000);
+  timed(() => sanitize('<div>x<span>t</span></div>'.repeat(5000)), 2000);
 });
 
 test('CSS allows fragments and data images only', () => {

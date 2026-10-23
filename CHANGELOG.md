@@ -8,6 +8,13 @@ All notable changes to planny are recorded here. The format follows
 
 ### Fixed
 
+- One upload can no longer burn minutes of server CPU. parse5 handles attribute
+  counts super-linearly, and a probe put 60,000 attributes (937 KB, under the 4 MiB
+  cap) on one request against production: 22.5 seconds of wall time, trending to
+  about 3.5 minutes at the full cap. A linear scan now bounds attributes
+  before the parser runs: 2,048 per tag and 20,000 per document, counted on end tags
+  too, because parse5 tokenizes those just as expensively before dropping them.
+  Oversized plans get 400 `too_many_attributes` in milliseconds instead.
 - The per-address upload gate claims its slot in the same atomic step that checks it.
   Before, the gate only read the counters and the slot was recorded only after a
   successful publish, so uploads sent in parallel could share one spacing window and

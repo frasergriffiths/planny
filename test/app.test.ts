@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 import { newPlanId } from '../src/util.js';
 import { createApp } from '../src/app.js';
 import type { App, Logger } from '../src/app.js';
+import { MAX_ATTRIBUTES_TOTAL } from '../src/sanitize.js';
 import { loadConfig, MiB, type AppConfig } from '../src/config.js';
 import { createLocalStore } from '../src/stores/local.js';
 import { PLAN_SCRIPT, PLAN_SCRIPT_HASH } from '../src/plan-script.js';
@@ -140,11 +141,35 @@ test('bad uploads get their own status and code', async () => {
       [await upload(t, { body: new Uint8Array([0xff, 0xfe, 0x3c]) }), 400, 'invalid_encoding'],
       [await upload(t, { body: 'x'.repeat(4 * MiB + 1) }), 413, 'too_large'],
       [await upload(t, { body: '<div>'.repeat(5000) }), 400, 'too_deep'],
+      [await upload(t, { body: `<div ${Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1000 }, (_, i) => `a${i}=1`).join(' ')}>x</div>` }), 400, 'too_many_attributes'],
     ];
     for (const [response, status, code] of cases) {
       expect(response.status).toBe(status);
       expect(((await response.json()) as { error: { code: string } }).error.code).toBe(code);
     }
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('attribute bombs are refused before any accounting happens', async () => {
+  const t = setup();
+  try {
+    const bomb = `<div ${Array.from({ length: 60000 }, (_, i) => `a${i}="v${i}"`).join(' ')}>x</div>`;
+    const start = Date.now();
+    const response = await upload(t, { name: 'attrbomb', body: bomb });
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('too_many_attributes');
+    // The scan decides before parse5 ever sees the markup, so the rejection is fast
+    // where the unguarded parse would burn minutes of CPU on a single request.
+    expect(Date.now() - start).toBeLessThan(2000);
+    // no slots were claimed or bytes reserved for the refused upload
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:upload:day:203.0.113.7:'
+      + new Date(Date.UTC(2026, 9, 19, 12)).toISOString().slice(0, 10))).toBe(0);
+    // and a valid plan still publishes normally afterwards
+    const json = await uploaded(t);
+    expect(json.bytes).toBeGreaterThan(0);
   } finally {
     t.cleanup();
   }

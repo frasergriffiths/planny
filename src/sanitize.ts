@@ -26,6 +26,211 @@ interface Document {
 const HTML_NS = 'http://www.w3.org/1999/xhtml';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_DEPTH = 200;
+// parse5 spends super-linear time in the number of attributes it keeps, and any one
+// start tag can carry as many attributes as the 4 MiB cap allows. The scan bounds both
+// counts before the parser runs: 2,048 per tag, 20,000 document-wide.
+export const MAX_ATTRIBUTES_PER_TAG = 2048;
+export const MAX_ATTRIBUTES_TOTAL = 20_000;
+
+export class SanitizeTooManyAttributesError extends Error {
+  readonly code = 'too_many_attributes';
+
+  constructor() {
+    super('plan uses too many attributes');
+  }
+}
+
+const isSpace = (code: number): boolean =>
+  code === 32 || code === 9 || code === 10 || code === 12 || code === 13;
+const isAsciiAlpha = (code: number): boolean =>
+  (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+
+// Comments follow the tokenizer's own states, so a markup-looking run can never hide the
+// way this scan ends. `<!-->` and `<!--->` are abrupt closings; `-->` and `--!>` close
+// normally; anything else runs to the end of the input, exactly like the parser.
+function commentEnd(html: string, at: number): number {
+  if (html[at] === '>' || (html[at] === '-' && html[at + 1] === '>')) {
+    return html[at] === '>' ? at + 1 : at + 2;
+  }
+  for (let i = at; i < html.length; i += 1) {
+    if (html[i] !== '-') continue;
+    if (html[i + 1] !== '-') continue;
+    if (html[i + 2] === '>') return i + 3;
+    if (html[i + 2] === '!' && html[i + 3] === '>') return i + 4;
+  }
+  return html.length;
+}
+
+const TAG_NAME = 0;
+const SELF_CLOSING = 1;
+const BEFORE_ATTR = 2;
+const ATTR_NAME = 3;
+const BEFORE_VALUE = 4;
+const VALUE_QUOTED = 5;
+const VALUE_UNQUOTED = 6;
+const AFTER_QUOTED = 7;
+
+// One linear pass that mirrors the tag machinery of the tokenizer state by state: tag
+// name, self-closing, before-attribute-name, attribute name, quoted and unquoted values,
+// and the after-value state where a name can follow a closing quote without whitespace.
+// Entering an attribute name is the only thing that counts, so every attribute the real
+// parse can mint is counted, whatever separator the attack omits — including the ones on
+// end tags, which parse5 tokenizes (and then drops at the tree level) at the same cost.
+// Content is never skipped as raw text: a `<style>` inside `<svg>` parses as markup, so
+// its text is scanned too. Entities carry no separators. Counts can only overshoot (a
+// quote shaped like a name pulls the matcher along), never undershoot.
+//
+// Returns the index just after the tag's `>` (or the end of the input) and the number of
+// attribute entries inside the tag.
+function walkTag(html: string, at: number, i: number): { end: number; count: number } {
+  let state = TAG_NAME;
+  let quote = '';
+  let count = 0;
+  while (i < at) {
+    const code = html.charCodeAt(i);
+    if (code === 62 /* > */) {
+      return { end: i + 1, count };
+    }
+    const space = isSpace(code);
+    if (state === TAG_NAME) {
+      if (space) state = BEFORE_ATTR;
+      else if (code === 47) state = SELF_CLOSING;
+      i += 1;
+      continue;
+    }
+    if (state === SELF_CLOSING) {
+      // the tokenizer reconsumes the character in the before-attribute-name state
+      state = BEFORE_ATTR;
+      continue;
+    }
+    if (state === BEFORE_ATTR) {
+      if (space) {
+        i += 1;
+        continue;
+      }
+      if (code === 47) {
+        state = SELF_CLOSING;
+        i += 1;
+        continue;
+      }
+      state = ATTR_NAME;
+      count += 1; // entering an attribute name, with `=` as the one odd legal opener
+      if (count > MAX_ATTRIBUTES_PER_TAG) throw new SanitizeTooManyAttributesError();
+      continue; // reconsume this character in the name state
+    }
+    if (state === ATTR_NAME) {
+      if (space) {
+        state = BEFORE_ATTR;
+        i += 1;
+        continue;
+      }
+      if (code === 47) {
+        state = BEFORE_ATTR;
+        continue; // the slash is reconsumed, where it may close the tag
+      }
+      if (code === 61 /* = */) {
+        state = BEFORE_VALUE;
+        i += 1;
+        continue;
+      }
+      i += 1;
+      continue;
+    }
+    if (state === BEFORE_VALUE) {
+      if (space) {
+        i += 1;
+        continue;
+      }
+      if (code === 34 || code === 39) {
+        quote = String.fromCharCode(code);
+        state = VALUE_QUOTED;
+        i += 1; // consume the opening quote; the closing one ends the state
+        continue;
+      }
+      state = VALUE_UNQUOTED; // `>` ends the tag from the check above
+      continue;
+    }
+    if (state === VALUE_QUOTED) {
+      if (code === quote.charCodeAt(0)) {
+        quote = '';
+        state = AFTER_QUOTED;
+      }
+      i += 1;
+      continue;
+    }
+    if (state === VALUE_UNQUOTED) {
+      // whitespace ends the value; `/` and `=` are value characters, per spec
+      if (space) state = BEFORE_ATTR;
+      i += 1;
+      continue;
+    }
+    // AFTER_QUOTED: whitespace or a slash decide, anything else is another attribute
+    if (space) {
+      state = BEFORE_ATTR;
+      i += 1;
+      continue;
+    }
+    if (code === 47) {
+      state = SELF_CLOSING;
+      i += 1;
+      continue;
+    }
+    state = ATTR_NAME;
+    count += 1;
+    if (count > MAX_ATTRIBUTES_PER_TAG) throw new SanitizeTooManyAttributesError();
+  }
+  return { end: at, count };
+}
+
+function guardAttributes(html: string): void {
+  let total = 0;
+  const at = html.length;
+  let i = 0;
+  while (i < at) {
+    if (html.charCodeAt(i) !== 60 /* < */) {
+      i += 1;
+      continue;
+    }
+    const open = html.charCodeAt(i + 1);
+    if (open === 33 /* ! */) {
+      if (html.startsWith('<!--', i)) {
+        i = commentEnd(html, i + 4);
+      } else {
+        // doctype, CDATA and the rest are bogus comments that end at the first `>`
+        const cut = html.indexOf('>', i + 2);
+        i = cut === -1 ? at : cut + 1;
+      }
+      continue;
+    }
+    if (open === 63 /* ? */) {
+      // processing-instruction state is a bogus comment that ends at the first `>`
+      const cut = html.indexOf('>', i + 2);
+      i = cut === -1 ? at : cut + 1;
+      continue;
+    }
+    if (open === 47 /* / */) {
+      if (isAsciiAlpha(html.charCodeAt(i + 2))) {
+        // an end tag carries attributes that parse5 tokenizes before dropping them,
+        // so they cost real time and are counted like start-tag attributes
+        const walked = walkTag(html, at, i + 3);
+        i = walked.end;
+        total += walked.count;
+      } else {
+        // `</>` and `</3` are bogus comments that end at the first `>`
+        const cut = html.indexOf('>', i + 2);
+        i = cut === -1 ? at : cut + 1;
+      }
+    } else if (isAsciiAlpha(open)) {
+      const walked = walkTag(html, at, i + 2);
+      i = walked.end;
+      total += walked.count;
+    } else {
+      // `<` followed by anything but a name character is text
+      i += 1;
+    }
+    if (total > MAX_ATTRIBUTES_TOTAL) throw new SanitizeTooManyAttributesError();
+  }
+}
 
 const ALLOWED_HTML = new Set<string>([
   'html', 'head', 'body', 'title', 'meta', 'style',
@@ -94,6 +299,7 @@ interface Walk {
 }
 
 export function sanitize(input: string): SanitizeResult {
+  guardAttributes(input);
   const document = parse(input) as unknown as Document;
   const walk: Walk = { removed: new Map<string, number>(), depth: 0 };
   document.childNodes = cleanList(walk, document.childNodes);

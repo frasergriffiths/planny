@@ -12,6 +12,7 @@ Generated from `src/error-codes.ts` by `scripts/generate-skill-errors.ts`. Do no
 | 400 | `empty_body` | upload | The request body is empty. | None | JSON |  |
 | 400 | `invalid_encoding` | upload | The body is not valid UTF-8. | None | JSON |  |
 | 400 | `too_deep` | upload | The HTML nests more than 200 levels deep. | None | JSON |  |
+| 400 | `too_many_attributes` | upload | The HTML uses more attributes than the parser budget allows. | None | JSON | One tag may carry up to 2,048 attributes and the document up to 20,000. The check runs before the plan is parsed. |
 | 400 | `invalid_query` | upload | The query contains anything other than name and duration. | None | JSON |  |
 | 401 | `missing_key` | delete | The DELETE has no Authorization: Bearer key. | None | JSON |  |
 | 401 | `unauthorized` | admin | The admin token is missing or wrong, or the admin rate limit refused the call. | None | JSON |  |
