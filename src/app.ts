@@ -276,11 +276,14 @@ export function createApp(deps: AppDeps): App {
     }
     const at = now();
     const owner = ownerKey(secret, address);
+    // The gate claims the slot in one atomic step: spacing, the daily cap and the monthly
+    // cap are all written inside the claim, so concurrent uploads cannot share a window.
+    const gateClaimId = newClaimId();
     const gate = await records.uploadGate(owner, at, {
       spacingSeconds: config.uploadSpacingSeconds,
       perDay: config.uploadsPerDay,
       perMonth: config.uploadsPerMonth,
-    });
+    }, gateClaimId);
     if (!gate.ok) {
       const code = gate.code ?? 'address_upload_rate_limited';
       const seconds = gate.retryAfter ?? 60;
@@ -293,92 +296,96 @@ export function createApp(deps: AppDeps): App {
         'retry-after': String(seconds),
       });
     }
-    if (!isHtmlType(request.headers.get('content-type'))) throw badType();
-    const parsedQuery = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-    if (!parsedQuery.success) throw new ApiError(400, 'invalid_query', 'Use ?name= and ?duration= only.');
-    const parsedName = nameSchema.safeParse(parsedQuery.data.name ?? '');
-    if (!parsedName.success) {
-      const empty = parsedName.error.issues.some((issue) => issue.message === 'empty');
-      throw empty
-        ? new ApiError(400, 'name_required', 'Add a name with ?name=. Example: name=Q4%20rollout')
-        : new ApiError(400, 'name_too_long', 'Names can be up to 120 characters.');
-    }
-    const name = parsedName.data;
-    const durationMs = parseDuration(parsedQuery.data.duration ?? null, config);
-    const raw = await readBody(request);
-    let text: string;
     try {
-      text = new TextDecoder('utf-8', { fatal: true }).decode(raw);
-    } catch {
-      throw new ApiError(400, 'invalid_encoding', 'The plan must be UTF-8 text.');
-    }
-    let cleaned: { html: string; removed: Record<string, number> };
-    try {
-      cleaned = sanitize(text);
-    } catch (error) {
-      if (error instanceof SanitizeTooDeepError) {
-        throw new ApiError(400, 'too_deep', 'The plan nests elements too deeply. Keep nesting under 200 levels.');
+      if (!isHtmlType(request.headers.get('content-type'))) throw badType();
+      const parsedQuery = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+      if (!parsedQuery.success) throw new ApiError(400, 'invalid_query', 'Use ?name= and ?duration= only.');
+      const parsedName = nameSchema.safeParse(parsedQuery.data.name ?? '');
+      if (!parsedName.success) {
+        const empty = parsedName.error.issues.some((issue) => issue.message === 'empty');
+        throw empty
+          ? new ApiError(400, 'name_required', 'Add a name with ?name=. Example: name=Q4%20rollout')
+          : new ApiError(400, 'name_too_long', 'Names can be up to 120 characters.');
       }
+      const name = parsedName.data;
+      const durationMs = parseDuration(parsedQuery.data.duration ?? null, config);
+      const raw = await readBody(request);
+      let text: string;
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(raw);
+      } catch {
+        throw new ApiError(400, 'invalid_encoding', 'The plan must be UTF-8 text.');
+      }
+      let cleaned: { html: string; removed: Record<string, number> };
+      try {
+        cleaned = sanitize(text);
+      } catch (error) {
+        if (error instanceof SanitizeTooDeepError) {
+          throw new ApiError(400, 'too_deep', 'The plan nests elements too deeply. Keep nesting under 200 levels.');
+        }
+        throw error;
+      }
+      // The cap is the raw body, checked before cleaning; the stored wrapper is a few dozen bytes.
+      const bytes = Buffer.from(cleaned.html, 'utf8');
+
+      const id = newPlanId();
+      const claimId = newClaimId();
+      const deleteKey = newDeleteKey();
+      const expiresAt = at + durationMs;
+      const reservation = {
+        id,
+        claimId,
+        now: at,
+        owner,
+        bytes: bytes.byteLength,
+        name,
+        expiresAt,
+        deleteKeyHash: sha256Hex(deleteKey),
+        limits: {
+          site: config.siteBytes,
+          owner: config.ownerBytes,
+          monthlyUploads: config.monthly.uploads,
+        },
+      } as const;
+      let reserved = await records.reserve(reservation);
+      if (reserved === 'site_bytes' || reserved === 'owner_bytes') {
+        await sweep({ limit: 50 }).catch((error: unknown) => log.error('planny: sweep before retry failed', error));
+        reserved = await records.reserve(reservation);
+      }
+      if (reserved !== 'ok') throw reservationError(reserved, at);
+
+      try {
+        await store.blobs.put(id, bytes);
+      } catch (error) {
+        log.error('planny: could not store the plan file', error);
+        await removePlan(id, 'abandoned', at, { force: true })
+          .catch((cleanup: unknown) => log.error('planny: rollback failed', cleanup));
+        throw new ApiError(500, 'upload_failed', 'The plan did not reach storage, so nothing was kept. Upload it again.');
+      }
+
+      if ((await records.publish(id, claimId, expiresAt)) !== 'ok') {
+        throw new ApiError(500, 'upload_interrupted', 'The upload was cancelled before it went live. Upload it again.');
+      }
+      await records.finalizeUpload(owner, gateClaimId);
+      background(sweep());
+      return json(201, {
+        id,
+        name,
+        build,
+        url: `${origin}/p/${id}`,
+        expiresAt: new Date(expiresAt).toISOString(),
+        bytes: bytes.byteLength,
+        deleteKey,
+        delete: { method: 'DELETE', url: `${origin}/p/${id}`, header: 'Authorization: Bearer <deleteKey>' },
+        removed: cleaned.removed,
+      });
+    } catch (error) {
+      // The claim underwrote the slot, so a failed upload hands it back. The refund acts
+      // only while this exact claim is still outstanding, so it cannot double-count.
+      await records.releaseUploadClaim(owner, gateClaimId)
+        .catch((refund: unknown) => log.error('planny: could not refund the upload claim', refund));
       throw error;
     }
-    // The cap is the raw body, checked before cleaning; the stored wrapper is a few dozen bytes.
-    const bytes = Buffer.from(cleaned.html, 'utf8');
-
-    const id = newPlanId();
-    const claimId = newClaimId();
-    const deleteKey = newDeleteKey();
-    const expiresAt = at + durationMs;
-    const reservation = {
-      id,
-      claimId,
-      now: at,
-      owner,
-      bytes: bytes.byteLength,
-      name,
-      expiresAt,
-      deleteKeyHash: sha256Hex(deleteKey),
-      limits: {
-        site: config.siteBytes,
-        owner: config.ownerBytes,
-        monthlyUploads: config.monthly.uploads,
-      },
-    } as const;
-    let reserved = await records.reserve(reservation);
-    if (reserved === 'site_bytes' || reserved === 'owner_bytes') {
-      await sweep({ limit: 50 }).catch((error: unknown) => log.error('planny: sweep before retry failed', error));
-      reserved = await records.reserve(reservation);
-    }
-    if (reserved !== 'ok') throw reservationError(reserved, at);
-
-    try {
-      await store.blobs.put(id, bytes);
-    } catch (error) {
-      log.error('planny: could not store the plan file', error);
-      await removePlan(id, 'abandoned', at, { force: true })
-        .catch((cleanup: unknown) => log.error('planny: rollback failed', cleanup));
-      throw new ApiError(500, 'upload_failed', 'The plan did not reach storage, so nothing was kept. Upload it again.');
-    }
-
-    if ((await records.publish(id, claimId, expiresAt)) !== 'ok') {
-      throw new ApiError(500, 'upload_interrupted', 'The upload was cancelled before it went live. Upload it again.');
-    }
-    await records.uploadRecord(owner, at, {
-      spacingSeconds: config.uploadSpacingSeconds,
-      perDay: config.uploadsPerDay,
-      perMonth: config.uploadsPerMonth,
-    });
-    background(sweep());
-    return json(201, {
-      id,
-      name,
-      build,
-      url: `${origin}/p/${id}`,
-      expiresAt: new Date(expiresAt).toISOString(),
-      bytes: bytes.byteLength,
-      deleteKey,
-      delete: { method: 'DELETE', url: `${origin}/p/${id}`, header: 'Authorization: Bearer <deleteKey>' },
-      removed: cleaned.removed,
-    });
   }
 
   function unavailable(record: PlanRecord): Response {

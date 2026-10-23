@@ -6,6 +6,14 @@ All notable changes to planny are recorded here. The format follows
 
 ## Unreleased
 
+### Fixed
+
+- The per-address upload gate claims its slot in the same atomic step that checks it.
+  Before, the gate only read the counters and the slot was recorded only after a
+  successful publish, so uploads sent in parallel could share one spacing window and
+  race past the daily and monthly caps. A failing upload now returns its claimed slot;
+  refusals still leave the counters untouched.
+
 ### Added
 
 - Every published plan ends with one restrained viewer line, "Made with Planny",

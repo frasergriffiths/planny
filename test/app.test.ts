@@ -344,6 +344,43 @@ test('the upload rate limit, the switch and the view rate limit hold', async () 
   }
 });
 
+test('a parallel upload waits while the first upload holds its claim', async () => {
+  const t = setup({}, { uploadSpacingSeconds: 120 });
+  try {
+    const pipe = new TransformStream<Uint8Array, Uint8Array>();
+    const writer = pipe.writable.getWriter();
+    const slow = t.app.fetch(new Request(`${ORIGIN}/plans?${new URLSearchParams({ name: 'Slow', duration: '30d' })}`, {
+      method: 'POST',
+      headers: { 'content-type': 'text/html' },
+      body: pipe.readable,
+      ...({ duplex: 'half' } as unknown as RequestInit),
+    }), { address: ADDRESS });
+    await flush();
+    // The first upload claimed its slot while the body was still trickling, so a
+    // parallel upload from the same address waits instead of sharing the window.
+    const parallel = await upload(t, { name: 'Parallel' });
+    expect(parallel.status).toBe(429);
+    expect(((await parallel.json()) as { error: { code: string } }).error.code).toBe('address_upload_rate_limited');
+
+    writer.write(new TextEncoder().encode(PLAN));
+    await writer.close();
+    expect((await slow).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('a failed upload refunds its claim, so the next attempt starts fresh', async () => {
+  const t = setup({}, { uploadSpacingSeconds: 120 });
+  try {
+    expect((await upload(t, { type: 'text/plain' })).status).toBe(415);
+    // The failed attempt handed its slot back: no 120 second wait for the retry.
+    expect((await upload(t, { name: 'Retry' })).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('the read guard pauses views, deletes still work, and the admin reset frees them', async () => {
   const t = setup({ PLANNY_MONTHLY_READS: '0' });
   try {
