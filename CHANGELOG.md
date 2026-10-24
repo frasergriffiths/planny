@@ -105,6 +105,11 @@ All notable changes to planny are recorded here. The format follows
 
 ### Changed
 
+- The home page now leads with the agent skill, follows it with a new MCP server section
+  (the `npx -y` tarball command and a pasteable stdio JSON config), and moves the demo box
+  below the MCP section with one intro line, a taller editor and a larger button. Header and
+  hero links cover skill, sample and MCP, and every copy control is now an icon button with
+  no visible "Copy" label.
 - The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
   footer link works without scripts, fetches or any other sandbox permission.
 - The site CSP now allows `'self'` in `script-src` and adds `connect-src 'self'`, because
