@@ -86,6 +86,59 @@ test('deep nesting is refused', () => {
   expect(() => sanitize('<div>'.repeat(5000))).toThrow(SanitizeTooDeepError);
 });
 
+// The three bypass classes found in the first cut of the guard, inflated past the
+// document cap: their hidden attributes are real parse5 tokens, so the guard counts
+// them and refuses long before the parser runs. Each shape was accepted at 93a8b2d,
+// where the scan stopped early and never saw the hidden attributes.
+const hidden = (n: number): string => Array.from({ length: n }, (_, i) => `a${i}=1`).join(' ');
+
+test('the bypass classes are counted wherever they hide', () => {
+  const over = hidden(MAX_ATTRIBUTES_TOTAL + 1);
+  // bypass 1: a `>` inside a quoted value may not end the scan early
+  expect(() => sanitize(`<div a=">"${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`</p a=">"${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  // a quoted `>` stays value text, and the tag still ends at its real `>` — and
+  // parse5 serializes a `>` in an attribute value unescaped
+  expect(sanitize('<div class=">">t</div>').html).toContain('<div class=">">t</div>');
+  // bypass 2: a `<!--` inside a raw-text interior is text, never a comment
+  for (const el of ['title', 'textarea', 'style', 'script', 'xmp', 'iframe', 'noscript']) {
+    expect(() => sanitize(`<${el}><!--</${el}><div${over}>x</div>-->`)).toThrow(SanitizeTooManyAttributesError);
+  }
+  // bypass 3: `=` opening an attribute name mints one entry, like any other name
+  // (` =n` joined: every `=` starts a new attribute name in the tokenizer)
+  expect(() => sanitize(`<div ${' =n'.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`))
+    .toThrow(SanitizeTooManyAttributesError);
+});
+
+test('content zones track the tokenizer exactly', () => {
+  const over = hidden(MAX_ATTRIBUTES_TOTAL + 1);
+  // the script escape dance: `<!--` starts escaped text, `<script>` double-escapes it,
+  // `</script>` there only steps back, and the element closes at the real `</script>`
+  expect(sanitize('<script>a</script><p class="x">1</p>').html).toContain('<p class="x">1</p>');
+  const dance = '<script><!--<script>e</script>--></script><p class="x">1</p>';
+  expect(sanitize(dance).html).toContain('<p class="x">1</p>');
+  // markup after the dance or after a plain close is counted like any other markup
+  expect(() => sanitize(`<script><!--<script></script>--></script><div ${over}>x`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<script><!--y--></script><div ${over}>x`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<title>c</title><div ${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  // svg content is markup: svg `<style>` is not raw text, and a causesExit start tag
+  // like `<div>` leaves the foreign context as a plainly-minted html element — parse5
+  // mints its attributes in the tree, so the scan counts them like any others
+  expect(() => sanitize(`<svg><style><div ${hidden(MAX_ATTRIBUTES_PER_TAG + 1)}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // an interior close that fails its terminator check stays raw text
+  expect(sanitize('<textarea></textareaX<div a=1></textarea><p class="x">1</p>').html)
+    .toContain('<p class="x">1</p>');
+  // a fused select/frameset zone never trusts a comment or a raw-text switch
+  expect(sanitize('<select><style><foo a=1></style></select><p class="x">1</p>').html)
+    .toContain('class="x"');
+  expect(sanitize('<body><frameset><style><foo a=1></style></frameset><p class="x">1</p></body>').html)
+    .toContain('class="x"');
+});
+
+
 // parse5 spends super-linear time per attribute, so the attribute guard decides before
 // the parser runs. The timing bounds are generous tripwires: every parse below takes
 // single-digit milliseconds with the guard, and minutes without it.

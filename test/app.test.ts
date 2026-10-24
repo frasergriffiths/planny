@@ -6,7 +6,7 @@ import { expect, test } from 'bun:test';
 import { newPlanId } from '../src/util.js';
 import { createApp } from '../src/app.js';
 import type { App, Logger } from '../src/app.js';
-import { MAX_ATTRIBUTES_TOTAL } from '../src/sanitize.js';
+import { MAX_ATTRIBUTES_PER_TAG, MAX_ATTRIBUTES_TOTAL } from '../src/sanitize.js';
 import { loadConfig, MiB, type AppConfig } from '../src/config.js';
 import { createLocalStore } from '../src/stores/local.js';
 import { PLAN_SCRIPT, PLAN_SCRIPT_HASH } from '../src/plan-script.js';
@@ -152,7 +152,7 @@ test('bad uploads get their own status and code', async () => {
   }
 });
 
-test('attribute bombs are refused before any accounting happens', async () => {
+test('attribute bombs are refused before slots or bytes are claimed', async () => {
   const t = setup();
   try {
     const bomb = `<div ${Array.from({ length: 60000 }, (_, i) => `a${i}="v${i}"`).join(' ')}>x</div>`;
@@ -163,13 +163,41 @@ test('attribute bombs are refused before any accounting happens', async () => {
     // The scan decides before parse5 ever sees the markup, so the rejection is fast
     // where the unguarded parse would burn minutes of CPU on a single request.
     expect(Date.now() - start).toBeLessThan(2000);
-    // no slots were claimed or bytes reserved for the refused upload
+    // no slots were claimed, no bytes reserved and no upload counted for it
     expect(await counter(t, 'planny:site:bytes')).toBe(0);
     expect(await counter(t, 'planny:upload:day:203.0.113.7:'
       + new Date(Date.UTC(2026, 9, 19, 12)).toISOString().slice(0, 10))).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
     // and a valid plan still publishes normally afterwards
     const json = await uploaded(t);
     expect(json.bytes).toBeGreaterThan(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the attribute-guard bypass classes are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    const over = Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1 }, (_, i) => `a${i}=1`).join(' ');
+    // Each payload was shaped so an early-stopping scan never counted the attributes:
+    // a `>` inside a quoted value, a comment inside a raw-text interior, and `=` as the
+    // first character of an attribute name. parse5 mints every hidden attribute for real.
+    const bodies = [
+      `<div a=">"${over}>x</div>`,
+      `</p a=">"${over}>x`,
+      ...['title', 'textarea', 'style', 'script', 'xmp', 'iframe', 'noscript'].map((el) =>
+        `<${el}><!--</${el}><div${over}>x</div>-->`),
+      `<div ${'= n '.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`,
+    ];
+    for (const [index, body] of bodies.entries()) {
+      const response = await upload(t, { body, name: `Bypass ${index}` });
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
   } finally {
     t.cleanup();
   }

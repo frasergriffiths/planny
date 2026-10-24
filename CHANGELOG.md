@@ -12,9 +12,25 @@ All notable changes to planny are recorded here. The format follows
   counts super-linearly, and a probe put 60,000 attributes (937 KB, under the 4 MiB
   cap) on one request against production: 22.5 seconds of wall time, trending to
   about 3.5 minutes at the full cap. A linear scan now bounds attributes
-  before the parser runs: 2,048 per tag and 20,000 per document, counted on end tags
+  before the parser runs: 2,048 per tag and 40,000 per document, counted on end tags
   too, because parse5 tokenizes those just as expensively before dropping them.
-  Oversized plans get 400 `too_many_attributes` in milliseconds instead.
+  Oversized plans get 400 `too_many_attributes` in milliseconds instead — the
+  937 KB bomb that took 22.5 s to parse rejects in under 1 ms.
+  The document cap sits at 40,000 on measured evidence: a dense 8,000-row table
+  (40,000 real attributes) parses in 29 ms, a 42,007-attribute variant is refused
+  in 1 ms, and the widest accepted shape so far (38,912 attributes at the per-tag
+  boundary) still parses in 94 ms — 20,000 would have refused the dense-table class.
+- The counting scan itself had three bypasses, all closed. The scan mirrors the
+  parse5 tokenizer state for state: a `>` inside a quoted attribute value is value
+  text and no longer ends the tag early; `<!--` inside `title`, `textarea`,
+  `style`, `script`, `xmp`, `iframe` and `noscript` interiors is text, not a
+  comment, so a real close after it is still reached; and `=` as the first
+  character of an attribute name opens that attribute instead of being rebuilt as
+  a separator. The content model also tracks the tokenizer through the script
+  escape dance, `svg`/`math` foreign content, and the `select` and `frameset`
+  zones, and attributes on end tags are walked where the tokenizer walks them —
+  so attributes hidden in any of these shapes are counted, and each class was a
+  400 at the old boundary where the first cut skipped it.
 - The per-address upload gate claims its slot in the same atomic step that checks it.
   Before, the gate only read the counters and the slot was recorded only after a
   successful publish, so uploads sent in parallel could share one spacing window and

@@ -94,7 +94,7 @@ export const ERROR_CODES: readonly ErrorCode[] = [
     when: 'The HTML uses more attributes than the parser budget allows.',
     retry: 'none',
     response: 'json',
-    notes: 'One tag may carry up to 2,048 attributes and the document up to 20,000. The check runs before the plan is parsed.',
+    notes: 'One tag may carry up to 2,048 attributes and the document up to 40,000. The check runs before the plan is parsed.',
   },
   {
     code: 'invalid_query',
