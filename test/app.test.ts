@@ -283,7 +283,7 @@ test('an upload is cleaned, stored and served with the plan headers', async () =
     // anchor a served plan carries (see attribution.test.ts).
     for (const bad of ['alert(1)', 'onclick', 'evil.example']) expect(rawBody).not.toContain(bad);
     expect(rawBody.split('href=').length - 1).toBe(1);
-    expect(rawBody).toContain('href="https://use-planny.vercel.app"');
+    expect(rawBody).toContain('href="https://use-planny.vercel.app?ref=plan"');
     expect(rawBody.split('<script>').length - 1).toBe(1);
     expect(rawBody).toContain('<title>X</title>');
     expect(page.headers.get('content-security-policy')).toMatch(/default-src 'none'/);
@@ -367,7 +367,7 @@ test('the sample gets the plan policy, the same script hash and the footer', asy
     expect(body.split('<script>').length - 1).toBe(1);
     expect(body).not.toContain('Make your own plan');
     expect(body).toContain('<footer data-planny-attribution');
-    expect(body).toContain('href="https://use-planny.vercel.app"');
+    expect(body).toContain('href="https://use-planny.vercel.app?ref=sample"');
   } finally {
     t.cleanup();
   }
@@ -526,7 +526,7 @@ test('the read guard pauses views, deletes still work, and the admin reset frees
 
 test('the per-plan and monthly alerts are logged once', async () => {
   const t = setup({}, {
-    monthly: { uploads: 5000, reads: 1_500_000, readBytes: 1_000_000_000 },
+    monthly: { uploads: 5000, demoUploads: 500, reads: 1_500_000, readBytes: 1_000_000_000 },
     planReadAlert: { perPlanHourly: 0, monthlyWarningFraction: 0.0000001, counterTtlSeconds: 7200 },
   }, Date.UTC(2027, 0, 3, 9, 30));
   try {
@@ -600,7 +600,7 @@ test('app-level storage and upload limits map to the documented status and code'
   const cases = [
     { overrides: { siteBytes: 50 }, status: 503, code: 'storage_full' },
     { overrides: { ownerBytes: 50 }, status: 429, code: 'storage_limit' },
-    { overrides: { monthly: { uploads: 0, reads: 1_500_000, readBytes: 200 * MiB } }, status: 503, code: 'site_upload_monthly_limit' },
+    { overrides: { monthly: { uploads: 0, demoUploads: 500, reads: 1_500_000, readBytes: 200 * MiB } }, status: 503, code: 'site_upload_monthly_limit' },
     { overrides: { uploadsPerDay: 0 }, status: 429, code: 'address_upload_daily_limit' },
   ];
   for (const testCase of cases) {

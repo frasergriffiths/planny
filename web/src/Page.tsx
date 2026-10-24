@@ -1,10 +1,18 @@
 import { useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 
 export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
 // Keep in step with PLUR in src/attribution.ts. The server marks the flag on <html>.
 const PLUR = 'https://use-planny.vercel.app';
+
+// Every link that leaves the site says which surface sent the visitor. Analytics reads the
+// first page's URL, so `/?ref=plan` from a plan footer is distinguishable from direct traffic.
+const REF = 'site';
+function withRef(url: string, ref: string): string {
+  return `${url}${url.includes('?') ? '&' : '?'}ref=${encodeURIComponent(ref)}`;
+}
 
 const stepIcon = {
   write: (
@@ -64,6 +72,119 @@ function InstallCommand() {
   );
 }
 
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          setCopied(false);
+        }
+      }}
+      aria-label={label}
+      className="flex h-7 flex-none cursor-pointer items-center justify-center rounded-bar border border-line px-2 font-mono text-xs text-zinc-400 hover:border-zinc-600 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
+    >
+      {copied ? 'Copied' : 'Copy'}
+      <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
+    </button>
+  );
+}
+
+type PublishState =
+  | { status: 'idle' }
+  | { status: 'sending' }
+  | { status: 'done'; url: string; deleteKey: string; expiresAt: string }
+  | { status: 'error'; message: string };
+
+// The demo box posts to its own endpoint, which has a fixed 24-hour life and a separate
+// monthly counter, so a public demo cannot spend the site-wide upload budget. It is the same
+// sanitiser and the same body cap as an agent's upload; the server decides that, not this form.
+function PublishBox() {
+  const [html, setHtml] = useState('');
+  const [state, setState] = useState<PublishState>({ status: 'idle' });
+  const sending = state.status === 'sending';
+  const canPublish = !sending && html.trim().length > 0;
+
+  const publish = async () => {
+    if (!canPublish) return;
+    setState({ status: 'sending' });
+    try {
+      const response = await fetch('/demo/plans', {
+        method: 'POST',
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+        body: html,
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        url?: string;
+        deleteKey?: string;
+        expiresAt?: string;
+        error?: { message?: string };
+      };
+      if (!response.ok || !data.url || !data.deleteKey || !data.expiresAt) {
+        setState({ status: 'error', message: data.error?.message ?? `Publishing failed (${response.status}).` });
+        return;
+      }
+      setState({ status: 'done', url: data.url, deleteKey: data.deleteKey, expiresAt: data.expiresAt });
+    } catch {
+      setState({ status: 'error', message: 'Could not reach planny. Check your connection and try again.' });
+    }
+  };
+
+  return (
+    <div className="mt-6">
+      <label htmlFor="plan-html" className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your HTML</label>
+      <textarea
+        id="plan-html"
+        value={html}
+        onChange={(event) => setHtml(event.target.value)}
+        spellCheck={false}
+        placeholder={'<!doctype html>\n<html><body><h1>Q4 rollout</h1><p>One page, one link.</p></body></html>'}
+        className="mt-2 h-48 w-full resize-y rounded-card border border-line bg-transparent p-4 font-mono text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-700 focus:border-zinc-600 focus:outline-none"
+      />
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={publish}
+          disabled={!canPublish}
+          className="cursor-pointer rounded-full bg-white px-5 py-3 text-sm font-medium text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+        >
+          {sending ? 'Publishing…' : 'Get a link'}
+        </button>
+        <p className="font-mono text-xs text-zinc-500">Expires in 24 hours. No account.</p>
+      </div>
+
+      {state.status === 'error' ? (
+        <p role="alert" className="mt-4 text-sm text-red-400">{state.message}</p>
+      ) : null}
+
+      {state.status === 'done' ? (
+        <div className="mt-6 plan-card">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your link</p>
+          <p className="mt-2 break-all text-sm">
+            <a href={state.url} className="text-white underline underline-offset-2 hover:text-zinc-300">{state.url}</a>
+          </p>
+          <p className="mt-2 font-mono text-xs text-zinc-500">Expires {new Date(state.expiresAt).toLocaleString()}</p>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Delete key — copy it now</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <code className="break-all font-mono text-xs text-zinc-300">{state.deleteKey}</code>
+              <CopyButton value={state.deleteKey} label="Copy delete key" />
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+              planny shows this once. It is the only way to delete the plan early; the link expires in 24 hours either way.
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 const copy: Record<PageKind, { kicker: string; title: string; body: string; code?: string }> = {
   home: {
     kicker: 'Plans for agents',
@@ -118,14 +239,30 @@ export function Page({ kind }: { kind: PageKind }) {
                 <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.05em] text-white md:text-7xl">{page.title}</h1>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">{page.body}</p>
                 <div className="mt-9 flex flex-wrap gap-3">
-                  <a href="/sample" className="rounded-full bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">See a sample plan</a>
+                  <a href="#try" className="rounded-full bg-white px-5 py-3 text-sm font-medium text-black no-underline hover:bg-zinc-200">Paste HTML, get a link</a>
+                  <a href="/sample" className="rounded-full border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">See a sample plan</a>
                   <a href="#install" className="rounded-full border border-line px-5 py-3 text-sm font-medium text-zinc-300 no-underline hover:border-zinc-600">Install the skill</a>
                 </div>
                 <p className="mt-6 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
                   Open source under MIT. The whole app, including self-hosting, is on{' '}
-                  <a href="https://github.com/frasergriffiths/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">GitHub</a>.
+                  <a href={withRef('https://github.com/frasergriffiths/planny', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">GitHub</a>.
                 </p>
               </div>
+            </section>
+
+            <section id="try" className="border-t border-line py-14">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Try it</p>
+              <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Paste HTML. Get a link.</h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
+                The same thing your agent does, without installing anything. Paste one self-contained page and planny
+                returns a link plus a delete key. Scripts, links, forms and frames are stripped by the server-side
+                sanitiser exactly as they are for every upload, so the link is safe to send to anyone.
+              </p>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-500">
+                Demo links last 24 hours and have their own monthly allowance, so they never eat the uploads your
+                agents rely on.
+              </p>
+              <PublishBox />
             </section>
 
             <section id="install" className="border-t border-line py-14">
@@ -144,8 +281,8 @@ export function Page({ kind }: { kind: PageKind }) {
                 After install, ask your agent: <span className="text-white">“Publish this plan with Planny.”</span>
               </p>
               <p className="mt-6 flex flex-wrap gap-4 font-mono text-xs">
-                <a href="https://www.skills.sh/frasergriffiths/planny/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">skills.sh page</a>
-                <a href="https://github.com/frasergriffiths/planny/tree/main/skills/planny" target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">Skill source</a>
+                <a href={withRef('https://www.skills.sh/frasergriffiths/planny/planny', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">skills.sh page</a>
+                <a href={withRef('https://github.com/frasergriffiths/planny/tree/main/skills/planny', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">Skill source</a>
               </p>
             </section>
 
@@ -209,7 +346,7 @@ export function Page({ kind }: { kind: PageKind }) {
             {inviteVisible(kind, dataset) ? (
               <p data-planny-invite className="mt-6 text-sm leading-relaxed text-zinc-400">
                 Have a plan of your own?{' '}
-                <a href={PLUR} rel="noopener" className="text-white underline underline-offset-2 hover:text-zinc-300">Publish it with Planny</a>.
+                <a href={withRef(PLUR, 'invite')} rel="noopener" className="text-white underline underline-offset-2 hover:text-zinc-300">Publish it with Planny</a>.
               </p>
             ) : null}
           </section>
@@ -218,16 +355,17 @@ export function Page({ kind }: { kind: PageKind }) {
 
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-6 py-6 font-mono text-xs text-zinc-600">
         <span>
-          planny, plans for agents · <a href="https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Terms</a>
+          planny, plans for agents · <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/docs/terms-of-use.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Terms</a>
           {' · '}
-          <a href="https://github.com/frasergriffiths/planny/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Privacy</a>
+          <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/PRIVACY.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Privacy</a>
           {' · '}
-          <a href="https://github.com/frasergriffiths/planny/blob/main/ACCEPTABLE_USE.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Acceptable use</a>
+          <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/ACCEPTABLE_USE.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Acceptable use</a>
           {' · '}
-          <a href="https://github.com/frasergriffiths/planny/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Licences</a>
+          <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/THIRD_PARTY_NOTICES.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-500 no-underline hover:text-white">Licences</a>
         </span>
         <span>One link. One key.</span>
       </footer>
+      <Analytics />
     </div>
   );
 }

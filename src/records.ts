@@ -136,6 +136,11 @@ export interface ReserveInput {
   readonly name: string;
   readonly expiresAt: number;
   readonly deleteKeyHash: string;
+  /**
+   * Which monthly upload counter this reservation charges. The homepage demo box has its
+   * own counter, so its uploads never spend the site-wide `uploads` budget.
+   */
+  readonly uploadCounter?: 'uploads' | 'uploads:demo';
   readonly limits: {
     readonly site: number;
     readonly owner: number;
@@ -178,7 +183,7 @@ export function createRecords(redis: RedisLike) {
         planKey(input.id),
         SITE_BYTES,
         ownerBytesKey(input.owner),
-        monthKey(month, 'uploads'),
+        monthKey(month, input.uploadCounter ?? 'uploads'),
         CLAIMS,
       ],
       [
