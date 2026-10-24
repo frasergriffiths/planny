@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test';
+import { parse } from 'parse5';
 import { MAX_ATTRIBUTES_PER_TAG, MAX_ATTRIBUTES_TOTAL, SanitizeTooDeepError, SanitizeTooManyAttributesError, checkCss, sanitize } from '../src/sanitize.js';
 
 const LEFTOVERS = [
@@ -136,6 +137,96 @@ test('content zones track the tokenizer exactly', () => {
     .toContain('class="x"');
   expect(sanitize('<body><frameset><style><foo a=1></style></frameset><p class="x">1</p></body>').html)
     .toContain('class="x"');
+});
+
+// Fresh under-count classes found in the second review round, inflated past the caps:
+// nested foreign contexts, integration points that never empty the context, and
+// end-tag attributes the scan walked but used to drop. Each was a 201 at the
+// previous head where the attributes parse5 tokenizes were skipped.
+test('nested foreign content is counted whatever its depth', () => {
+  const over = hidden(MAX_ATTRIBUTES_PER_TAG + 1);
+  // nested svg/math: the inner close pops only that context, so a later bomb inside
+  // the outer one is still real markup
+  expect(() => sanitize(`<svg><svg></svg><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<math><math></math><style><div ${over}></style></math>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // integration points: parse5 stays inside the context and mints the markup
+  expect(() => sanitize(`<svg><foreignObject><div></div></foreignObject><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<svg><desc><div></div></desc><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<svg><title><div></div></title><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<math><mtext><div></div></mtext><style><div ${over}></style></math>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // the walk-up pop stays exact: an unclosed child dies with its svg, so a raw-text
+  // body after it is skipped by parse5 too — nothing in it becomes an attribute
+  expect(sanitize('<svg><foo></svg><style>/*<div a=1 are text>*/</style><p class="x">1</p>').html)
+    .toContain('class="x"');
+});
+
+test('end tags inside raw-text interiors carry their attribute cost', () => {
+  // 100 broken closers, each carrying attributes parse5 tokenizes before dropping:
+  // the scan used to walk them and then throw the count away
+  expect(() => sanitize(('<title></title ' + hidden(2047) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(('<script></script ' + hidden(2000) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(('<style></style ' + hidden(2047) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  // at the boundary it is still accepted: 2048 is within the per-tag budget
+  expect(sanitize(`<title>ok</title ${hidden(2048)}>t<p class="x">1</p>`).html)
+    .toContain('class="x"');
+});
+
+// Property check over the nested-foreign families: whatever the scan accepts, the real
+// parse5 tree may never mint more than the per-tag or document budget. This catches a
+// fresh under-count without enumerating one by hand.
+test('accepted bodies never mint above the caps', () => {
+  const pieces = [
+    '<svg>', '</svg>', '<svg/>', '<math>', '</math>', '<foreignObject>', '</foreignObject>',
+    '<desc>', '</desc>', '<title>', '</title>', '<mi>', '</mi>', '<mtext>', '</mtext>',
+    '<div>', '</div>', '<p>', '</p>', '</br>', '<select>', '</select>', '<style>', '</style>',
+    '<script>', '</script>', '<plaintext>', '<textarea>', '</textarea>', 'x', '<!--', '-->',
+    'foo', '<foo>', '</foo>',
+  ];
+  const soup = ` <div ${Array.from({ length: 2016 }, (_, i) => `a${i}=1`).join(' ')}>`;
+  let seed = 0x6a1d2b34;
+  const next = (): number => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const mintedMax = (body: string): { total: number; perTag: number } => {
+    let total = 0;
+    let perTag = 0;
+    const walk = (node: any): void => {
+      const count = node.attrs?.length ?? 0;
+      total += count;
+      if (count > perTag) perTag = count;
+      for (const child of node.childNodes ?? []) walk(child);
+    };
+    walk(parse(body));
+    return { total, perTag };
+  };
+  for (let run = 0; run < 2000; run += 1) {
+    const parts = 1 + Math.floor(next() * 24);
+    let body = '';
+    for (let k = 0; k < parts; k += 1) body += pieces[Math.floor(next() * pieces.length)];
+    if (next() < 0.5) body += soup;
+    if (next() < 0.3) body += '<p class="x">ok</p>';
+    try {
+      sanitize(body);
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message === 'plan uses too many attributes' || message === 'plan nests elements too deeply')
+        .toBe(true);
+      continue;
+    }
+    const { total, perTag } = mintedMax(body);
+    expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
+    expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
+  }
 });
 
 

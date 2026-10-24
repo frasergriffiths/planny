@@ -219,13 +219,17 @@ function walkTag(
 }
 
 // Content-model scan. The tokenizer only falls into RCDATA/RAWTEXT/script data when the
-// tree builder is processing plain HTML; the scan mirrors the three contexts that change
-// that decision, because skipping content that parse5 tokenizes is the only way to
+// tree builder is processing plain HTML; the scan mirrors the contexts that change that
+// decision, because skipping content that parse5 tokenizes is the only way to
 // under-count, and an under-count is a bypass:
 //   - inside `<svg>`/`<math>` the tokenizer never switches (SVG `<title>`/`<style>` stay
 //     markup — an `<svg><style>` interior is parsed, so its attributes are real), except
-//     that comments are still comments. parse5's exit-list start tags (`<div>`, `<body>`,
-//     `</p>`-like ends and more) pop the foreign context back to HTML;
+//     at integration points, and comments are still comments. Nested `svg`/`math` open
+//     contexts at any depth, every other minted foreign element sits on the tracked
+//     stack, and only a matching end tag pops through it, like parse5's walk-up pop.
+//     Start tags in the exits list (`<div>` and friends, `</p>`, `</br>`) would break
+//     out only down to an HTML element or an integration point, so this scan never
+//     leaves foreign content on them: staying in markup mode can only over-count;
 //   - inside an open `<select>` parse5 ignores style/title/… (still data) but processes
 //     script and a reprocessed textarea through their plain rules, so NO switch is made
 //     and comment opens are not trusted there either. Walking everything in that zone can
@@ -273,10 +277,19 @@ function guardAttributes(html: string): void {
         let nameEnd = i + 2;
         while (nameEnd < at && isAsciiAlpha(html.charCodeAt(nameEnd))) nameEnd += 1;
         const name = html.slice(i + 2, nameEnd).toLowerCase();
-        if ((name === 'svg' || name === 'math') && foreign[foreign.length - 1] === name) {
-          foreign.pop();
+        if (foreign.length > 0) {
+          // parse5's foreign end tag walks down the open-element stack and pops the
+          // first tag that matches, together with everything above it. Names with no
+          // match, and `</p>`/`</br>` (parse5 pops to the HTML boundary first), leave
+          // the context open in this scan — staying in markup mode can only
+          // over-count.
+          for (let k = foreign.length - 1; k >= 0; k -= 1) {
+            if (foreign[k] === name) {
+              foreign.length = k;
+              break;
+            }
+          }
         }
-        if (name === 'p' || name === 'br') foreign.length = 0;
         if (name === 'select') inSelect = false;
         const walked = walkTag(html, at, nameEnd);
         i = walked.end;
@@ -304,9 +317,19 @@ function guardAttributes(html: string): void {
     if (i === at) break; // unterminated tag: parse5 emits nothing after it either
     if (!inSelect && !inFrameset) {
       if (name === 'svg' || name === 'math') {
-        if (foreign.length === 0 && !walked.selfClosing) foreign.push(name);
-      } else if (foreign.length > 0 && HTML_FOREIGN_EXITS.has(name)) {
-        foreign.pop();
+        // nested svg/math open real foreign contexts at any depth; a self-closing
+        // one is appended and closed at once, like parse5's own stack handling
+        if (!walked.selfClosing) foreign.push(name);
+      } else if (
+        foreign.length > 0 && !HTML_FOREIGN_EXITS.has(name) && !walked.selfClosing
+      ) {
+        // any other start tag inside foreign content mints a foreign element that
+        // sits on the open-element stack, so an end tag may pop through it. Start
+        // tags in the exits list would break out only down to an HTML element or an
+        // integration point; parse5 may keep the whole context either way, so this
+        // scan never leaves foreign content on them and counts what follows as
+        // markup — the over-count-only direction.
+        foreign.push(name);
       }
       if (foreign.length === 0) {
         if (name === 'select') inSelect = true;
@@ -316,7 +339,10 @@ function guardAttributes(html: string): void {
     if (inSelect || inFrameset || foreign.length > 0) continue; // content stays markup
     // plain data only: switch the scan into the element's special content
     if (name === 'script') {
-      i = scriptContentEnd(html, at, i);
+      const ended = scriptContentEnd(html, at, i);
+      i = ended.end;
+      total += ended.count;
+      if (total > MAX_ATTRIBUTES_TOTAL) throw new SanitizeTooManyAttributesError();
       continue;
     }
     if (name === 'plaintext') break; // the rest of the document is text
@@ -324,15 +350,21 @@ function guardAttributes(html: string): void {
       name === 'title' || name === 'textarea' || name === 'style' || name === 'xmp'
       || name === 'iframe' || name === 'noembed' || name === 'noframes' || name === 'noscript'
     ) {
-      i = rawContentEnd(html, at, i, name);
+      const ended = rawContentEnd(html, at, i, name);
+      i = ended.end;
+      total += ended.count;
+      if (total > MAX_ATTRIBUTES_TOTAL) throw new SanitizeTooManyAttributesError();
       continue;
     }
   }
 }
 
-// Start tags in this set pop the foreign context before being processed again as HTML —
-// parse5's `causesExit` list. (`<font color|size|face>` also exits in parse5; ignoring
-// that keeps the zone open, which can only over-count.)
+// Start tags in this set break out of foreign content in parse5 (the `causesExit`
+// list) — down to the first HTML element or integration point. This scan never leaves
+// foreign content on them: when an integration point blocks the break, parse5 keeps
+// counting markup inside the context, and when the break reaches the boundary the
+// scan can only over-count by staying in markup mode. (`<font color|size|face>`
+// also breaks out in parse5; ignoring it here keeps the zone open, over-count only.)
 const HTML_FOREIGN_EXITS = new Set([
   'b', 'big', 'blockquote', 'body', 'br', 'center', 'code', 'dd', 'div', 'dl', 'dt', 'em',
   'embed', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'hr', 'i', 'img', 'li', 'listing',
@@ -343,12 +375,18 @@ const HTML_FOREIGN_EXITS = new Set([
 // RCDATA/RAWTEXT interior: text until the FIRST `</name` (ASCII case-insensitive) that the
 // special-end-tag machinery accepts — name followed by whitespace, `/` or `>`. With a
 // whitespace or `/` terminator that `</name ...>` becomes an end tag token whose
-// attributes parse5 tokenizes (and the tree drops), so walkTag counts them.
-function rawContentEnd(html: string, at: number, from: number, name: string): number {
+// attributes parse5 tokenizes (and the tree drops), so walkTag counts them into the
+// document total.
+function rawContentEnd(
+  html: string,
+  at: number,
+  from: number,
+  name: string,
+): { end: number; count: number } {
   let i = from;
   while (i < at) {
     const lt = html.indexOf('</', i);
-    if (lt === -1) return at;
+    if (lt === -1) return { end: at, count: 0 };
     let j = lt + 2;
     let k = 0;
     while (j < at && k < name.length && (html.charCodeAt(j) | 32) === name.charCodeAt(k)) {
@@ -362,16 +400,16 @@ function rawContentEnd(html: string, at: number, from: number, name: string): nu
     const code = j < at ? html.charCodeAt(j) : -1;
     if (isSpace(code)) {
       const walked = walkTag(html, at, j, BEFORE_ATTR);
-      return walked.end; // unterminated end tags run to EOF just like parse5
+      return { end: walked.end, count: walked.count }; // unterminated runs to EOF like parse5
     }
     if (code === 47 /* / */) {
       const walked = walkTag(html, at, j, SELF_CLOSING);
-      return walked.end;
+      return { end: walked.end, count: walked.count };
     }
-    if (code === 62 /* > */) return j + 1;
+    if (code === 62 /* > */) return { end: j + 1, count: 0 };
     i = j; // `</titlex` and friends are text; a later `</name` may still close
   }
-  return at;
+  return { end: at, count: 0 };
 }
 
 const SC_NONE = 0; // script data
@@ -395,7 +433,7 @@ const SC_DOUBLE_END = 9; // saw `</` in double-escaped, deciding on `script`
 // parse5 "reconsumes" (at the just-read character), so the scan can only ever stop at
 // the tokenizer's real close — a late exit, the only under-counting direction, cannot
 // happen.
-function scriptContentEnd(html: string, at: number, from: number): number {
+function scriptContentEnd(html: string, at: number, from: number): { end: number; count: number } {
   let mode = SC_NONE;
   let i = from;
   while (i < at) {
@@ -405,8 +443,11 @@ function scriptContentEnd(html: string, at: number, from: number): number {
         if (code === 60 /* < */) {
           const next = html.charCodeAt(i + 1); // read by the less-than state
           if (next === 47 /* / */) {
-            const end = scriptEndTag(html, at, i + 2);
-            if (end !== -1) return end;
+            const ended = scriptEndTag(html, at, i + 2);
+            if (ended) {
+              i = ended.end;
+              return { end: i, count: ended.count };
+            }
             i += 2; // unmatched `</x`: text, resumed at the char after `/`
             continue;
           }
@@ -443,8 +484,8 @@ function scriptContentEnd(html: string, at: number, from: number): number {
         if (code === 60 /* < */) {
           const next = html.charCodeAt(i + 1);
           if (next === 47 /* / */) {
-            const end = scriptEndTag(html, at, i + 2);
-            if (end !== -1) return end; // the element closes in escaped text too
+            const ended = scriptEndTag(html, at, i + 2);
+            if (ended) return ended; // the element closes in escaped text too
             mode = SC_ESCAPED;
             i += 2;
             continue;
@@ -471,8 +512,8 @@ function scriptContentEnd(html: string, at: number, from: number): number {
         if (code === 60 /* < */) {
           const next = html.charCodeAt(i + 1);
           if (next === 47 /* / */) {
-            const end = scriptEndTag(html, at, i + 2);
-            if (end !== -1) return end;
+            const ended = scriptEndTag(html, at, i + 2);
+            if (ended) return ended;
             mode = SC_ESCAPED;
             i += 2;
             continue;
@@ -497,8 +538,8 @@ function scriptContentEnd(html: string, at: number, from: number): number {
         if (code === 60 /* < */) {
           const next = html.charCodeAt(i + 1);
           if (next === 47 /* / */) {
-            const end = scriptEndTag(html, at, i + 2);
-            if (end !== -1) return end;
+            const ended = scriptEndTag(html, at, i + 2);
+            if (ended) return ended;
             mode = SC_ESCAPED;
             i += 2;
             continue;
@@ -589,32 +630,32 @@ function scriptContentEnd(html: string, at: number, from: number): number {
       }
     }
   }
-  return at;
+  return { end: at, count: 0 };
 }
 
 // The `</script` matcher inside plain/escaped script data. Returns the index after the
-// matching end tag when the name is followed by whitespace, `/` or `>` (walking and
-// counting the end tag's own attributes, which parse5 tokenizes), and -1 when the
-// sequence is text instead.
-function scriptEndTag(html: string, at: number, i: number): number {
+// matching end tag and the end tag's attribute count (parse5 tokenizes those attributes
+// before dropping them) when the name is followed by whitespace, `/` or `>`, and null
+// when the sequence is text instead.
+function scriptEndTag(html: string, at: number, i: number): { end: number; count: number } | null {
   let j = i;
   let k = 0;
   while (j < at && k < 6 && (html.charCodeAt(j) | 32) === 'script'.charCodeAt(k)) {
     j += 1;
     k += 1;
   }
-  if (k < 6) return -1;
+  if (k < 6) return null;
   const code = j < at ? html.charCodeAt(j) : -1;
   if (isSpace(code)) {
     const walked = walkTag(html, at, j, BEFORE_ATTR);
-    return walked.end;
+    return { end: walked.end, count: walked.count };
   }
   if (code === 47) {
     const walked = walkTag(html, at, j, SELF_CLOSING);
-    return walked.end;
+    return { end: walked.end, count: walked.count };
   }
-  if (code === 62) return j + 1;
-  return -1;
+  if (code === 62) return { end: j + 1, count: 0 };
+  return null;
 }
 
 // `<script` (case-insensitive) whose buildout hits the double-escape terminator set.

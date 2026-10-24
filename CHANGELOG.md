@@ -31,6 +31,18 @@ All notable changes to planny are recorded here. The format follows
   zones, and attributes on end tags are walked where the tokenizer walks them —
   so attributes hidden in any of these shapes are counted, and each class was a
   400 at the old boundary where the first cut skipped it.
+  A second review round closed three more ways to skip: nested `svg`/`math`
+  contexts now open at any depth and only a matching end tag pops through the
+  tracked stack, exactly where parse5's own walk-up pop ends; a start tag from
+  parse5's break-out list, `</p>` or `</br>`, never empties the context (parse5
+  stops at an HTML element or an integration point, so staying in markup mode can
+  only over-count); and attributes on end tags inside raw-text interiors — which
+  parse5 tokenizes before dropping — are added to the document total instead of
+  being thrown away, so a 100-repeat title end-tag bomb (204,700 tokenized
+  attributes) is refused in 2 ms at the app boundary and 42,007 realistic
+  attributes stay the refusal boundary. A property test generates the
+  nested-foreign families and requires that every accepted body mints at most the
+  per-tag and document caps in the real parse5 tree.
 - The per-address upload gate claims its slot in the same atomic step that checks it.
   Before, the gate only read the counters and the slot was recorded only after a
   successful publish, so uploads sent in parallel could share one spacing window and

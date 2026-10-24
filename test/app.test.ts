@@ -203,6 +203,42 @@ test('the attribute-guard bypass classes are refused through the upload path', a
   }
 });
 
+test('nested-foreign and end-tag bombs are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    const over = Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1 }, (_, i) => `a${i}=1`).join(' ');
+    const perTag = Array.from({ length: MAX_ATTRIBUTES_PER_TAG + 1 }, (_, i) => `a${i}=1`).join(' ');
+    // Nested foreign contexts, integration points the scan used to leave empty, and
+    // raw-text end tags whose attributes the scan walked but dropped: parse5 mints
+    // (or tokenizes) every hidden attribute in these shapes, each of which returned
+    // 201 at the previous head.
+    const bodies = [
+      `<svg><svg></svg><style><div ${perTag}></style></svg>`,
+      `<math><math></math><style><div ${over}></style></math>`,
+      `<svg><foreignObject><div></div></foreignObject><style><div ${over}></style></svg>`,
+      `<svg><desc><div></div></desc><style><div ${over}></style></svg>`,
+      `<svg><title><div></div></title><style><div ${over}></style></svg>`,
+      `<math><mtext><div></div></mtext><style><div ${over}></style></math>`,
+      ('<title></title ' + Array.from({ length: 2047 }, (_, i) => `b${i}=1`).join(' ') + '>').repeat(100),
+      ('<script></script ' + Array.from({ length: 2000 }, (_, i) => `c${i}=1`).join(' ') + '>').repeat(100),
+    ];
+    for (const [index, body] of bodies.entries()) {
+      const t0 = Date.now();
+      const response = await upload(t, { body, name: `Nested ${index}` });
+      const ms = Date.now() - t0;
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+      // the refusal happens in the pre-parse scan, well under the unguarded cost
+      expect(ms, `bodies[${index}] took ${ms}ms`).toBeLessThan(2000);
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('an upload is cleaned, stored and served with the plan headers', async () => {
   const t = setup();
   try {
