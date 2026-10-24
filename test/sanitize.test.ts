@@ -105,9 +105,10 @@ test('the bypass classes are counted wherever they hide', () => {
   for (const el of ['title', 'textarea', 'style', 'script', 'xmp', 'iframe', 'noscript']) {
     expect(() => sanitize(`<${el}><!--</${el}><div${over}>x</div>-->`)).toThrow(SanitizeTooManyAttributesError);
   }
-  // bypass 3: `=` opening an attribute name mints one entry, like any other name
-  // (` =n` joined: every `=` starts a new attribute name in the tokenizer)
-  expect(() => sanitize(`<div ${' =n'.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`))
+  // bypass 3: a bare `=` name separated from the next by a value mints one entry per
+  // pair, in the tokenizer and in this scan alike (`=a=b ` pairs never merge, unlike
+  // space-only sequences where the odd `=` becomes the previous attribute's value)
+  expect(() => sanitize(`<div ${'=a=b '.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`))
     .toThrow(SanitizeTooManyAttributesError);
 });
 
@@ -180,6 +181,26 @@ test('end tags inside raw-text interiors carry their attribute cost', () => {
     .toContain('class="x"');
 });
 
+// After a bare attribute name parse5 treats `=` as that attribute's value separator,
+// so `a == x0/…/x99/ ` repeated mints one real attribute per x-segment while a scan
+// without the after-attribute-name state counts the run as a single `=`-named
+// attribute's value. Both sizes were 201 at the previous head (16.2 s at 806 KB).
+test('attribute separators after a bare name do not hide attributes', () => {
+  // every x-segment after the `=`-run is its own tokenized attribute
+  const perName = `<v ${'a == x0/x1/x2/x3/x4/x5/x6/x7/x8/x9/c/d/e/f/g/h/i/j/k/'.repeat(125)}>`;
+  expect(() => sanitize(perName)).toThrow(SanitizeTooManyAttributesError);
+  // the two reported bomb sizes: ~405 KB and ~811 KB, both far over the per-tag cap
+  const segs = Array.from({ length: 100 }, (_, i) => `x${i}/`).join('');
+  expect(() => sanitize(`<v ${(`a == ${segs} `).repeat(1024)}>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<v ${(`a == ${segs} `).repeat(2048)}>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // legit separators keep their value semantics and stay inside every cap
+  expect(sanitize('<div a = 1 b == 2 class="x">ok</div>').html).toContain('class="x"');
+  expect(sanitize('<div a/b c=3 href="http://example.com/a/b" class="x">ok</div>').html)
+    .toContain('class="x"');
+});
+
 // Property check over the nested-foreign families: whatever the scan accepts, the real
 // parse5 tree may never mint more than the per-tag or document budget. This catches a
 // fresh under-count without enumerating one by hand.
@@ -193,6 +214,7 @@ test('accepted bodies never mint above the caps', () => {
   ];
   const soup = ` <div ${Array.from({ length: 2016 }, (_, i) => `a${i}=1`).join(' ')}>`;
   let seed = 0x6a1d2b34;
+  let nameSeq = 0;
   const next = (): number => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 2 ** 32;
@@ -215,6 +237,36 @@ test('accepted bodies never mint above the caps', () => {
     for (let k = 0; k < parts; k += 1) body += pieces[Math.floor(next() * pieces.length)];
     if (next() < 0.5) body += soup;
     if (next() < 0.3) body += '<p class="x">ok</p>';
+    try {
+      sanitize(body);
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message === 'plan uses too many attributes' || message === 'plan nests elements too deeply')
+        .toBe(true);
+      continue;
+    }
+    const { total, perTag } = mintedMax(body);
+    expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
+    expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
+  }
+  // generic '='/'/' tag soup (the after-attribute-name class): after a bare name an `=`
+  // opens that attribute's value while each following x segment is a real attribute, so
+  // the generated names stay unique per segment — the tree cannot collapse this class
+  // into duplicates — and both knob sizes are randomized wide enough to cross the caps.
+  for (let run = 0; run < 300; run += 1) {
+    let body = '<v ';
+    const reps = 1 + Math.floor(next() * 300);
+    const segs = 1 + Math.floor(next() * 120);
+    for (let r = 0; r < reps; r += 1) {
+      body += `a${nameSeq} ==`;
+      for (let s = 0; s < segs; s += 1) {
+        nameSeq += 1;
+        body += `x${nameSeq}/`;
+      }
+      nameSeq += 1;
+      body += ' ';
+    }
+    body += '>';
     try {
       sanitize(body);
     } catch (error) {

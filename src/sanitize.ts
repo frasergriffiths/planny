@@ -66,26 +66,32 @@ function commentEnd(html: string, at: number): number {
 const TAG_NAME = 0;
 const BEFORE_ATTR = 1;
 const ATTR_NAME = 2;
-const BEFORE_VALUE = 3;
-const VALUE_DQ = 4;
-const VALUE_SQ = 5;
-const VALUE_UNQUOTED = 6;
-const AFTER_QUOTED = 7;
-const SELF_CLOSING = 8;
+const AFTER_ATTR_NAME = 3;
+const BEFORE_VALUE = 4;
+const VALUE_DQ = 5;
+const VALUE_SQ = 6;
+const VALUE_UNQUOTED = 7;
+const AFTER_QUOTED = 8;
+const SELF_CLOSING = 9;
 
 // One linear pass that mirrors the tag machinery of the tokenizer state by state: tag
-// name, before-attribute-name, attribute name, quoted and unquoted values, the after-value
-// state where a name can follow a closing quote without whitespace, and self-closing.
+// name, before-attribute-name, attribute name, the after-attribute-name state, quoted
+// and unquoted values, the after-value state where a name can follow a closing quote
+// without whitespace, and self-closing.
 // Entering an attribute name is the only thing that counts, so every attribute the real
 // parse can mint is counted, whatever separator the attack omits — including the ones on
 // end tags, which parse5 tokenizes (and then drops at the tree level) at the same cost.
 //
-// Two tokenizer details this pass must not approximate:
+// Three tokenizer details this pass must not approximate:
 //   - `>` closes a tag in every state EXCEPT the quoted values, where it is value text and
 //     the matching quote decides (a `<div a=">" b60000…>` scan must not stop at the `>`);
 //   - `=` as the first character of an attribute name is CONSUMED as the name and mints an
 //     attribute literally named `=` — both in BEFORE-ATTRIBUTE-NAME (unexpected `=` after
-//     a name) and when the character is reconsumed out of AFTER-ATTRIBUTE-VALUE-QUOTED.
+//     a name) and when the character is reconsumed out of AFTER-ATTRIBUTE-VALUE-QUOTED;
+//   - after a bare attribute name — in AFTER-ATTRIBUTE-NAME — a `=` belongs to THAT name's
+//     value (no new count), while whitespace holds and any other character starts the next
+//     attribute. Skipping this state (`a == x…` × k) counts the second `=` as a new
+//     attribute and swallows the run as its value, one under-count per `=`.
 // Counts can only overshoot (a quote shaped like a name pulls the matcher along), never
 // undershoot, while how much content is skipped is decided by the content model in
 // `guardAttributes`, never here.
@@ -146,13 +152,14 @@ function walkTag(
       case ATTR_NAME:
         if (code === 62 /* > */) return { end: i + 1, count, selfClosing };
         if (space) {
-          state = BEFORE_ATTR;
+          state = AFTER_ATTR_NAME;
           i += 1;
           continue;
         }
         if (code === 47) {
-          state = BEFORE_ATTR;
-          continue; // the slash is reconsumed, where it may close the tag
+          state = AFTER_ATTR_NAME;
+          i += 1;
+          continue; // the name ended at an unexpected `/`
         }
         if (code === 61 /* = */) {
           state = BEFORE_VALUE;
@@ -161,6 +168,24 @@ function walkTag(
         }
         i += 1;
         continue;
+      case AFTER_ATTR_NAME: // after a bare name: `=` is that attribute's value separator
+        if (code === 62 /* > */) return { end: i + 1, count, selfClosing };
+        if (space) {
+          i += 1;
+          continue;
+        }
+        if (code === 47) {
+          state = SELF_CLOSING;
+          i += 1;
+          continue;
+        }
+        if (code === 61 /* = */) {
+          state = BEFORE_VALUE; // belongs to the name just read, so no new count
+          i += 1;
+          continue;
+        }
+        state = BEFORE_ATTR;
+        continue; // reconsume: anything else starts the next attribute
       case BEFORE_VALUE:
         if (code === 62 /* > */) return { end: i + 1, count, selfClosing };
         if (space) {

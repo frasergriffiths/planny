@@ -43,6 +43,19 @@ All notable changes to planny are recorded here. The format follows
   attributes stay the refusal boundary. A property test generates the
   nested-foreign families and requires that every accepted body mints at most the
   per-tag and document caps in the real parse5 tree.
+  A third review round closed the scanner's missing after-attribute-name state:
+  after a bare attribute name parse5 treats `=` as that attribute's value
+  separator, while each further name segment separated by `/` mints a real
+  attribute. The scan used to drop back to before-attribute-name and count the
+  second `=` as a new attribute whose unquoted value swallowed the rest of the
+  run, so `<v a == x0/x1/…/x99/ ` repeated ~1,000 times scanned as ~2,000 entries
+  while the tokenizer processed ~101 per repetition (~103,424), and one ~806 KB
+  request burned about 16 seconds and stored its 110 bytes. The state now holds
+  whitespace, ends the tag on `>`, opens the value on `=` without a new count,
+  and sends any other character to the before-attribute-name state — exactly
+  parse5's machine — so both bomb sizes are refused pre-parse in ~1 ms. The
+  property test also generates generic `=`/`/` separator soup with unique
+  per-segment names.
 - The per-address upload gate claims its slot in the same atomic step that checks it.
   Before, the gate only read the counters and the slot was recorded only after a
   successful publish, so uploads sent in parallel could share one spacing window and

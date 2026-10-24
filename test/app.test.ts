@@ -203,6 +203,34 @@ test('the attribute-guard bypass classes are refused through the upload path', a
   }
 });
 
+test('after-name separator bombs are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    // Each `a == x…/ ` repetition tokenizes ~101 attributes for real; a scan without
+    // the after-attribute-name state counted the run as one attribute's value and let
+    // both of these through (201 in 16.2 s at the larger size).
+    const segs = Array.from({ length: 100 }, (_, i) => `x${i}/`).join('');
+    const bodies = [
+      `<v ${(`a == ${segs} `).repeat(1024)}>`, // ~405 KB
+      `<v ${(`a == ${segs} `).repeat(2048)}>`, // ~811 KB
+    ];
+    for (const [index, body] of bodies.entries()) {
+      expect(body.length, `bodies[${index}] bytes`).toBeGreaterThan(400_000);
+      const t0 = Date.now();
+      const response = await upload(t, { body, name: `Separator ${index}` });
+      const ms = Date.now() - t0;
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+      expect(ms, `bodies[${index}] took ${ms}ms`).toBeLessThan(2000);
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('nested-foreign and end-tag bombs are refused through the upload path', async () => {
   const t = setup();
   try {
