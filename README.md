@@ -42,14 +42,14 @@ The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 
 
 [`mcp/`](mcp) is a thin MCP wrapper over the same HTTP API. Two tools: `publish_plan` (name, html, duration → link, expiry, delete key) and `delete_plan` (id and delete key). It has no read or list tool, because the API has no metadata or collection route to wrap.
 
-`planny-mcp@0.1.0` is the published version. Run it, or add it to Claude Code:
+npm registry publication is deferred. Version 0.1.0 is distributed as a version-pinned, immutable GitHub Release tarball:
 
 ```sh
-npx -y planny-mcp
-claude mcp add --transport stdio planny -- npx -y planny-mcp
+npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+claude mcp add --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
-Set `PLANNY_URL` to point it at a self-hosted instance. If npm does not serve 0.1.0 yet, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
+OpenBot runs that same command. Set `PLANNY_URL` to point it at a self-hosted instance. If you cannot use the release asset, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
 
 ```sh
 git clone https://github.com/frasergriffiths/planny.git

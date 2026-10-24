@@ -3,9 +3,11 @@
 An MCP server for [planny](https://use-planny.vercel.app). It lets an agent publish one
 self-contained HTML page and get back a public link plus a delete key.
 
-> **0.1.0 is the published version.** The package is `planny-mcp@0.1.0`. Run it with
-> `npx -y planny-mcp`. If npm does not serve 0.1.0 yet, use the clone/build fallback
-> below. A self-hosted instance uses `PLANNY_URL`; the default is the hosted service.
+> **Distribution: GitHub Release asset, not npm.** npm registry publication is deferred.
+> Release 0.1.0 is distributed as a version-pinned, immutable tarball:
+> `npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`.
+> OpenBot runs this same command. A self-hosted instance sets `PLANNY_URL`; the default is
+> the hosted service.
 
 ## Tools
 
@@ -21,7 +23,7 @@ third tool can wrap it.
 
 ## Prerequisites
 
-- **Node.js 22 or newer with npm/npx** for the published package. `npx` ships with npm.
+- **Node.js 22 or newer with npm/npx** for the GitHub Release tarball. `npx` ships with npm.
 - **Bun 1.4 or newer only for the clone/build fallback.** The repository pins Bun 1.4.0 in
   `packageManager`. `bun install` from `mcp/` installs the workspace, including the
   TypeScript compiler used by `bun run build`.
@@ -30,13 +32,17 @@ third tool can wrap it.
 - `PLANNY_URL` only when you publish to a self-hosted planny. The default is
   `https://use-planny.vercel.app`.
 
-## Install with npx
+## Install from the GitHub Release
 
 This is the normal path. It needs Node 22+ and does not clone the repository:
 
 ```sh
-npx -y planny-mcp
+npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
+
+The URL is version-pinned and immutable. It always refers to the `mcp-v0.1.0` release
+asset, so a later release cannot change what a client installs. OpenBot runs this same
+command to start the server.
 
 The process is a stdio server, so it waits for MCP messages on stdin. It prints one line to
 stderr:
@@ -49,22 +55,16 @@ Stop it with Ctrl+C. stdout is reserved for the MCP protocol; logs and the start
 to stderr. If you see no startup line, the process failed before the handshake; see
 [Troubleshooting](#troubleshooting).
 
-Pin the release explicitly when a client or a lockfile needs it:
-
-```sh
-npx -y planny-mcp@0.1.0
-```
-
 To point at a self-hosted instance, set `PLANNY_URL` to its origin, with no trailing slash
 and no path:
 
 ```sh
-PLANNY_URL=https://plans.example.com npx -y planny-mcp
+PLANNY_URL=https://plans.example.com npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
 ## Build from a clone
 
-Use this fallback if npm does not serve 0.1.0 yet, or if you are changing the server. Run it
+Use this fallback if you cannot use the GitHub Release asset, or if you are changing the server. Run it
 from the repository root:
 
 ```sh
@@ -90,28 +90,29 @@ PLANNY_URL=https://use-planny.vercel.app bun /absolute/path/to/planny/mcp/dist/i
 
 ## Client setup
 
-All examples use the published package through `npx -y planny-mcp`. If you built from a
-clone, replace the command and arguments with the fallback at the end of this section.
-Replace `PLANNY_URL` only if you self-host; the value is an origin, not an upload URL.
+All examples use the GitHub Release tarball through `npx -y` with the full URL. If you
+built from a clone, replace the command and arguments with the fallback at the end of this
+section. Replace `PLANNY_URL` only if you self-host; the value is an origin, not an upload
+URL.
 
 ### Claude Code
 
 Add the server from a terminal:
 
 ```sh
-claude mcp add --transport stdio planny -- npx -y planny-mcp
+claude mcp add --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
 For all projects rather than the current one, add `--scope user`:
 
 ```sh
-claude mcp add --scope user --transport stdio planny -- npx -y planny-mcp
+claude mcp add --scope user --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
 For a self-hosted instance, pass the environment variable before the `--`:
 
 ```sh
-claude mcp add --env PLANNY_URL=https://plans.example.com --transport stdio planny -- npx -y planny-mcp
+claude mcp add --env PLANNY_URL=https://plans.example.com --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
 Check the connection with `claude mcp list` or `/mcp` inside Claude Code. The status should
@@ -126,7 +127,7 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "planny-mcp"],
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -138,7 +139,7 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
 The same entry can be added without editing the file:
 
 ```sh
-claude mcp add-json planny '{"type":"stdio","command":"npx","args":["-y","planny-mcp"],"env":{"PLANNY_URL":"https://use-planny.vercel.app"}}'
+claude mcp add-json planny '{"type":"stdio","command":"npx","args":["-y","https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],"env":{"PLANNY_URL":"https://use-planny.vercel.app"}}'
 ```
 
 A project-scoped `.mcp.json` server needs approval the first time Claude Code opens the
@@ -158,7 +159,7 @@ Use a top-level `mcpServers` object:
   "mcpServers": {
     "planny": {
       "command": "npx",
-      "args": ["-y", "planny-mcp"],
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -182,7 +183,7 @@ Use `~/.cursor/mcp.json` for all projects or `.cursor/mcp.json` in a project. Cu
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "planny-mcp"],
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -205,7 +206,7 @@ object, not `mcpServers`:
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "planny-mcp"],
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -230,7 +231,7 @@ Edit `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project. Codex
 ```toml
 [mcp_servers.planny]
 command = "npx"
-args = ["-y", "planny-mcp"]
+args = ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
 
 [mcp_servers.planny.env]
 PLANNY_URL = "https://use-planny.vercel.app"
@@ -249,7 +250,7 @@ Most MCP clients accept this shape under `mcpServers`:
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "planny-mcp"],
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -260,7 +261,7 @@ Most MCP clients accept this shape under `mcpServers`:
 
 Some clients call the top-level object `servers`, some require `type`, and some use
 `command` plus `args` without a wrapper. Check the client's MCP reference before copying
-the block. The published package always uses `npx` with `-y planny-mcp`.
+the block. The release asset always uses `npx` with `-y` and the full tarball URL.
 
 ### Clone fallback config
 
@@ -434,7 +435,14 @@ The repository includes a real stdio check, not only a typecheck. From `mcp/`:
 bun run verify
 ```
 
-That runs `bun run build` and then `bun run e2e`. The script:
+That runs `bun run build` and then `bun run e2e`. To run the same check against an installed
+release tarball instead of the local build:
+
+```sh
+PLANNY_MCP_BIN=/absolute/path/to/prefix/bin/planny-mcp bun run e2e
+```
+
+The script:
 
 1. starts a local planny server on `127.0.0.1:4399` with a temporary SQLite store;
 2. launches the built `mcp/dist/index.js` through the MCP SDK client over stdio;
@@ -483,17 +491,23 @@ For a GUI client, use the absolute path in `command`, for example
 `"command": "/opt/homebrew/bin/npx"` and the same `args`. If you cannot use npx, build from
 a clone and point the config at the absolute `dist/index.js` path with Node or Bun.
 
-### `npx` returns 404 or an old version
+### The GitHub Release tarball returns 404
 
-If npm does not serve `planny-mcp@0.1.0` yet, use the clone fallback above. To pin the
-release and bypass a stale npx cache, run `npx -y planny-mcp@0.1.0`. If an older version
-was cached, `npm cache clean --force` or the pinned version clears it.
+The URL is version-pinned; a typo in the tag or asset name fails. Check the release page
+for `mcp-v0.1.0` and confirm the asset is `planny-mcp-0.1.0.tgz`:
+
+```sh
+curl -I https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+```
+
+If the release is not published yet, use the clone fallback above. Do not change the URL
+to `latest`; `latest` is not immutable.
 
 ### The server starts, then exits or the client shows no tools
 
 Run the exact command from the client config in a terminal. The startup line must appear on
-stderr. If it does not, the command or path is wrong. For npx, check that `npx -y
-planny-mcp@0.1.0` works in a terminal. For a clone fallback, check that
+stderr. If it does not, the command or path is wrong. For npx, check that the full tarball
+URL from the config works in a terminal. For a clone fallback, check that
 `/absolute/path/to/planny/mcp/dist/index.js` exists and was produced by `bun run build`.
 Do not point a Node client at `mcp/src/index.ts`; that is TypeScript. Point it at
 `mcp/dist/index.js`, or use Bun to run the source.
@@ -556,11 +570,12 @@ server is working correctly when it returns these.
 
 | File | Directory | Where it goes |
 |---|---|---|
-| `server.json` | official MCP registry, ingested by PulseMCP and mcp.so | repository root of the published package |
+| `server.json` | official MCP registry, ingested by PulseMCP and mcp.so | repository root for registry submission |
 | `smithery.yaml` | Smithery | repository root of the repository Smithery builds |
 | `glama.json` | Glama | repository root, to claim the listing |
 
 PulseMCP and mcp.so ingest the official registry rather than accepting a separate manifest,
-so `server.json` is the file that matters for them. The manifests reference
-`planny-mcp@0.1.0`. Submit them after the 0.1.0 publish completes; nothing has been
-submitted yet.
+so `server.json` is the file that matters for them. That manifest references the npm
+package, and npm publication is deferred, so registry submission is blocked until an npm
+release exists. `smithery.yaml` can run the GitHub Release tarball and can be submitted
+after the `mcp-v0.1.0` asset exists. Nothing has been submitted yet.

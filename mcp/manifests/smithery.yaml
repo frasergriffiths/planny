@@ -5,8 +5,8 @@
 # server. When mcp/ is split into its own repository before submission, move this file there
 # as `smithery.yaml`.
 #
-# The command assumes `planny-mcp@0.1.0` is published to npm. Publish from main before
-# submitting this manifest.
+# The command installs the version-pinned GitHub Release tarball. Create that release
+# before submitting this manifest.
 startCommand:
   type: stdio
   configSchema:
@@ -19,7 +19,7 @@ startCommand:
   commandFunction: |-
     (config) => ({
       command: 'npx',
-      args: ['-y', 'planny-mcp'],
+      args: ['-y', 'https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz'],
       env: config.plannyUrl ? { PLANNY_URL: config.plannyUrl } : {}
     })
   exampleConfig:

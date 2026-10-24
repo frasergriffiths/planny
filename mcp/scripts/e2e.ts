@@ -16,6 +16,9 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
 const builtServer = resolve(here, '../dist/index.js');
+const installedServer = process.env.PLANNY_MCP_BIN;
+const serverCommand = installedServer ?? process.execPath;
+const serverArgs = installedServer ? [] : [builtServer];
 const port = Number(process.env.PLANNY_E2E_PORT ?? 4399);
 const base = `http://127.0.0.1:${port}`;
 const dataDir = mkdtempSync(join(tmpdir(), 'planny-mcp-e2e-'));
@@ -95,8 +98,8 @@ async function main(): Promise<void> {
   pass('local planny is listening');
 
   const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: [builtServer],
+    command: serverCommand,
+    args: serverArgs,
     env: { ...process.env, PLANNY_URL: base },
     stderr: 'pipe',
   });

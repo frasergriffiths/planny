@@ -1,6 +1,7 @@
 {
   "name": "planny-mcp",
   "version": "0.1.0",
+  "private": true,
   "description": "MCP server for planny: publish an HTML plan, get a link and a delete key.",
   "license": "MIT",
   "author": "Fraser Griffiths",

@@ -88,9 +88,9 @@ All notable changes to planny are recorded here. The format follows
   `site` from the product links. Analytics can tell a plan-driven visit from a direct one.
 - `mcp/`, an MCP server wrapping the existing HTTP API: `publish_plan` and `delete_plan`.
   It has no read or list tool because the API has no collection or metadata route. Includes
-  a publishable `planny-mcp@0.1.0` package, a README with Claude Code, Claude Desktop,
-  Cursor, VS Code and Codex configs, and prepared (unsubmitted) manifests for Smithery,
-  Glama, PulseMCP and mcp.so.
+  a `planny-mcp@0.1.0` tarball distributed as a GitHub Release asset (npm publication is
+  deferred), a README with Claude Code, Claude Desktop, Cursor, VS Code and Codex configs,
+  and prepared (unsubmitted) manifests for Smithery, Glama, PulseMCP and mcp.so.
 
 ### Changed
 
@@ -104,10 +104,11 @@ All notable changes to planny are recorded here. The format follows
 - The privacy notice covers Vercel Web Analytics, and `admin reset demo` clears the
   demo counter without touching the site-wide upload quota. A preview deployment now
   refuses `/demo/plans` as it already refused `/plans`.
-- The MCP setup docs lead with `npx -y planny-mcp@0.1.0` and keep the clone-and-build
-  fallback. The client configs for Claude Code, Claude Desktop, Cursor, VS Code and Codex
-  use the published package by default. `bun run verify` in `mcp/` builds the server and
-  runs a real stdio end-to-end check against a temporary local store.
+- The MCP setup docs lead with the version-pinned GitHub Release tarball
+  (`npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`)
+  and keep the clone-and-build fallback. The client configs for Claude Code, Claude
+  Desktop, Cursor, VS Code and Codex use that URL. `bun run verify` in `mcp/` builds the
+  server and runs a real stdio end-to-end check against a temporary local store.
 - The local `dev` and `start` scripts start `server.ts` again, so the documented
   `bun run dev` command works.
 
