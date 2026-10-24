@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
-import { SanitizeTooDeepError, checkCss, sanitize } from '../src/sanitize.js';
+import { parse } from 'parse5';
+import { MAX_ATTRIBUTES_PER_TAG, MAX_ATTRIBUTES_TOTAL, SanitizeTooDeepError, SanitizeTooManyAttributesError, checkCss, sanitize } from '../src/sanitize.js';
 
 const LEFTOVERS = [
   /<\/?(script|iframe|frame|frameset|object|embed|base|link|form|input|button|select|textarea|template|noscript|math|a|use|image|animate|set|foreignobject|video|audio|source)\b/i,
@@ -84,6 +85,262 @@ test('a plan is unchanged when sanitised twice', () => {
 
 test('deep nesting is refused', () => {
   expect(() => sanitize('<div>'.repeat(5000))).toThrow(SanitizeTooDeepError);
+});
+
+// The three bypass classes found in the first cut of the guard, inflated past the
+// document cap: their hidden attributes are real parse5 tokens, so the guard counts
+// them and refuses long before the parser runs. Each shape was accepted at 93a8b2d,
+// where the scan stopped early and never saw the hidden attributes.
+const hidden = (n: number): string => Array.from({ length: n }, (_, i) => `a${i}=1`).join(' ');
+
+test('the bypass classes are counted wherever they hide', () => {
+  const over = hidden(MAX_ATTRIBUTES_TOTAL + 1);
+  // bypass 1: a `>` inside a quoted value may not end the scan early
+  expect(() => sanitize(`<div a=">"${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`</p a=">"${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  // a quoted `>` stays value text, and the tag still ends at its real `>` — and
+  // parse5 serializes a `>` in an attribute value unescaped
+  expect(sanitize('<div class=">">t</div>').html).toContain('<div class=">">t</div>');
+  // bypass 2: a `<!--` inside a raw-text interior is text, never a comment
+  for (const el of ['title', 'textarea', 'style', 'script', 'xmp', 'iframe', 'noscript']) {
+    expect(() => sanitize(`<${el}><!--</${el}><div${over}>x</div>-->`)).toThrow(SanitizeTooManyAttributesError);
+  }
+  // bypass 3: a bare `=` name separated from the next by a value mints one entry per
+  // pair, in the tokenizer and in this scan alike (`=a=b ` pairs never merge, unlike
+  // space-only sequences where the odd `=` becomes the previous attribute's value)
+  expect(() => sanitize(`<div ${'=a=b '.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`))
+    .toThrow(SanitizeTooManyAttributesError);
+});
+
+test('content zones track the tokenizer exactly', () => {
+  const over = hidden(MAX_ATTRIBUTES_TOTAL + 1);
+  // the script escape dance: `<!--` starts escaped text, `<script>` double-escapes it,
+  // `</script>` there only steps back, and the element closes at the real `</script>`
+  expect(sanitize('<script>a</script><p class="x">1</p>').html).toContain('<p class="x">1</p>');
+  const dance = '<script><!--<script>e</script>--></script><p class="x">1</p>';
+  expect(sanitize(dance).html).toContain('<p class="x">1</p>');
+  // markup after the dance or after a plain close is counted like any other markup
+  expect(() => sanitize(`<script><!--<script></script>--></script><div ${over}>x`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<script><!--y--></script><div ${over}>x`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<title>c</title><div ${over}>x`)).toThrow(SanitizeTooManyAttributesError);
+  // svg content is markup: svg `<style>` is not raw text, and a causesExit start tag
+  // like `<div>` leaves the foreign context as a plainly-minted html element — parse5
+  // mints its attributes in the tree, so the scan counts them like any others
+  expect(() => sanitize(`<svg><style><div ${hidden(MAX_ATTRIBUTES_PER_TAG + 1)}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // an interior close that fails its terminator check stays raw text
+  expect(sanitize('<textarea></textareaX<div a=1></textarea><p class="x">1</p>').html)
+    .toContain('<p class="x">1</p>');
+  // a fused select/frameset zone never trusts a comment or a raw-text switch
+  expect(sanitize('<select><style><foo a=1></style></select><p class="x">1</p>').html)
+    .toContain('class="x"');
+  expect(sanitize('<body><frameset><style><foo a=1></style></frameset><p class="x">1</p></body>').html)
+    .toContain('class="x"');
+});
+
+// Fresh under-count classes found in the second review round, inflated past the caps:
+// nested foreign contexts, integration points that never empty the context, and
+// end-tag attributes the scan walked but used to drop. Each was a 201 at the
+// previous head where the attributes parse5 tokenizes were skipped.
+test('nested foreign content is counted whatever its depth', () => {
+  const over = hidden(MAX_ATTRIBUTES_PER_TAG + 1);
+  // nested svg/math: the inner close pops only that context, so a later bomb inside
+  // the outer one is still real markup
+  expect(() => sanitize(`<svg><svg></svg><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<math><math></math><style><div ${over}></style></math>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // integration points: parse5 stays inside the context and mints the markup
+  expect(() => sanitize(`<svg><foreignObject><div></div></foreignObject><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<svg><desc><div></div></desc><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<svg><title><div></div></title><style><div ${over}></style></svg>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<math><mtext><div></div></mtext><style><div ${over}></style></math>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // the walk-up pop stays exact: an unclosed child dies with its svg, so a raw-text
+  // body after it is skipped by parse5 too — nothing in it becomes an attribute
+  expect(sanitize('<svg><foo></svg><style>/*<div a=1 are text>*/</style><p class="x">1</p>').html)
+    .toContain('class="x"');
+});
+
+test('end tags inside raw-text interiors carry their attribute cost', () => {
+  // 100 broken closers, each carrying attributes parse5 tokenizes before dropping:
+  // the scan used to walk them and then throw the count away
+  expect(() => sanitize(('<title></title ' + hidden(2047) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(('<script></script ' + hidden(2000) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(('<style></style ' + hidden(2047) + '>').repeat(100)))
+    .toThrow(SanitizeTooManyAttributesError);
+  // at the boundary it is still accepted: 2048 is within the per-tag budget
+  expect(sanitize(`<title>ok</title ${hidden(2048)}>t<p class="x">1</p>`).html)
+    .toContain('class="x"');
+});
+
+// After a bare attribute name parse5 treats `=` as that attribute's value separator,
+// so `a == x0/…/x99/ ` repeated mints one real attribute per x-segment while a scan
+// without the after-attribute-name state counts the run as a single `=`-named
+// attribute's value. Both sizes were 201 at the previous head (16.2 s at 806 KB).
+test('attribute separators after a bare name do not hide attributes', () => {
+  // every x-segment after the `=`-run is its own tokenized attribute
+  const perName = `<v ${'a == x0/x1/x2/x3/x4/x5/x6/x7/x8/x9/c/d/e/f/g/h/i/j/k/'.repeat(125)}>`;
+  expect(() => sanitize(perName)).toThrow(SanitizeTooManyAttributesError);
+  // the two reported bomb sizes: ~405 KB and ~811 KB, both far over the per-tag cap
+  const segs = Array.from({ length: 100 }, (_, i) => `x${i}/`).join('');
+  expect(() => sanitize(`<v ${(`a == ${segs} `).repeat(1024)}>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<v ${(`a == ${segs} `).repeat(2048)}>`))
+    .toThrow(SanitizeTooManyAttributesError);
+  // legit separators keep their value semantics and stay inside every cap
+  expect(sanitize('<div a = 1 b == 2 class="x">ok</div>').html).toContain('class="x"');
+  expect(sanitize('<div a/b c=3 href="http://example.com/a/b" class="x">ok</div>').html)
+    .toContain('class="x"');
+});
+
+// Property check over the nested-foreign families: whatever the scan accepts, the real
+// parse5 tree may never mint more than the per-tag or document budget. This catches a
+// fresh under-count without enumerating one by hand.
+test('accepted bodies never mint above the caps', () => {
+  const pieces = [
+    '<svg>', '</svg>', '<svg/>', '<math>', '</math>', '<foreignObject>', '</foreignObject>',
+    '<desc>', '</desc>', '<title>', '</title>', '<mi>', '</mi>', '<mtext>', '</mtext>',
+    '<div>', '</div>', '<p>', '</p>', '</br>', '<select>', '</select>', '<style>', '</style>',
+    '<script>', '</script>', '<plaintext>', '<textarea>', '</textarea>', 'x', '<!--', '-->',
+    'foo', '<foo>', '</foo>',
+  ];
+  const soup = ` <div ${Array.from({ length: 2016 }, (_, i) => `a${i}=1`).join(' ')}>`;
+  let seed = 0x6a1d2b34;
+  const next = (): number => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const mintedMax = (body: string): { total: number; perTag: number } => {
+    let total = 0;
+    let perTag = 0;
+    const walk = (node: any): void => {
+      const count = node.attrs?.length ?? 0;
+      total += count;
+      if (count > perTag) perTag = count;
+      for (const child of node.childNodes ?? []) walk(child);
+    };
+    walk(parse(body));
+    return { total, perTag };
+  };
+  for (let run = 0; run < 2000; run += 1) {
+    const parts = 1 + Math.floor(next() * 24);
+    let body = '';
+    for (let k = 0; k < parts; k += 1) body += pieces[Math.floor(next() * pieces.length)];
+    if (next() < 0.5) body += soup;
+    if (next() < 0.3) body += '<p class="x">ok</p>';
+    try {
+      sanitize(body);
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message === 'plan uses too many attributes' || message === 'plan nests elements too deeply')
+        .toBe(true);
+      continue;
+    }
+    const { total, perTag } = mintedMax(body);
+    expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
+    expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
+  }
+}, 20_000);
+
+// Same property over generic '='/'/' tag soup — the after-attribute-name class. After a
+// bare name an `=` opens that attribute's value while each following x segment is a real
+// attribute, so the generated names stay unique per segment (the tree cannot collapse
+// this class into duplicates) and both knob sizes are randomized wide enough to cross
+// the caps. Kept in its own test with a CI-sized budget; the generation, not one fixed
+// payload, is what covers the class.
+test('accepted separator soup never mints above the caps', () => {
+  let seed = 0x2f3d4a17;
+  const next = (): number => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const mintedMax = (body: string): { total: number; perTag: number } => {
+    let total = 0;
+    let perTag = 0;
+    const walk = (node: any): void => {
+      const count = node.attrs?.length ?? 0;
+      total += count;
+      if (count > perTag) perTag = count;
+      for (const child of node.childNodes ?? []) walk(child);
+    };
+    walk(parse(body));
+    return { total, perTag };
+  };
+  let nameSeq = 0;
+  for (let run = 0; run < 240; run += 1) {
+    let body = '<v ';
+    const reps = 1 + Math.floor(next() * 220);
+    const segs = 1 + Math.floor(next() * 120);
+    for (let r = 0; r < reps; r += 1) {
+      body += `a${nameSeq} ==`;
+      for (let s = 0; s < segs; s += 1) {
+        nameSeq += 1;
+        body += `x${nameSeq}/`;
+      }
+      nameSeq += 1;
+      body += ' ';
+    }
+    body += '>';
+    try {
+      sanitize(body);
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message === 'plan uses too many attributes' || message === 'plan nests elements too deeply')
+        .toBe(true);
+      continue;
+    }
+    const { total, perTag } = mintedMax(body);
+    expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
+    expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
+  }
+}, 20_000);
+
+
+// parse5 spends super-linear time per attribute, so the attribute guard decides before
+// the parser runs. The timing bounds are generous tripwires: every parse below takes
+// single-digit milliseconds with the guard, and minutes without it.
+test('attribute counts are bounded before parsing', () => {
+  const attrs = (n: number): string => Array.from({ length: n }, (_, i) => `a${i}=1`).join(' ');
+  const timed = (work: () => void, limit: number): void => {
+    const start = Date.now();
+    work();
+    expect(Date.now() - start).toBeLessThan(limit);
+  };
+
+  timed(() => sanitize(`<div ${attrs(MAX_ATTRIBUTES_PER_TAG)}>x</div>`), 2000);
+  expect(() => sanitize(`<div ${attrs(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`)).toThrow(SanitizeTooManyAttributesError);
+  // end tags carry the same budget: parse5 tokenizes their attributes before dropping them
+  timed(() => sanitize(`<p>x</div ${attrs(MAX_ATTRIBUTES_PER_TAG)}>ok`), 2000);
+  expect(() => sanitize(`<p>x</div ${attrs(MAX_ATTRIBUTES_PER_TAG + 1)}>ok`)).toThrow(SanitizeTooManyAttributesError);
+
+  const tags = (n: number): string => `<p ${attrs(100)}>x</p>`.repeat(n / 100);
+  timed(() => sanitize(tags(MAX_ATTRIBUTES_TOTAL)), 2000);
+  expect(() => sanitize(tags(MAX_ATTRIBUTES_TOTAL + 1000))).toThrow(SanitizeTooManyAttributesError);
+
+  // separate attr-name entries without whitespace cannot dodge the count
+  expect(() => sanitize(`<div a="1"${'b="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  expect(() => sanitize(`<div${'/a="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  // an unquoted value swallows `/` and `=` as value characters, exactly like the parser
+  expect(sanitize(`<div${'/title=1'.repeat(MAX_ATTRIBUTES_TOTAL)}>`).html).toContain('title="1/title=');
+  expect(() => sanitize(`<div a==${' =x="1"'.repeat(MAX_ATTRIBUTES_TOTAL)}>`)).toThrow(SanitizeTooManyAttributesError);
+  // svg style content is markup, not raw text, so hidden tags are still counted
+  expect(() => sanitize(`<svg><style><div${' a=1'.repeat(9000)}></style></svg>`)).toThrow(SanitizeTooManyAttributesError);
+
+  const table = (rows: number): string =>
+    `<table>${'<tr><td a="1" b="2" c="3" d="4">x</td></tr>'.repeat(rows)}</table>`;
+  let once = '';
+  timed(() => { once = sanitize(table(3000)).html; }, 2000); // 12,000 attributes
+  expect(sanitize(once).html).toBe(once);
+  timed(() => sanitize('<br />'.repeat(20000)), 2000);
+  timed(() => sanitize('<div>x<span>t</span></div>'.repeat(5000)), 2000);
 });
 
 test('CSS allows fragments and data images only', () => {

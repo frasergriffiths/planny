@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import * as pages from './pages.js';
 import { PAGES } from './generated-pages.js';
 import { createRecords, type PlanRecord } from './records.js';
-import { SanitizeTooDeepError, sanitize } from './sanitize.js';
+import { SanitizeTooDeepError, SanitizeTooManyAttributesError, sanitize } from './sanitize.js';
 import { MiB, type AppConfig } from './config.js';
 import type { Store } from './stores/local.js';
 import { ApiError, badType, isHtmlType, parseDuration } from './validate.js';
@@ -322,6 +322,9 @@ export function createApp(deps: AppDeps): App {
       } catch (error) {
         if (error instanceof SanitizeTooDeepError) {
           throw new ApiError(400, 'too_deep', 'The plan nests elements too deeply. Keep nesting under 200 levels.');
+        }
+        if (error instanceof SanitizeTooManyAttributesError) {
+          throw new ApiError(400, 'too_many_attributes', 'The plan uses more attributes than planny parses. Keep the markup lean and spread it over tags.');
         }
         throw error;
       }

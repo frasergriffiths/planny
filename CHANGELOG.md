@@ -8,6 +8,54 @@ All notable changes to planny are recorded here. The format follows
 
 ### Fixed
 
+- One upload can no longer burn minutes of server CPU. parse5 handles attribute
+  counts super-linearly, and a probe put 60,000 attributes (937 KB, under the 4 MiB
+  cap) on one request against production: 22.5 seconds of wall time, trending to
+  about 3.5 minutes at the full cap. A linear scan now bounds attributes
+  before the parser runs: 2,048 per tag and 40,000 per document, counted on end tags
+  too, because parse5 tokenizes those just as expensively before dropping them.
+  Oversized plans get 400 `too_many_attributes` in milliseconds instead — the
+  937 KB bomb that took 22.5 s to parse rejects in under 1 ms.
+  The document cap sits at 40,000 on measured evidence: a dense 8,000-row table
+  (40,000 real attributes) parses in 29 ms, a 42,007-attribute variant is refused
+  in 1 ms, and the widest accepted shape so far (38,912 attributes at the per-tag
+  boundary) still parses in 94 ms — 20,000 would have refused the dense-table class.
+- The counting scan itself had three bypasses, all closed. The scan mirrors the
+  parse5 tokenizer state for state: a `>` inside a quoted attribute value is value
+  text and no longer ends the tag early; `<!--` inside `title`, `textarea`,
+  `style`, `script`, `xmp`, `iframe` and `noscript` interiors is text, not a
+  comment, so a real close after it is still reached; and `=` as the first
+  character of an attribute name opens that attribute instead of being rebuilt as
+  a separator. The content model also tracks the tokenizer through the script
+  escape dance, `svg`/`math` foreign content, and the `select` and `frameset`
+  zones, and attributes on end tags are walked where the tokenizer walks them —
+  so attributes hidden in any of these shapes are counted, and each class was a
+  400 at the old boundary where the first cut skipped it.
+  A second review round closed three more ways to skip: nested `svg`/`math`
+  contexts now open at any depth and only a matching end tag pops through the
+  tracked stack, exactly where parse5's own walk-up pop ends; a start tag from
+  parse5's break-out list, `</p>` or `</br>`, never empties the context (parse5
+  stops at an HTML element or an integration point, so staying in markup mode can
+  only over-count); and attributes on end tags inside raw-text interiors — which
+  parse5 tokenizes before dropping — are added to the document total instead of
+  being thrown away, so a 100-repeat title end-tag bomb (204,700 tokenized
+  attributes) is refused in 2 ms at the app boundary and 42,007 realistic
+  attributes stay the refusal boundary. A property test generates the
+  nested-foreign families and requires that every accepted body mints at most the
+  per-tag and document caps in the real parse5 tree.
+  A third review round closed the scanner's missing after-attribute-name state:
+  after a bare attribute name parse5 treats `=` as that attribute's value
+  separator, while each further name segment separated by `/` mints a real
+  attribute. The scan used to drop back to before-attribute-name and count the
+  second `=` as a new attribute whose unquoted value swallowed the rest of the
+  run, so `<v a == x0/x1/…/x99/ ` repeated ~1,000 times scanned as ~2,000 entries
+  while the tokenizer processed ~101 per repetition (~103,424), and one ~806 KB
+  request burned about 16 seconds and stored its 110 bytes. The state now holds
+  whitespace, ends the tag on `>`, opens the value on `=` without a new count,
+  and sends any other character to the before-attribute-name state — exactly
+  parse5's machine — so both bomb sizes are refused pre-parse in ~1 ms. The
+  property test also generates generic `=`/`/` separator soup with unique
+  per-segment names.
 - The per-address upload gate claims its slot in the same atomic step that checks it.
   Before, the gate only read the counters and the slot was recorded only after a
   successful publish, so uploads sent in parallel could share one spacing window and

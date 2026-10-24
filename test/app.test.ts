@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 import { newPlanId } from '../src/util.js';
 import { createApp } from '../src/app.js';
 import type { App, Logger } from '../src/app.js';
+import { MAX_ATTRIBUTES_PER_TAG, MAX_ATTRIBUTES_TOTAL } from '../src/sanitize.js';
 import { loadConfig, MiB, type AppConfig } from '../src/config.js';
 import { createLocalStore } from '../src/stores/local.js';
 import { PLAN_SCRIPT, PLAN_SCRIPT_HASH } from '../src/plan-script.js';
@@ -140,11 +141,127 @@ test('bad uploads get their own status and code', async () => {
       [await upload(t, { body: new Uint8Array([0xff, 0xfe, 0x3c]) }), 400, 'invalid_encoding'],
       [await upload(t, { body: 'x'.repeat(4 * MiB + 1) }), 413, 'too_large'],
       [await upload(t, { body: '<div>'.repeat(5000) }), 400, 'too_deep'],
+      [await upload(t, { body: `<div ${Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1000 }, (_, i) => `a${i}=1`).join(' ')}>x</div>` }), 400, 'too_many_attributes'],
     ];
     for (const [response, status, code] of cases) {
       expect(response.status).toBe(status);
       expect(((await response.json()) as { error: { code: string } }).error.code).toBe(code);
     }
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('attribute bombs are refused before slots or bytes are claimed', async () => {
+  const t = setup();
+  try {
+    const bomb = `<div ${Array.from({ length: 60000 }, (_, i) => `a${i}="v${i}"`).join(' ')}>x</div>`;
+    const start = Date.now();
+    const response = await upload(t, { name: 'attrbomb', body: bomb });
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('too_many_attributes');
+    // The scan decides before parse5 ever sees the markup, so the rejection is fast
+    // where the unguarded parse would burn minutes of CPU on a single request.
+    expect(Date.now() - start).toBeLessThan(2000);
+    // no slots were claimed, no bytes reserved and no upload counted for it
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:upload:day:203.0.113.7:'
+      + new Date(Date.UTC(2026, 9, 19, 12)).toISOString().slice(0, 10))).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
+    // and a valid plan still publishes normally afterwards
+    const json = await uploaded(t);
+    expect(json.bytes).toBeGreaterThan(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the attribute-guard bypass classes are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    const over = Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1 }, (_, i) => `a${i}=1`).join(' ');
+    // Each payload was shaped so an early-stopping scan never counted the attributes:
+    // a `>` inside a quoted value, a comment inside a raw-text interior, and `=` as the
+    // first character of an attribute name. parse5 mints every hidden attribute for real.
+    const bodies = [
+      `<div a=">"${over}>x</div>`,
+      `</p a=">"${over}>x`,
+      ...['title', 'textarea', 'style', 'script', 'xmp', 'iframe', 'noscript'].map((el) =>
+        `<${el}><!--</${el}><div${over}>x</div>-->`),
+      `<div ${'= n '.repeat(MAX_ATTRIBUTES_PER_TAG + 1)}>x</div>`,
+    ];
+    for (const [index, body] of bodies.entries()) {
+      const response = await upload(t, { body, name: `Bypass ${index}` });
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('after-name separator bombs are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    // Each `a == x…/ ` repetition tokenizes ~101 attributes for real; a scan without
+    // the after-attribute-name state counted the run as one attribute's value and let
+    // both of these through (201 in 16.2 s at the larger size).
+    const segs = Array.from({ length: 100 }, (_, i) => `x${i}/`).join('');
+    const bodies = [
+      `<v ${(`a == ${segs} `).repeat(1024)}>`, // ~405 KB
+      `<v ${(`a == ${segs} `).repeat(2048)}>`, // ~811 KB
+    ];
+    for (const [index, body] of bodies.entries()) {
+      expect(body.length, `bodies[${index}] bytes`).toBeGreaterThan(400_000);
+      const t0 = Date.now();
+      const response = await upload(t, { body, name: `Separator ${index}` });
+      const ms = Date.now() - t0;
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+      expect(ms, `bodies[${index}] took ${ms}ms`).toBeLessThan(2000);
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('nested-foreign and end-tag bombs are refused through the upload path', async () => {
+  const t = setup();
+  try {
+    const over = Array.from({ length: MAX_ATTRIBUTES_TOTAL + 1 }, (_, i) => `a${i}=1`).join(' ');
+    const perTag = Array.from({ length: MAX_ATTRIBUTES_PER_TAG + 1 }, (_, i) => `a${i}=1`).join(' ');
+    // Nested foreign contexts, integration points the scan used to leave empty, and
+    // raw-text end tags whose attributes the scan walked but dropped: parse5 mints
+    // (or tokenizes) every hidden attribute in these shapes, each of which returned
+    // 201 at the previous head.
+    const bodies = [
+      `<svg><svg></svg><style><div ${perTag}></style></svg>`,
+      `<math><math></math><style><div ${over}></style></math>`,
+      `<svg><foreignObject><div></div></foreignObject><style><div ${over}></style></svg>`,
+      `<svg><desc><div></div></desc><style><div ${over}></style></svg>`,
+      `<svg><title><div></div></title><style><div ${over}></style></svg>`,
+      `<math><mtext><div></div></mtext><style><div ${over}></style></math>`,
+      ('<title></title ' + Array.from({ length: 2047 }, (_, i) => `b${i}=1`).join(' ') + '>').repeat(100),
+      ('<script></script ' + Array.from({ length: 2000 }, (_, i) => `c${i}=1`).join(' ') + '>').repeat(100),
+    ];
+    for (const [index, body] of bodies.entries()) {
+      const t0 = Date.now();
+      const response = await upload(t, { body, name: `Nested ${index}` });
+      const ms = Date.now() - t0;
+      expect(response.status, body.slice(0, 24)).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code)
+        .toBe('too_many_attributes');
+      // the refusal happens in the pre-parse scan, well under the unguarded cost
+      expect(ms, `bodies[${index}] took ${ms}ms`).toBeLessThan(2000);
+    }
+    expect(await counter(t, 'planny:site:bytes')).toBe(0);
+    expect(await counter(t, 'planny:month:2026-10:uploads')).toBe(0);
   } finally {
     t.cleanup();
   }

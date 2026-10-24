@@ -88,6 +88,15 @@ export const ERROR_CODES: readonly ErrorCode[] = [
     response: 'json',
   },
   {
+    code: 'too_many_attributes',
+    status: 400,
+    scope: 'upload',
+    when: 'The HTML uses more attributes than the parser budget allows.',
+    retry: 'none',
+    response: 'json',
+    notes: 'One tag may carry up to 2,048 attributes and the document up to 40,000. The check runs before the plan is parsed.',
+  },
+  {
     code: 'invalid_query',
     status: 400,
     scope: 'upload',
