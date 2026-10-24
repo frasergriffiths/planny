@@ -99,7 +99,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `GET /` | Home page. |
 | `GET /sample` | The generated sample plan, with the plan CSP and the footer. |
 | `POST /plans?name=&duration=` | Upload raw `text/html`. Returns `url`, `expiresAt`, `deleteKey` and `removed`. |
-| `POST /demo/plans` | The home page box. Same body and sanitiser, fixed 24-hour life, separate monthly counter. |
+| `POST /demo/plans` | The home page box. Same body and sanitiser, fixed 24-hour life, separate monthly counter: 500/month site-wide, and 2/day and 5/month per address. |
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |

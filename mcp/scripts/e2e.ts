@@ -82,17 +82,19 @@ async function expectToolError(name: string, args: Record<string, unknown>, patt
 }
 
 async function main(): Promise<void> {
-  // Force the local SQLite store. The e2e must never inherit a production store from the
-  // shell: PLANNY_STORE=postgres plus an exported DATABASE_URL would point the test at Neon,
-  // and a publish here would write a real plan. `local` selects the SQLite store explicitly.
+  // Force the local entry and SQLite store. The e2e must never inherit deployment settings
+  // from the shell: VERCEL flips server.ts to the Vercel entry, and PLANNY_STORE=postgres
+  // plus an exported DATABASE_URL would point the test at Neon and publish real plans.
+  // `local` selects the SQLite store explicitly.
+  const childEnv: NodeJS.ProcessEnv = { ...process.env };
+  for (const key of ['VERCEL', 'VERCEL_ENV', 'DATABASE_URL']) delete childEnv[key];
   const localEnv: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...childEnv,
     PLANNY_STORE: 'local',
     PLANNY_DATA_DIR: dataDir,
     PLANNY_LOCAL_PORT: String(port),
     PLANNY_UPLOAD_SPACING_SECONDS: '120',
   };
-  delete localEnv.DATABASE_URL;
 
   local = spawn(process.execPath, ['run', 'dev'], {
     cwd: repo,
@@ -107,7 +109,7 @@ async function main(): Promise<void> {
   const transport = new StdioClientTransport({
     command: serverCommand,
     args: serverArgs,
-    env: { ...process.env, PLANNY_URL: base },
+    env: { ...childEnv, PLANNY_URL: base },
     stderr: 'pipe',
   });
   transport.stderr?.on('data', (chunk: Buffer) => {
