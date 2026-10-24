@@ -135,6 +135,33 @@ function PublishBox() {
     }
   };
 
+  // Once the plan is published the form is replaced, not just disabled: a second click
+  // cannot publish a duplicate plan, and the only way to start again is an explicit reload.
+  if (state.status === 'done') {
+    return (
+      <div className="mt-6 plan-card">
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your link</p>
+        <p className="mt-2 break-all text-sm">
+          <a href={state.url} className="text-white underline underline-offset-2 hover:text-zinc-300">{state.url}</a>
+        </p>
+        <p className="mt-2 font-mono text-xs text-zinc-500">Expires {new Date(state.expiresAt).toLocaleString()}</p>
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Delete key — copy it now</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <code className="break-all font-mono text-xs text-zinc-300">{state.deleteKey}</code>
+            <CopyButton value={state.deleteKey} label="Copy delete key" />
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+            planny shows this once. It is the only way to delete the plan early; the link expires in 24 hours either way.
+          </p>
+        </div>
+        <p className="mt-4 text-xs leading-relaxed text-zinc-500">
+          The box closes after a publish so a second click cannot create a duplicate. Reload the page to publish another plan.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-6">
       <label htmlFor="plan-html" className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your HTML</label>
@@ -160,26 +187,6 @@ function PublishBox() {
 
       {state.status === 'error' ? (
         <p role="alert" className="mt-4 text-sm text-red-400">{state.message}</p>
-      ) : null}
-
-      {state.status === 'done' ? (
-        <div className="mt-6 plan-card">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your link</p>
-          <p className="mt-2 break-all text-sm">
-            <a href={state.url} className="text-white underline underline-offset-2 hover:text-zinc-300">{state.url}</a>
-          </p>
-          <p className="mt-2 font-mono text-xs text-zinc-500">Expires {new Date(state.expiresAt).toLocaleString()}</p>
-          <div className="mt-5 border-t border-line pt-4">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Delete key — copy it now</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <code className="break-all font-mono text-xs text-zinc-300">{state.deleteKey}</code>
-              <CopyButton value={state.deleteKey} label="Copy delete key" />
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-              planny shows this once. It is the only way to delete the plan early; the link expires in 24 hours either way.
-            </p>
-          </div>
-        </div>
       ) : null}
     </div>
   );

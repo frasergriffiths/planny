@@ -107,7 +107,7 @@ local day = redis.call('INCR', KEYS[2])
 if day == 1 then redis.call('EXPIRE', KEYS[2], ARGV[6]) end
 local month = redis.call('INCR', KEYS[3])
 if month == 1 then redis.call('EXPIRE', KEYS[3], ARGV[7]) end
-redis.call('HSET', KEYS[4], 'now', ARGV[2], 'day', day, 'month', month)
+redis.call('HSET', KEYS[4], 'now', ARGV[2], 'day', day, 'month', month, 'scope', ARGV[9])
 redis.call('EXPIRE', KEYS[4], ARGV[8])
 return 'ok'
 `;

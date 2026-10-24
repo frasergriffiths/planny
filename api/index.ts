@@ -8,6 +8,28 @@ import { home, notConfigured, notFound, unknownPath } from '../src/pages.js';
 // on the Vercel project setting; /health reports the runtime that is actually running.
 // The app is built lazily, so a missing setting produces the designed 503, not a load crash.
 let app: ReturnType<typeof createVercelApp> | null = null;
+
+/**
+ * Vercel hands the function the path as the client sent it, so `/%64emo/plans` arrives
+ * encoded and would not match `/demo/plans` in a plain comparison. Decode until the path
+ * stops changing, which also catches double encoding, and keep the raw path when the
+ * encoding is malformed rather than throwing. Routing checks only: the app still sees the
+ * original request.
+ */
+function decodedPath(pathname: string): string {
+  let path = pathname;
+  for (let pass = 0; pass < 5; pass += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(path);
+    } catch {
+      return path;
+    }
+    if (next === path) return path;
+    path = next;
+  }
+  return path;
+}
 let failure: string | null = null;
 let purged = false;
 let purgeStatus: 'pending' | 'ok' | 'failed' = 'pending';
@@ -34,13 +56,14 @@ export default {
   async fetch(request: Request): Promise<Response> {
     await purgePlanTags();
     const url = new URL(request.url);
+    const path = decodedPath(url.pathname);
     if (process.env.VERCEL_ENV === 'preview'
-      && (url.pathname === '/plans' || url.pathname === '/demo/plans' || url.pathname.startsWith('/admin/'))) {
+      && (path === '/plans' || path === '/demo/plans' || path.startsWith('/admin/'))) {
       return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'Uploads are disabled on preview deployments.' } })}\n`, {
         status: 503, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });
     }
-    if (url.pathname === '/' && !app) {
+    if (path === '/' && !app) {
       const body = home({ build: 'vercel', origin: 'https://use-planny.vercel.app', config: loadConfig() });
       return new Response(body, {
         status: 200,
@@ -51,7 +74,7 @@ export default {
         },
       });
     }
-    if (url.pathname === '/health') {
+    if (path === '/health') {
       if (!app && !failure) {
         try {
           app = createVercelApp({ env: process.env, waitUntil });
@@ -91,9 +114,9 @@ export default {
       const pageHeaders = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
       const jsonHeaders = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
       const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-      if (url.pathname === '/plans' || url.pathname === '/demo/plans') {
+      if (path === '/plans' || path === '/demo/plans') {
         if (method !== 'POST') {
-          const message = url.pathname === '/plans'
+          const message = path === '/plans'
             ? 'Upload a plan with POST /plans.'
             : 'Publish a demo plan with POST /demo/plans.';
           return new Response(`${JSON.stringify({ error: { code: 'method_not_allowed', message } })}\n`, {
@@ -102,8 +125,8 @@ export default {
         }
         return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });
       }
-      if (url.pathname.startsWith('/p/')) {
-        const id = url.pathname.slice(3).replace(/\/$/, '');
+      if (path.startsWith('/p/')) {
+        const id = path.slice(3).replace(/\/$/, '');
         if (method !== 'GET' && method !== 'HEAD') {
           if (method === 'DELETE') {
             return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, { status: 503, headers: jsonHeaders });

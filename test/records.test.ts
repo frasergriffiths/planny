@@ -221,6 +221,29 @@ test('release refunds a claimed slot and answers twice with nothing', async () =
   expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(now + 1000);
 });
 
+test('the demo gate keeps its own counters and refunds them', async () => {
+  const f = fixture();
+  const owner = 'owner-demo-scope';
+  const now = Date.UTC(2026, 9, 20, 12);
+  const values = { spacingSeconds: 120, perDay: 2, perMonth: 5 };
+  const claim = newClaimId();
+  expect(await f.records.uploadGate(owner, now, values, claim, 'demo')).toEqual({ ok: true });
+
+  // The demo claim charges only the demo counters; the ordinary upload gate is untouched.
+  expect(await f.counter(`planny:upload:demo:day:${owner}:2026-10-20`)).toBe(1);
+  expect(await f.counter(`planny:upload:demo:month:${owner}:2026-10`)).toBe(1);
+  expect(await f.counter(`planny:upload:demo:spacing:${owner}`)).toBe(now);
+  expect(await f.counter(`planny:upload:day:${owner}:2026-10-20`)).toBe(0);
+  expect(await f.counter(`planny:upload:month:${owner}:2026-10`)).toBe(0);
+  expect(await f.counter(`planny:upload:spacing:${owner}`)).toBe(0);
+
+  // The claim record carries its scope, so the refund finds the demo counters again.
+  expect(await f.records.releaseUploadClaim(owner, claim)).toBe('ok');
+  expect(await f.counter(`planny:upload:demo:day:${owner}:2026-10-20`)).toBe(0);
+  expect(await f.counter(`planny:upload:demo:month:${owner}:2026-10`)).toBe(0);
+  expect(await f.counter(`planny:upload:demo:spacing:${owner}`)).toBe(0);
+});
+
 test('claims respect the daily cap, then the refunded slot frees the room', async () => {
   const f = fixture();
   const owner = 'owner-daily';

@@ -39,6 +39,13 @@ export interface AppConfig {
   uploadsPerDay: number;
   uploadsPerMonth: number;
   monthly: MonthlyLimits;
+  /**
+   * Per-address demo limits. They are deliberately smaller than the ordinary upload gate:
+   * the demo box draws on a small shared monthly allowance, so one visitor must not be
+   * able to spend all of it. Demo uploads use their own counters, not the upload gate's.
+   */
+  demoUploadsPerAddressPerDay: number;
+  demoUploadsPerAddressPerMonth: number;
   rateLimits: {
     uploads: RateLimit;
     views: RateLimit;
@@ -92,6 +99,8 @@ export function loadConfig(env: Env = process.env): AppConfig {
       reads: setting(env.PLANNY_MONTHLY_READS, 1_500_000),
       readBytes: setting(env.PLANNY_MONTHLY_READ_BYTES, 200 * 1024 * MiB),
     },
+    demoUploadsPerAddressPerDay: setting(env.PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY, 2),
+    demoUploadsPerAddressPerMonth: setting(env.PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH, 5),
     rateLimits: {
       uploads: { max: setting(env.PLANNY_RATE_UPLOADS_MAX, 20), windowSeconds: setting(env.PLANNY_RATE_UPLOADS_WINDOW, 3600) },
       views: { max: setting(env.PLANNY_RATE_VIEWS_MAX, 20), windowSeconds: setting(env.PLANNY_RATE_VIEWS_WINDOW, 60) },

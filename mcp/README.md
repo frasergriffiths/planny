@@ -4,10 +4,10 @@ An MCP server for [planny](https://use-planny.vercel.app). It lets an agent publ
 self-contained HTML page and get back a public link plus a delete key.
 
 > **Distribution: GitHub Release asset, not npm.** npm registry publication is deferred.
-> Release 0.1.0 is distributed as a version-pinned, immutable tarball:
+> Release 0.1.0 is distributed as a version-pinned tarball:
 > `npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`.
-> OpenBot runs this same command. A self-hosted instance sets `PLANNY_URL`; the default is
-> the hosted service.
+> OpenBot runs the same tarball from a local install, not literally through `npx`. A
+> self-hosted instance sets `PLANNY_URL`; the default is the hosted service.
 
 ## Tools
 
@@ -40,9 +40,11 @@ This is the normal path. It needs Node 22+ and does not clone the repository:
 npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
-The URL is version-pinned and immutable. It always refers to the `mcp-v0.1.0` release
-asset, so a later release cannot change what a client installs. OpenBot runs this same
-command to start the server.
+The URL is version-pinned: it names the `mcp-v0.1.0` release and asset, so publishing a
+later release does not change what a client installs. GitHub allows an asset to be replaced
+under the same name, so pin the URL rather than treating it as immutable. OpenBot installs
+this same tarball locally and starts the server from that install, rather than running
+`npx` on every launch.
 
 The process is a stdio server, so it waits for MCP messages on stdin. It prints one line to
 stderr:
@@ -444,7 +446,8 @@ PLANNY_MCP_BIN=/absolute/path/to/prefix/bin/planny-mcp bun run e2e
 
 The script:
 
-1. starts a local planny server on `127.0.0.1:4399` with a temporary SQLite store;
+1. starts a local planny server on `127.0.0.1:4399` with a temporary SQLite store, forcing
+   `PLANNY_STORE=local` and clearing `DATABASE_URL` so it cannot reach a production database;
 2. launches the built `mcp/dist/index.js` through the MCP SDK client over stdio;
 3. checks `tools/list`, publishes a plan, fetches the link, rejects a wrong key, rejects a
    blank key, checks the 120-second `429`, deletes the plan, and confirms the old link is
@@ -501,7 +504,7 @@ curl -I https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/p
 ```
 
 If the release is not published yet, use the clone fallback above. Do not change the URL
-to `latest`; `latest` is not immutable.
+to `latest`; `latest` is not version-pinned.
 
 ### The server starts, then exits or the client shows no tools
 

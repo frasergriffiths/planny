@@ -27,6 +27,13 @@ export type ReservationOutcome =
 
 export type ViewGuard = 'reads' | 'bytes' | 'owner_bytes';
 
+/**
+ * Which per-address gate a slot is claimed against. Ordinary uploads and the homepage demo
+ * box have separate counters, so the demo's smaller caps cannot refuse an API upload and a
+ * demo visitor cannot spend an API address's allowance.
+ */
+export type UploadScope = 'plan' | 'demo';
+
 export interface ViewResult {
   readonly ok: boolean;
   readonly guard?: ViewGuard;
@@ -94,15 +101,17 @@ const ownerMonthlyKey = (month: string, owner: string): string => `planny:month:
 
 export const monthOf = (ms: number): string => new Date(ms).toISOString().slice(0, 7);
 const monthKey = (month: string, what: string): string => `planny:month:${month}:${what}`;
-const uploadSpacingKey = (owner: string): string => `planny:upload:spacing:${owner}`;
-const uploadDayKey = (owner: string, now: number): string => `planny:upload:day:${owner}:${dayOf(now)}`;
-const uploadMonthKey = (owner: string, now: number): string => `planny:upload:month:${owner}:${monthOf(now)}`;
+const uploadSpacingKey = (scope: UploadScope, owner: string): string => `planny:upload:${scope === 'demo' ? 'demo:' : ''}spacing:${owner}`;
+const uploadDayKey = (scope: UploadScope, owner: string, now: number): string => `planny:upload:${scope === 'demo' ? 'demo:' : ''}day:${owner}:${dayOf(now)}`;
+const uploadMonthKey = (scope: UploadScope, owner: string, now: number): string => `planny:upload:${scope === 'demo' ? 'demo:' : ''}month:${owner}:${monthOf(now)}`;
 const uploadClaimKey = (owner: string, claimId: string): string => `planny:upload:claim:${owner}:${claimId}`;
 
 const claimRecordSchema = z.object({
   now: z.string().regex(/^\d+$/),
   day: z.string().regex(/^\d+$/),
   month: z.string().regex(/^\d+$/),
+  // Old claims predate the demo scope and were all ordinary uploads.
+  scope: z.enum(['plan', 'demo']).default('plan'),
 });
 
 export function parseRecord(hash: Record<string, string> | null): PlanRecord | null {
@@ -225,11 +234,12 @@ export function createRecords(redis: RedisLike) {
     now: number,
     limits: { spacingSeconds: number; perDay: number; perMonth: number },
     claimId: string,
+    scope: UploadScope = 'plan',
   ): Promise<UploadGateResult> {
     const keys = [
-      uploadSpacingKey(owner),
-      uploadDayKey(owner, now),
-      uploadMonthKey(owner, now),
+      uploadSpacingKey(scope, owner),
+      uploadDayKey(scope, owner, now),
+      uploadMonthKey(scope, owner, now),
       uploadClaimKey(owner, claimId),
     ];
     const raw = String(await redis.eval(UPLOAD_CLAIM, keys, [
@@ -241,6 +251,7 @@ export function createRecords(redis: RedisLike) {
       String(Math.max(1, Math.ceil((nextDayStart(now) - now) / 1000))),
       String(Math.max(1, Math.ceil((nextMonthStart(now) - now) / 1000))),
       String(CLAIM_TTL_SECONDS),
+      scope,
     ]));
     if (raw === 'ok') return { ok: true };
     if (raw === 'address_upload_rate_limited') {
@@ -266,9 +277,9 @@ export function createRecords(redis: RedisLike) {
       UPLOAD_RELEASE,
       [
         uploadClaimKey(owner, claimId),
-        uploadSpacingKey(owner),
-        uploadDayKey(owner, at),
-        uploadMonthKey(owner, at),
+        uploadSpacingKey(claim.scope, owner),
+        uploadDayKey(claim.scope, owner, at),
+        uploadMonthKey(claim.scope, owner, at),
       ],
       [claim.now, claim.day, claim.month],
     );
