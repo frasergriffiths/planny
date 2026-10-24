@@ -6,8 +6,8 @@ export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
 const MCP_TARBALL = 'https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz';
 const MCP_COMMAND = `npx -y ${MCP_TARBALL}`;
-// A compact block a reader can paste into any stdio client; the URL is the same
-// version-pinned release asset the command uses.
+// A compact block for the Claude Desktop and Claude Code mcpServers shape; the README
+// carries the Cursor, VS Code and Codex variants.
 const MCP_CONFIG = `{
   "mcpServers": {
     "planny": {
@@ -341,12 +341,15 @@ export function Page({ kind }: { kind: PageKind }) {
                 <McpCommand />
               </div>
               <p className="mt-4 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
-                Node 22+ or Bun. Installs the version-pinned GitHub Release tarball. A self-hosted instance sets <code className="text-zinc-400">PLANNY_URL</code>.
+                Node 22+ with npm/npx. Installs the version-pinned GitHub Release tarball; Bun is only for the clone-and-build fallback. A self-hosted instance sets <code className="text-zinc-400">PLANNY_URL</code>.
               </p>
-              <p className="mt-5 font-mono text-xs text-zinc-500">Or paste this into a stdio client:</p>
+              <p className="mt-5 font-mono text-xs text-zinc-500">For Claude Desktop and Claude Code:</p>
               <pre className="mt-2 max-w-full overflow-x-auto rounded-card border border-line bg-zinc-950/40 p-4 font-mono text-xs leading-relaxed text-zinc-300">
                 <code>{MCP_CONFIG}</code>
               </pre>
+              <p className="mt-2 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
+                Cursor, VS Code and Codex use their own config shapes; the setup docs cover each.
+              </p>
               <p className="mt-6 flex flex-wrap gap-4 font-mono text-xs">
                 <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/mcp/README.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">MCP setup docs</a>
                 <a href={withRef('https://github.com/frasergriffiths/planny/releases/tag/mcp-v0.1.0', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">mcp-v0.1.0 release</a>
