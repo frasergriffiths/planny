@@ -1,0 +1,26 @@
+# Smithery configuration: https://smithery.ai/docs/config#smitheryyaml
+#
+# Placement: Smithery reads `smithery.yaml` from the root of the GitHub repository it builds.
+# This file lives in manifests/ because the app repo root is the web service, not the MCP
+# server. When mcp/ is split into its own repository before submission, move this file there
+# as `smithery.yaml`.
+#
+# The command assumes `planny-mcp` is published to npm. It is not published yet, and the
+# brief for this branch forbids publishing, so the directory listing has to wait for that.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      plannyUrl:
+        type: string
+        description: Base URL of the planny instance to publish to. Leave empty for the hosted service.
+        default: https://use-planny.vercel.app
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'planny-mcp'],
+      env: config.plannyUrl ? { PLANNY_URL: config.plannyUrl } : {}
+    })
+  exampleConfig:
+    plannyUrl: https://use-planny.vercel.app

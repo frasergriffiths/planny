@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.frasergriffiths/planny",
+  "title": "planny",
+  "description": "Publish an HTML plan from an agent and get back a public link and a delete key. Server-side sanitising, link expiry from one hour to 100 years.",
+  "version": "0.1.0",
+  "websiteUrl": "https://use-planny.vercel.app",
+  "repository": {
+    "url": "https://github.com/frasergriffiths/planny",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "planny-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PLANNY_URL",
+          "description": "Base URL of the planny instance to publish to. Defaults to https://use-planny.vercel.app.",
+          "default": "https://use-planny.vercel.app"
+        }
+      ]
+    }
+  ]
+}
