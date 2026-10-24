@@ -291,19 +291,27 @@ export function createApp(deps: AppDeps): App {
     const owner = ownerKey(secret, address);
     // The gate claims the slot in one atomic step: spacing, the daily cap and the monthly
     // cap are all written inside the claim, so concurrent uploads cannot share a window.
+    // The demo box is gated separately with smaller per-address caps: it draws on a small
+    // shared allowance, so one visitor must not be able to spend all of it.
     const gateClaimId = newClaimId();
+    const perDay = demo ? config.demoUploadsPerAddressPerDay : config.uploadsPerDay;
+    const perMonth = demo ? config.demoUploadsPerAddressPerMonth : config.uploadsPerMonth;
     const gate = await records.uploadGate(owner, at, {
       spacingSeconds: config.uploadSpacingSeconds,
-      perDay: config.uploadsPerDay,
-      perMonth: config.uploadsPerMonth,
-    }, gateClaimId);
+      perDay,
+      perMonth,
+    }, gateClaimId, demo ? 'demo' : 'plan');
     if (!gate.ok) {
       const code = gate.code ?? 'address_upload_rate_limited';
       const seconds = gate.retryAfter ?? 60;
       const messages: Record<string, string> = {
         address_upload_rate_limited: `One upload at a time from this address. Wait ${seconds} seconds before the next.`,
-        address_upload_daily_limit: `This address has uploaded its 50 plans for today. Uploads resume at midnight UTC.`,
-        address_upload_monthly_limit: `This address has uploaded its 500 plans this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
+        address_upload_daily_limit: demo
+          ? `This address has reached the demo box limit of ${perDay} a day. Try again tomorrow, or publish through the API.`
+          : `This address has uploaded its 50 plans for today. Uploads resume at midnight UTC.`,
+        address_upload_monthly_limit: demo
+          ? `This address has reached the demo box limit of ${perMonth} a month. Publishing through the API is unaffected.`
+          : `This address has uploaded its 500 plans this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}.`,
       };
       throw new ApiError(429, code, messages[code] ?? `Try again in ${seconds} seconds.`, {
         'retry-after': String(seconds),

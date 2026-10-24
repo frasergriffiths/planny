@@ -58,7 +58,9 @@ objects directly. Do not create one.
 
    The demo box has its own monthly quota. `reset uploads` and `reset all` do not
    clear it; use `reset demo` when the demo allowance, not the site-wide upload
-   budget, is exhausted.
+   budget, is exhausted. The smaller per-address demo caps
+   (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY` and `..._MONTH`) are not cleared by
+   `reset demo`; their day and month keys expire with their windows.
 
 5. To stop uploads without stopping reads (the switch is written to
    `config/kill.json`):

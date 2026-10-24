@@ -8,6 +8,15 @@ All notable changes to planny are recorded here. The format follows
 
 ### Fixed
 
+- The preview and unconfigured upload gate now decodes the path before it compares, so
+  `/%64emo/plans` and `/%70lans` are refused like `/demo/plans` and `/plans` instead of
+  falling through to the unknown-path 404. Malformed escapes keep the raw path and never
+  throw.
+- The home demo box replaces its form with the result after a successful publish, so a
+  second click cannot create a duplicate plan.
+- The MCP end-to-end check forces `PLANNY_STORE=local` and clears `DATABASE_URL` for the
+  child server, so an exported production storage setting cannot point the test at a real
+  database.
 - The skill's duration examples and its publish helper now list only `h`, `d`, `w`
   and `y`, which is what the API accepts. Months were documented and accepted by the
   helper but rejected by `parseDuration`.
@@ -81,7 +90,9 @@ All notable changes to planny are recorded here. The format follows
   sanitiser and 4 MiB cap, fixes the life at 24 hours, and charges its own monthly counter
   (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500) instead of `PLANNY_MONTHLY_UPLOADS`. A
   public demo cannot spend the site-wide upload budget, and an exhausted demo allowance
-  leaves the API working.
+  leaves the API working. Each address gets a smaller share of that allowance on its own
+  counters (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`, default 2, and
+  `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5), so one visitor cannot drain it.
 - `@vercel/analytics` on the deployed home, 404, 410 and 503 pages.
 - A `ref` parameter on every outbound link: `?ref=plan` from a plan footer, `sample` from
   the sample, `missing`/`expired`/`deleted`/`takedown` from the plan error pages, and
@@ -108,7 +119,9 @@ All notable changes to planny are recorded here. The format follows
   (`npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`)
   and keep the clone-and-build fallback. The client configs for Claude Code, Claude
   Desktop, Cursor, VS Code and Codex use that URL. `bun run verify` in `mcp/` builds the
-  server and runs a real stdio end-to-end check against a temporary local store.
+  server and runs a real stdio end-to-end check against a temporary local store. The docs
+  call the URL version-pinned rather than immutable, and say OpenBot installs the tarball
+  locally instead of running `npx` on every launch.
 - The local `dev` and `start` scripts start `server.ts` again, so the documented
   `bun run dev` command works.
 

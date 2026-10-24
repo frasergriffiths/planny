@@ -110,6 +110,16 @@ test('a preview deployment refuses uploads', async () => {
   expect(demo.status).toBe(503);
   expect(demo.headers.get('content-type')).toBe('application/json; charset=utf-8');
   expect((await errorOf(demo)).error.code).toBe('planny_not_configured');
+
+  // A percent-encoded path names the same route, so the gate must decode before it compares.
+  for (const path of ['/%64emo/plans', '/%70lans', '/%2564emo/plans', '/%61dmin/reset']) {
+    const encoded = await entry(new Request(`${ORIGIN}${path}`, {
+      method: 'POST', headers: { 'content-type': 'text/html', 'x-vercel-forwarded-for': '203.0.113.9' }, body: PLAN,
+    }));
+    expect(encoded.status, path).toBe(503);
+    expect(encoded.headers.get('content-type'), path).toBe('application/json; charset=utf-8');
+    expect((await errorOf(encoded)).error.code, path).toBe('planny_not_configured');
+  }
 });
 
 test('an unconfigured deployment fails closed, serves pages, and fails a startup purge', async () => {
@@ -134,6 +144,20 @@ test('an unconfigured deployment fails closed, serves pages, and fails a startup
   const demoGet = await entry(new Request(`${ORIGIN}/demo/plans`));
   expect(demoGet.status).toBe(405);
   expect((await errorOf(demoGet)).error.message).toContain('POST /demo/plans');
+
+  // Encoded spellings are the same unconfigured gate, not a 404 on the unknown-path fallback.
+  const encodedDemo = await entry(new Request(`${ORIGIN}/%64emo/plans`, {
+    method: 'POST', headers: { 'content-type': 'text/html' }, body: PLAN,
+  }));
+  expect(encodedDemo.status).toBe(503);
+  expect((await errorOf(encodedDemo)).error.code).toBe('planny_not_configured');
+  const encodedPlans = await entry(new Request(`${ORIGIN}/%70lans`));
+  expect(encodedPlans.status).toBe(405);
+  expect(encodedPlans.headers.get('allow')).toBe('POST');
+
+  // A malformed escape is not decoded, and must not throw the entry into a 500.
+  const badEncoding = await entry(new Request(`${ORIGIN}/plans%`));
+  expect(badEncoding.status).toBe(404);
 
   const gone = await entry(new Request(`${ORIGIN}/p/${UUID_A}`));
   expect(gone.status).toBe(503);

@@ -36,20 +36,20 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 
 On the deployed site, the home page has a paste box. Paste one self-contained HTML page, click **Get a link**, and planny returns a link plus a delete key. No account, no terminal. The local server serves the plain server-rendered page instead.
 
-The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 4 MiB cap as every other upload. Two things differ: a demo link expires after 24 hours, and demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500). A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
+The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 4 MiB cap as every other upload. Three things differ: a demo link expires after 24 hours, demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500), and each address gets a smaller share of it (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`, default 2, and `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5) so one visitor cannot drain the shared demo allowance. A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
 
 ## MCP server
 
 [`mcp/`](mcp) is a thin MCP wrapper over the same HTTP API. Two tools: `publish_plan` (name, html, duration → link, expiry, delete key) and `delete_plan` (id and delete key). It has no read or list tool, because the API has no metadata or collection route to wrap.
 
-npm registry publication is deferred. Version 0.1.0 is distributed as a version-pinned, immutable GitHub Release tarball:
+npm registry publication is deferred. Version 0.1.0 is distributed as a version-pinned GitHub Release tarball:
 
 ```sh
 npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 claude mcp add --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
 ```
 
-OpenBot runs that same command. Set `PLANNY_URL` to point it at a self-hosted instance. If you cannot use the release asset, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
+OpenBot installs that same tarball locally and starts the server from the install, rather than running `npx` on every launch. Set `PLANNY_URL` to point it at a self-hosted instance. If you cannot use the release asset, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
 
 ```sh
 git clone https://github.com/frasergriffiths/planny.git
@@ -158,6 +158,8 @@ Core production settings:
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. Defaults to `https://use-planny.vercel.app`; set it for a self-hosted instance. |
 | `PLANNY_ATTRIBUTION` | `on` (default) adds the "Made with Planny" footer to each plan and the publish line to 404/410 pages. Set `off` to remove both. Aliases: `off` also accepts `0`, `false`, `no`, `disable`, `disabled`, `none`; `on` accepts `1`, `true`, `yes`, `enabled`. Anything else keeps the default, `on`. |
 | `PLANNY_DEMO_MONTHLY_UPLOADS` | Uploads allowed from the home page demo box each month. Default 500, on its own counter so it never spends `PLANNY_MONTHLY_UPLOADS`. |
+| `PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY` | Demo uploads allowed from one address each day. Default 2, so one visitor cannot drain the shared demo allowance. |
+| `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH` | Demo uploads allowed from one address each month. Default 5. Demo uploads have their own counters, so this never affects `POST /plans`. |
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 

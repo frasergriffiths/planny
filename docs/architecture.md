@@ -37,7 +37,7 @@ POST /admin/plans/<uuid>/remove
 
 `HEAD` follows the view path and returns the same headers without a body. `/p/<uuid>/raw` redirects to `/p/<uuid>`. `/sample` is generated from the template and the sample body and is served with the same plan CSP and footer as a plan. Query strings on a plan are a 404 and are not counted as reads.
 
-`POST /demo/plans` is the deployed home page's paste box. It shares the body cap, sanitiser, per-address gate and storage guards with `POST /plans`, but fixes the name and the 24-hour life and charges its own monthly counter, so a public demo cannot spend the site-wide upload budget. A preview deployment refuses it, as it refuses `POST /plans`.
+`POST /demo/plans` is the deployed home page's paste box. It shares the body cap, sanitiser and storage guards with `POST /plans`, but fixes the name and the 24-hour life, charges its own monthly counter so a public demo cannot spend the site-wide upload budget, and applies its own smaller per-address daily and monthly caps so one address cannot drain the demo allowance. A preview deployment refuses it, as it refuses `POST /plans`.
 
 ## Storage
 

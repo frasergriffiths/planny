@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.frasergriffiths/planny",
   "title": "planny",
-  "description": "Publish an HTML plan from an agent and get back a public link and a delete key. Server-side sanitising, link expiry from one hour to 100 years.",
+  "description": "Publish an HTML plan from an agent and get a shareable link and a delete key.",
   "version": "0.1.0",
   "websiteUrl": "https://use-planny.vercel.app",
   "repository": {

@@ -118,6 +118,50 @@ test('the demo quota is its own limit and reports itself', async () => {
   }
 });
 
+test('one address cannot drain the shared demo allowance', async () => {
+  // The site-wide demo allowance is generous only because one address is held to a much
+  // smaller share of it. The API stays untouched by that cap.
+  const t = setup({ PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY: '5', PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH: '2' });
+  try {
+    expect((await demo(t)).status).toBe(201);
+    expect((await demo(t)).status).toBe(201);
+
+    const refused = await demo(t);
+    expect(refused.status).toBe(429);
+    const body = await refused.json() as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('address_upload_monthly_limit');
+    expect(body.error.message).toContain('demo box limit of 2 a month');
+    expect(body.error.message).toContain('API is unaffected');
+    expect(refused.headers.get('retry-after')).toBeTruthy();
+
+    // Another address still has the rest of the shared allowance, and the refused address
+    // is not blocked from the ordinary API, which has its own counters.
+    expect((await demo(t, '198.51.100.7')).status).toBe(201);
+    expect((await publish(t)).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('the demo per-address daily cap resets the next day', async () => {
+  const t = setup({ PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY: '1' });
+  try {
+    expect((await demo(t)).status).toBe(201);
+
+    const refused = await demo(t);
+    expect(refused.status).toBe(429);
+    const body = await refused.json() as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('address_upload_daily_limit');
+    expect(body.error.message).toContain('demo box limit of 1 a day');
+
+    // The monthly counter still has room, so tomorrow is open again.
+    t.clock.t += DAY_MS;
+    expect((await demo(t)).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('the demo quota has its own operator reset', async () => {
   const t = setup({ PLANNY_DEMO_MONTHLY_UPLOADS: '1' });
   try {

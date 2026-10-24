@@ -82,14 +82,21 @@ async function expectToolError(name: string, args: Record<string, unknown>, patt
 }
 
 async function main(): Promise<void> {
+  // Force the local SQLite store. The e2e must never inherit a production store from the
+  // shell: PLANNY_STORE=postgres plus an exported DATABASE_URL would point the test at Neon,
+  // and a publish here would write a real plan. `local` selects the SQLite store explicitly.
+  const localEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    PLANNY_STORE: 'local',
+    PLANNY_DATA_DIR: dataDir,
+    PLANNY_LOCAL_PORT: String(port),
+    PLANNY_UPLOAD_SPACING_SECONDS: '120',
+  };
+  delete localEnv.DATABASE_URL;
+
   local = spawn(process.execPath, ['run', 'dev'], {
     cwd: repo,
-    env: {
-      ...process.env,
-      PLANNY_DATA_DIR: dataDir,
-      PLANNY_LOCAL_PORT: String(port),
-      PLANNY_UPLOAD_SPACING_SECONDS: '120',
-    },
+    env: localEnv,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   local.stdout?.on('data', (chunk: Buffer) => { localLog += chunk.toString(); });
