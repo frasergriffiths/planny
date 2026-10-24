@@ -5,8 +5,8 @@
 # server. When mcp/ is split into its own repository before submission, move this file there
 # as `smithery.yaml`.
 #
-# The command assumes `planny-mcp` is published to npm. It is not published yet, and the
-# brief for this branch forbids publishing, so the directory listing has to wait for that.
+# The command assumes `planny-mcp` is published to npm. It is not published yet, so the
+# directory listing waits for that release decision.
 startCommand:
   type: stdio
   configSchema:

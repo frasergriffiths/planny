@@ -15,8 +15,8 @@ const BASE = (process.env.PLANNY_URL ?? DEFAULT_BASE).replace(/\/+$/, '');
 
 const durationSchema = z
   .string()
-  .regex(/^\d{1,6}[hdwy]$/, 'Use a number and a unit: 12h, 30d, 2w or 5y.')
-  .describe('How long the link lives: 12h, 30d, 2w or 5y. Defaults to 30d.');
+  .regex(/^\d{1,6}[hdwy]$/i, 'Use a number and a unit: 12h, 30d, 2w or 5y.')
+  .describe('How long the link lives. Units are h, d, w and y, from 1h to 100y. Defaults to 30d.');
 
 const idSchema = z
   .string()
@@ -30,7 +30,9 @@ interface ApiFailure {
 function failure(status: number, body: unknown): string {
   const parsed = body as ApiFailure | null;
   const message = parsed?.error?.message;
-  return message ? `${message} (HTTP ${status})` : `planny returned HTTP ${status}.`;
+  const code = parsed?.error?.code;
+  if (message) return `${message} (${code ? `${code}, ` : ''}HTTP ${status})`;
+  return code ? `planny returned ${code} (HTTP ${status}).` : `planny returned HTTP ${status}.`;
 }
 
 async function readBody(response: Response): Promise<unknown> {

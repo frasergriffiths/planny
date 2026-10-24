@@ -16,7 +16,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "e2e": "bun run scripts/e2e.ts",
+    "verify": "bun run build && bun run e2e"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",

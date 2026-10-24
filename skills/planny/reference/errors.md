@@ -6,7 +6,7 @@ Generated from `src/error-codes.ts` by `scripts/generate-skill-errors.ts`. Do no
 |---|---|---|---|---|---|---|
 | 400 | `name_required` | upload | The name is missing or blank. | None | JSON | Add ?name= to the upload URL. |
 | 400 | `name_too_long` | upload | The name is over 120 characters. | None | JSON |  |
-| 400 | `invalid_duration` | upload | The duration is not a number plus h, d, w, m or y. | None | JSON | Examples: 12h, 30d, 2w, 6m, 1y. |
+| 400 | `invalid_duration` | upload | The duration is not a number plus h, d, w or y. | None | JSON | Examples: 12h, 30d, 2w, 1y. |
 | 400 | `duration_too_short` | upload | The duration is under 1 hour. | None | JSON |  |
 | 400 | `duration_too_long` | upload | The duration is over 100 years. | None | JSON |  |
 | 400 | `empty_body` | upload | The request body is empty. | None | JSON |  |

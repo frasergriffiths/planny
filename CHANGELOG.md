@@ -8,6 +8,9 @@ All notable changes to planny are recorded here. The format follows
 
 ### Fixed
 
+- The skill's duration examples and its publish helper now list only `h`, `d`, `w`
+  and `y`, which is what the API accepts. Months were documented and accepted by the
+  helper but rejected by `parseDuration`.
 - One upload can no longer burn minutes of server CPU. parse5 handles attribute
   counts super-linearly, and a probe put 60,000 attributes (937 KB, under the 4 MiB
   cap) on one request against production: 22.5 seconds of wall time, trending to
@@ -100,6 +103,12 @@ All notable changes to planny are recorded here. The format follows
 - The privacy notice covers Vercel Web Analytics, and `admin reset demo` clears the
   demo counter without touching the site-wide upload quota. A preview deployment now
   refuses `/demo/plans` as it already refused `/plans`.
+- The MCP setup docs lead with the clone-and-build path, because the npm package is
+  `private` and unpublished. The client configs for Claude Code, Claude Desktop, Cursor,
+  VS Code and Codex use the built `mcp/dist/index.js`. `bun run verify` in `mcp/` builds
+  the server and runs a real stdio end-to-end check against a temporary local store.
+- The local `dev` and `start` scripts start `server.ts` again, so the documented
+  `bun run dev` command works.
 
 ## 1.2.0 — 2026-10-20
 

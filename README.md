@@ -42,11 +42,17 @@ The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 
 
 [`mcp/`](mcp) is a thin MCP wrapper over the same HTTP API. Two tools: `publish_plan` (name, html, duration → link, expiry, delete key) and `delete_plan` (id and delete key). It has no read or list tool, because the API has no metadata or collection route to wrap.
 
+The npm package is **not published yet**: `mcp/package.json` is `"private": true`. Build from a clone and point the client at the built file:
+
 ```sh
-claude mcp add planny -- bun /absolute/path/to/planny/mcp/src/index.ts
+git clone https://github.com/frasergriffiths/planny.git
+cd planny/mcp
+bun install
+bun run build
+claude mcp add --transport stdio planny -- node /absolute/path/to/planny/mcp/dist/index.js
 ```
 
-From a checkout, or `npx -y planny-mcp` once the package is published. Set `PLANNY_URL` to point it at a self-hosted instance. See [mcp/README.md](mcp/README.md) for the Cursor config and the prepared directory manifests.
+Set `PLANNY_URL` to point it at a self-hosted instance. `npx -y planny-mcp` is a future route after a publish decision, not a working command today. See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
 
 ## How it works
 
@@ -117,7 +123,7 @@ bun run local:uninstall           # plan data stays
 bun run local:uninstall -- --purge
 ```
 
-The LaunchAgent (`dev.planny.local`) runs `bun local/server.ts` with `PLANNY_DATA_DIR`. If Bun or the repo moves, run install again.
+The LaunchAgent (`dev.planny.local`) runs `bun server.ts` with `PLANNY_DATA_DIR`. If Bun or the repo moves, run install again.
 
 Operator commands:
 

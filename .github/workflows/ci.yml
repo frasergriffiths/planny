@@ -21,6 +21,7 @@ jobs:
       - run: bun run mcp:typecheck
       - run: bun run build
       - run: bun test --isolate --concurrency=1
+      - run: cd mcp && bun run build && bun run e2e
       - run: bun run scripts/generate-tokens.ts --check
       - run: bun run scripts/generate-sample.ts --check
       - run: bun run scripts/generate-skill-errors.ts --check
