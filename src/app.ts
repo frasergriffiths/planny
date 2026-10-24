@@ -96,7 +96,9 @@ const deleteKeySchema = z.string().min(1);
 export interface App extends Hono<AppEnv> {
   sweep(options?: { limit?: number }): Promise<Array<{ id: string; reason: string; outcome: string }>>;
   takedown(id: string): Promise<{ outcome: string; purged: boolean }>;
-  resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all'): Promise<{ reads: number; bytes: number; uploads: number }>;
+  resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'demo' | 'owner' | 'all'): Promise<{
+    reads: number; bytes: number; uploads: number; demoUploads: number; ownerBytes: number;
+  }>;
   uploadsEnabled(): Promise<boolean>;
   setUploadsEnabled(enabled: boolean): Promise<void>;
 }
@@ -519,14 +521,14 @@ export function createApp(deps: AppDeps): App {
   }
 
   const adminResetSchema = z.object({
-    counter: z.enum(['reads', 'bytes', 'uploads', 'owner', 'all']),
+    counter: z.enum(['reads', 'bytes', 'uploads', 'demo', 'owner', 'all']),
     owner: z.string().regex(/^[0-9a-f]{64}$/).optional(),
   });
 
   async function resetMonth(
-    counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all',
+    counter: 'reads' | 'bytes' | 'uploads' | 'demo' | 'owner' | 'all',
     owner?: string,
-  ): Promise<{ reads: number; bytes: number; uploads: number; ownerBytes: number }> {
+  ): Promise<{ reads: number; bytes: number; uploads: number; demoUploads: number; ownerBytes: number }> {
     return records.resetMonth(now(), counter, owner);
   }
 
@@ -708,7 +710,7 @@ export function createApp(deps: AppDeps): App {
     }
     const parsed = adminResetSchema.safeParse(body);
     if (!parsed.success) {
-      return json(400, { error: { code: 'invalid_reset', message: 'Send {"counter":"reads"|"bytes"|"uploads"|"owner"|"all"}, and owner for owner.' } });
+      return json(400, { error: { code: 'invalid_reset', message: 'Send {"counter":"reads"|"bytes"|"uploads"|"demo"|"owner"|"all"}, and owner for owner.' } });
     }
     if (parsed.data.counter === 'owner' && !parsed.data.owner) {
       return json(400, { error: { code: 'invalid_reset', message: 'An owner reset needs the hashed address in "owner".' } });

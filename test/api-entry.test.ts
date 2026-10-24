@@ -102,6 +102,14 @@ test('a preview deployment refuses uploads', async () => {
   const error = await errorOf(response);
   expect(error.error.code).toBe('planny_not_configured');
   expect(error.error.message).toContain('Uploads are disabled on preview deployments.');
+
+  // The demo endpoint is a second write path; a preview must refuse it too.
+  const demo = await entry(new Request(`${ORIGIN}/demo/plans`, {
+    method: 'POST', headers: { 'content-type': 'text/html', 'x-vercel-forwarded-for': '203.0.113.9' }, body: PLAN,
+  }));
+  expect(demo.status).toBe(503);
+  expect(demo.headers.get('content-type')).toBe('application/json; charset=utf-8');
+  expect((await errorOf(demo)).error.code).toBe('planny_not_configured');
 });
 
 test('an unconfigured deployment fails closed, serves pages, and fails a startup purge', async () => {
@@ -115,6 +123,17 @@ test('an unconfigured deployment fails closed, serves pages, and fails a startup
   expect(post.headers.get('content-type')).toBe('application/json; charset=utf-8');
   expect(post.headers.get('x-planny-build')).toBe('vercel');
   expect((await errorOf(post)).error.code).toBe('planny_not_configured');
+
+  const demoPost = await entry(new Request(`${ORIGIN}/demo/plans`, {
+    method: 'POST', headers: { 'content-type': 'text/html' }, body: PLAN,
+  }));
+  expect(demoPost.status).toBe(503);
+  expect(demoPost.headers.get('content-type')).toBe('application/json; charset=utf-8');
+  expect((await errorOf(demoPost)).error.code).toBe('planny_not_configured');
+
+  const demoGet = await entry(new Request(`${ORIGIN}/demo/plans`));
+  expect(demoGet.status).toBe(405);
+  expect((await errorOf(demoGet)).error.message).toContain('POST /demo/plans');
 
   const gone = await entry(new Request(`${ORIGIN}/p/${UUID_A}`));
   expect(gone.status).toBe(503);

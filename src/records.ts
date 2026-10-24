@@ -152,6 +152,7 @@ export interface MonthReset {
   readonly reads: number;
   readonly bytes: number;
   readonly uploads: number;
+  readonly demoUploads: number;
   readonly ownerBytes: number;
 }
 
@@ -343,7 +344,7 @@ export function createRecords(redis: RedisLike) {
 
   async function resetMonth(
     now: number,
-    counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all',
+    counter: 'reads' | 'bytes' | 'uploads' | 'demo' | 'owner' | 'all',
     owner?: string,
   ): Promise<MonthReset> {
     const month = monthOf(now);
@@ -359,6 +360,7 @@ export function createRecords(redis: RedisLike) {
       if (what === 'reads') return [monthKey(month, 'reads')];
       if (what === 'bytes') return [monthKey(month, 'bytes'), `planny:alert:warn:${month}`];
       if (what === 'uploads') return [monthKey(month, 'uploads')];
+      if (what === 'demo') return [monthKey(month, 'uploads:demo')];
       if (what === 'owner') return ownerKeys;
       return [];
     };
@@ -366,10 +368,12 @@ export function createRecords(redis: RedisLike) {
       reads: await readNumber(keysFor('reads')[0] ?? ''),
       bytes: await readNumber(keysFor('bytes')[0] ?? ''),
       uploads: await readNumber(keysFor('uploads')[0] ?? ''),
+      demoUploads: await readNumber(keysFor('demo')[0] ?? ''),
       ownerBytes: owner ? await readNumber(ownerMonthlyKey(month, owner)) : 0,
     };
     // With an owner, "all" clears only that address's keys and markers. Without one it clears
-    // the site read counters too; stored bytes and the site uploads key always stay explicit.
+    // the site read counters too; stored bytes plus the site upload and demo quotas always
+    // stay explicit, because resetting a quota is an operator decision.
     const reset = counter === 'all' ? (owner ? ['owner'] : ['reads', 'bytes', 'owner']) : [counter];
     for (const what of reset) {
       for (const key of keysFor(what)) {

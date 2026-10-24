@@ -15,6 +15,10 @@ POST /plans
   -> write the pending record to state.json
   -> return url, expiresAt and deleteKey
 
+POST /demo/plans
+  -> the same upload path with a fixed name and a 24-hour life
+  -> charges the uploads:demo counter, not uploads
+
 GET /p/<uuid>
   -> read the record from state.json
   -> pending, missing, expired, deleted or taken down -> 404 or 410
@@ -32,6 +36,8 @@ POST /admin/plans/<uuid>/remove
 ```
 
 `HEAD` follows the view path and returns the same headers without a body. `/p/<uuid>/raw` redirects to `/p/<uuid>`. `/sample` is generated from the template and the sample body and is served with the same plan CSP and footer as a plan. Query strings on a plan are a 404 and are not counted as reads.
+
+`POST /demo/plans` is the deployed home page's paste box. It shares the body cap, sanitiser, per-address gate and storage guards with `POST /plans`, but fixes the name and the 24-hour life and charges its own monthly counter, so a public demo cannot spend the site-wide upload budget. A preview deployment refuses it, as it refuses `POST /plans`.
 
 ## Storage
 
@@ -76,6 +82,8 @@ The record's content licence survives deletion; the plan HTML licence ends when 
 ## Rendering and safety
 
 Plans are untrusted. The sanitiser uses parse5 for HTML and PostCSS for CSS, with allowlists for elements, attributes, properties and at-rules. It removes plan-authored scripts, links, forms, frames, remote URLs, event handlers and unsafe CSS. The served plan uses a sandboxed CSP with one hash-pinned copy script (no plan-authored scripts; one fixed copy script is injected by the viewer), no remote images and no plan-authored navigation. A served plan carries one viewer anchor, the "Made with Planny" footer, because plan-authored links are stripped; the sandbox therefore grants `allow-top-navigation-by-user-activation`, which needs a click and allows no script, fetch or frame. 404 and 410 plan pages carry a publish line instead, rendered inside the visible card (the local string pages take it inside `<main>`; the React pages render it from the `data-planny-attribution` flag the server sets on `<html>`). Both come from `src/attribution.ts` after sanitising, so neither is stored with the plan, and `PLANNY_ATTRIBUTION=off` removes both.
+
+The site pages are not plans and use a different CSP: `default-src 'none'`, `script-src 'unsafe-inline' 'self'`, `connect-src 'self'`, `style-src 'unsafe-inline'`, `img-src data:`, with no base, form or frame permissions. That permits the inline bundle, Vercel Web Analytics loaded from the same origin, and the demo box's same-origin `fetch`; no third-party origin is allowed.
 
 The site pages are React, built by Vite into single files and embedded into the function by `scripts/generate-pages.ts`. The function never reads `dist/` at runtime. The plan template is plain HTML and CSS with no scripts.
 

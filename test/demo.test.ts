@@ -118,6 +118,24 @@ test('the demo quota is its own limit and reports itself', async () => {
   }
 });
 
+test('the demo quota has its own operator reset', async () => {
+  const t = setup({ PLANNY_DEMO_MONTHLY_UPLOADS: '1' });
+  try {
+    expect((await demo(t)).status).toBe(201);
+    expect((await demo(t)).status).toBe(503);
+    expect((await publish(t)).status).toBe(201);
+
+    const before = await t.app.resetMonth('demo');
+    expect(before.demoUploads).toBe(1);
+    expect(before.uploads).toBe(1);
+    // Resetting the demo quota leaves the site-wide upload counter charged.
+    expect((await t.app.resetMonth('uploads')).uploads).toBe(1);
+    expect((await demo(t)).status).toBe(201);
+  } finally {
+    t.cleanup();
+  }
+});
+
 test('the demo box rejects the wrong method and the wrong content type', async () => {
   const t = setup();
   try {

@@ -4,7 +4,7 @@
 //   tsx scripts/admin.ts takedown <plan-id>
 //   tsx scripts/admin.ts sweep
 //   tsx scripts/admin.ts uploads on|off|status
-//   tsx scripts/admin.ts reset reads|bytes|uploads|all
+//   tsx scripts/admin.ts reset reads|bytes|uploads|demo|all
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../src/app.js';
@@ -18,7 +18,7 @@ const vercel = process.env.PLANNY_BUILD === 'vercel';
 const dataDir = process.env.PLANNY_DATA_DIR || join(homedir(), 'Library', 'Application Support', 'planny-local');
 const port = Number(process.env.PLANNY_LOCAL_PORT ?? 4317);
 const [command, argument] = process.argv.slice(2);
-const usage = 'Usage: tsx scripts/admin.ts takedown <plan-id> | sweep | uploads on|off|status | reset reads|bytes|uploads|all';
+const usage = 'Usage: tsx scripts/admin.ts takedown <plan-id> | sweep | uploads on|off|status | reset reads|bytes|uploads|demo|all';
 
 const log: Logger = {
   error: (...args) => console.error(...args),
@@ -50,8 +50,8 @@ async function main(): Promise<void> {
   } else if (command === 'uploads') {
     await app.setUploadsEnabled(argument === 'on');
     console.log(`Uploads ${argument}.`);
-  } else if (command === 'reset' && ['reads', 'bytes', 'uploads', 'all'].includes(argument ?? '')) {
-    console.log(JSON.stringify({ reset: argument, before: await app.resetMonth(argument as 'reads' | 'bytes' | 'uploads' | 'all') }));
+  } else if (command === 'reset' && ['reads', 'bytes', 'uploads', 'demo', 'all'].includes(argument ?? '')) {
+    console.log(JSON.stringify({ reset: argument, before: await app.resetMonth(argument as 'reads' | 'bytes' | 'uploads' | 'demo' | 'all') }));
   } else {
     console.error(usage);
     process.exitCode = 2;

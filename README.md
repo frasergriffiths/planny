@@ -34,7 +34,7 @@ Plans can include a styled code block with static syntax highlighting and a Copy
 
 ## Or try it in the browser
 
-The home page has a paste box. Paste one self-contained HTML page, click **Get a link**, and planny returns a link plus a delete key. No account, no terminal.
+On the deployed site, the home page has a paste box. Paste one self-contained HTML page, click **Get a link**, and planny returns a link plus a delete key. No account, no terminal. The local server serves the plain server-rendered page instead.
 
 The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 4 MiB cap as every other upload. Two things differ: a demo link expires after 24 hours, and demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500). A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
 
