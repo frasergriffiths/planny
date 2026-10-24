@@ -42,17 +42,23 @@ The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 
 
 [`mcp/`](mcp) is a thin MCP wrapper over the same HTTP API. Two tools: `publish_plan` (name, html, duration → link, expiry, delete key) and `delete_plan` (id and delete key). It has no read or list tool, because the API has no metadata or collection route to wrap.
 
-The npm package is **not published yet**: `mcp/package.json` is `"private": true`. Build from a clone and point the client at the built file:
+`planny-mcp@0.1.0` is the published version. Run it, or add it to Claude Code:
+
+```sh
+npx -y planny-mcp
+claude mcp add --transport stdio planny -- npx -y planny-mcp
+```
+
+Set `PLANNY_URL` to point it at a self-hosted instance. If npm does not serve 0.1.0 yet, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
 
 ```sh
 git clone https://github.com/frasergriffiths/planny.git
 cd planny/mcp
 bun install
 bun run build
-claude mcp add --transport stdio planny -- node /absolute/path/to/planny/mcp/dist/index.js
 ```
 
-Set `PLANNY_URL` to point it at a self-hosted instance. `npx -y planny-mcp` is a future route after a publish decision, not a working command today. See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
+See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
 
 ## How it works
 

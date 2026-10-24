@@ -1,24 +1,39 @@
 {
   "name": "planny-mcp",
   "version": "0.1.0",
-  "private": true,
   "description": "MCP server for planny: publish an HTML plan, get a link and a delete key.",
   "license": "MIT",
   "author": "Fraser Griffiths",
+  "homepage": "https://use-planny.vercel.app",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "planny",
+    "html",
+    "plan",
+    "report",
+    "share",
+    "agent"
+  ],
   "type": "module",
   "bin": {
     "planny-mcp": "dist/index.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "bun run src/index.ts",
     "e2e": "bun run scripts/e2e.ts",
-    "verify": "bun run build && bun run e2e"
+    "verify": "bun run build && bun run e2e",
+    "prepack": "bun run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",

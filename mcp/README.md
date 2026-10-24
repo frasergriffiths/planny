@@ -3,10 +3,9 @@
 An MCP server for [planny](https://use-planny.vercel.app). It lets an agent publish one
 self-contained HTML page and get back a public link plus a delete key.
 
-> **Not on npm yet.** `mcp/package.json` is `"private": true` and no package has been
-> published. The clone-and-build path below is the only install that works today.
-> `npx -y planny-mcp` and `npm install -g planny-mcp` are future routes after a publish
-> decision. Nothing in this repository publishes the package for you.
+> **0.1.0 is the published version.** The package is `planny-mcp@0.1.0`. Run it with
+> `npx -y planny-mcp`. If npm does not serve 0.1.0 yet, use the clone/build fallback
+> below. A self-hosted instance uses `PLANNY_URL`; the default is the hosted service.
 
 ## Tools
 
@@ -22,35 +21,21 @@ third tool can wrap it.
 
 ## Prerequisites
 
-- **Bun 1.4 or newer to clone, install and build.** The repository pins Bun 1.4.0 in
+- **Node.js 22 or newer with npm/npx** for the published package. `npx` ships with npm.
+- **Bun 1.4 or newer only for the clone/build fallback.** The repository pins Bun 1.4.0 in
   `packageManager`. `bun install` from `mcp/` installs the workspace, including the
   TypeScript compiler used by `bun run build`.
-- **Node.js 22 or newer, or Bun 1.4 or newer, to run the built server.** The built entry is
-  ordinary ESM at `mcp/dist/index.js` with a `node` shebang.
 - **No API key.** planny has no accounts. The delete key is the only credential, and it is
   returned once when a plan is published.
 - `PLANNY_URL` only when you publish to a self-hosted planny. The default is
   `https://use-planny.vercel.app`.
 
-## Install from a clone
+## Install with npx
 
-This is the first working path. Run it from the repository root:
-
-```sh
-git clone https://github.com/frasergriffiths/planny.git
-cd planny/mcp
-bun install
-bun run build
-```
-
-`bun run build` writes `mcp/dist/index.js`. Use the **absolute** path to that file in every
-client config below. A client launched from the GUI does not share your shell's working
-directory, so a relative path such as `mcp/dist/index.js` will not resolve.
-
-Check that the server starts before touching a client:
+This is the normal path. It needs Node 22+ and does not clone the repository:
 
 ```sh
-PLANNY_URL=https://use-planny.vercel.app bun /absolute/path/to/planny/mcp/dist/index.js
+npx -y planny-mcp
 ```
 
 The process is a stdio server, so it waits for MCP messages on stdin. It prints one line to
@@ -64,43 +49,69 @@ Stop it with Ctrl+C. stdout is reserved for the MCP protocol; logs and the start
 to stderr. If you see no startup line, the process failed before the handshake; see
 [Troubleshooting](#troubleshooting).
 
-With Node instead of Bun:
+Pin the release explicitly when a client or a lockfile needs it:
 
 ```sh
-PLANNY_URL=https://use-planny.vercel.app node /absolute/path/to/planny/mcp/dist/index.js
+npx -y planny-mcp@0.1.0
 ```
 
 To point at a self-hosted instance, set `PLANNY_URL` to its origin, with no trailing slash
 and no path:
 
 ```sh
-PLANNY_URL=https://plans.example.com node /absolute/path/to/planny/mcp/dist/index.js
+PLANNY_URL=https://plans.example.com npx -y planny-mcp
+```
+
+## Build from a clone
+
+Use this fallback if npm does not serve 0.1.0 yet, or if you are changing the server. Run it
+from the repository root:
+
+```sh
+git clone https://github.com/frasergriffiths/planny.git
+cd planny/mcp
+bun install
+bun run build
+```
+
+`bun run build` writes `mcp/dist/index.js`. Use the **absolute** path to that file in the
+client config. A client launched from the GUI does not share your shell's working directory,
+so a relative path such as `mcp/dist/index.js` will not resolve.
+
+```sh
+PLANNY_URL=https://use-planny.vercel.app node /absolute/path/to/planny/mcp/dist/index.js
+```
+
+With Bun instead of Node:
+
+```sh
+PLANNY_URL=https://use-planny.vercel.app bun /absolute/path/to/planny/mcp/dist/index.js
 ```
 
 ## Client setup
 
-All examples use the absolute path `/absolute/path/to/planny/mcp/dist/index.js`. Replace it
-with the real path on your machine, and replace `PLANNY_URL` only if you self-host. The
-value is an origin, not an upload URL.
+All examples use the published package through `npx -y planny-mcp`. If you built from a
+clone, replace the command and arguments with the fallback at the end of this section.
+Replace `PLANNY_URL` only if you self-host; the value is an origin, not an upload URL.
 
 ### Claude Code
 
 Add the server from a terminal:
 
 ```sh
-claude mcp add --transport stdio planny -- node /absolute/path/to/planny/mcp/dist/index.js
+claude mcp add --transport stdio planny -- npx -y planny-mcp
 ```
 
 For all projects rather than the current one, add `--scope user`:
 
 ```sh
-claude mcp add --scope user --transport stdio planny -- node /absolute/path/to/planny/mcp/dist/index.js
+claude mcp add --scope user --transport stdio planny -- npx -y planny-mcp
 ```
 
 For a self-hosted instance, pass the environment variable before the `--`:
 
 ```sh
-claude mcp add --env PLANNY_URL=https://plans.example.com --transport stdio planny -- node /absolute/path/to/planny/mcp/dist/index.js
+claude mcp add --env PLANNY_URL=https://plans.example.com --transport stdio planny -- npx -y planny-mcp
 ```
 
 Check the connection with `claude mcp list` or `/mcp` inside Claude Code. The status should
@@ -114,8 +125,8 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
   "mcpServers": {
     "planny": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "planny-mcp"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -127,7 +138,7 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
 The same entry can be added without editing the file:
 
 ```sh
-claude mcp add-json planny '{"type":"stdio","command":"node","args":["/absolute/path/to/planny/mcp/dist/index.js"],"env":{"PLANNY_URL":"https://use-planny.vercel.app"}}'
+claude mcp add-json planny '{"type":"stdio","command":"npx","args":["-y","planny-mcp"],"env":{"PLANNY_URL":"https://use-planny.vercel.app"}}'
 ```
 
 A project-scoped `.mcp.json` server needs approval the first time Claude Code opens the
@@ -146,8 +157,8 @@ Use a top-level `mcpServers` object:
 {
   "mcpServers": {
     "planny": {
-      "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "planny-mcp"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -170,8 +181,8 @@ Use `~/.cursor/mcp.json` for all projects or `.cursor/mcp.json` in a project. Cu
   "mcpServers": {
     "planny": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "planny-mcp"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -193,8 +204,8 @@ object, not `mcpServers`:
   "servers": {
     "planny": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "planny-mcp"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -218,8 +229,8 @@ Edit `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project. Codex
 
 ```toml
 [mcp_servers.planny]
-command = "node"
-args = ["/absolute/path/to/planny/mcp/dist/index.js"]
+command = "npx"
+args = ["-y", "planny-mcp"]
 
 [mcp_servers.planny.env]
 PLANNY_URL = "https://use-planny.vercel.app"
@@ -237,8 +248,8 @@ Most MCP clients accept this shape under `mcpServers`:
   "mcpServers": {
     "planny": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "planny-mcp"],
       "env": {
         "PLANNY_URL": "https://use-planny.vercel.app"
       }
@@ -249,8 +260,31 @@ Most MCP clients accept this shape under `mcpServers`:
 
 Some clients call the top-level object `servers`, some require `type`, and some use
 `command` plus `args` without a wrapper. Check the client's MCP reference before copying
-the block. The command and arguments are always the same: a Node-compatible binary and the
-absolute path to `dist/index.js`.
+the block. The published package always uses `npx` with `-y planny-mcp`.
+
+### Clone fallback config
+
+If you built from a clone, replace the command and arguments in any config above with the
+absolute path to the built file:
+
+```json
+{
+  "mcpServers": {
+    "planny": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
+      "env": {
+        "PLANNY_URL": "https://use-planny.vercel.app"
+      }
+    }
+  }
+}
+```
+
+Use `"command": "bun"` with the same absolute argument if you run the built file with Bun.
+VS Code's `.vscode/mcp.json` still uses `servers` rather than `mcpServers`; Codex still uses
+the `mcp_servers` TOML table.
 
 ## What the tools return
 
@@ -434,24 +468,32 @@ ok - publish_plan rejects an oversized plan before calling the API
 
 ## Troubleshooting
 
-### `spawn node ENOENT` or `command not found`
+### `npx: command not found` or `spawn npx ENOENT`
 
-GUI clients often do not inherit your shell's `PATH`. Use the absolute path to the runtime,
-not just `node`:
+Install Node.js 22 or newer; `npx` ships with npm. GUI clients often do not inherit your
+shell's `PATH`, so check where npx and node live:
 
 ```sh
+which npx
 which node
 which bun
 ```
 
-Put that path in `command`. For example, `"command": "/opt/homebrew/bin/node"` instead of
-`"command": "node"`. If Node is not installed, install Node 22+ or use the absolute path to
-Bun and point `args` at `dist/index.js`.
+For a GUI client, use the absolute path in `command`, for example
+`"command": "/opt/homebrew/bin/npx"` and the same `args`. If you cannot use npx, build from
+a clone and point the config at the absolute `dist/index.js` path with Node or Bun.
+
+### `npx` returns 404 or an old version
+
+If npm does not serve `planny-mcp@0.1.0` yet, use the clone fallback above. To pin the
+release and bypass a stale npx cache, run `npx -y planny-mcp@0.1.0`. If an older version
+was cached, `npm cache clean --force` or the pinned version clears it.
 
 ### The server starts, then exits or the client shows no tools
 
 Run the exact command from the client config in a terminal. The startup line must appear on
-stderr. If it does not, the path is wrong or the build is missing. Check that
+stderr. If it does not, the command or path is wrong. For npx, check that `npx -y
+planny-mcp@0.1.0` works in a terminal. For a clone fallback, check that
 `/absolute/path/to/planny/mcp/dist/index.js` exists and was produced by `bun run build`.
 Do not point a Node client at `mcp/src/index.ts`; that is TypeScript. Point it at
 `mcp/dist/index.js`, or use Bun to run the source.
@@ -519,10 +561,6 @@ server is working correctly when it returns these.
 | `glama.json` | Glama | repository root, to claim the listing |
 
 PulseMCP and mcp.so ingest the official registry rather than accepting a separate manifest,
-so `server.json` is the file that matters for them. The manifests reference an npm package
-that does not exist yet. Nothing was submitted to any directory, and the package is not
-published.
-
-Publishing to npm is the sensible next step if the MCP route is worth pursuing: remove
-`"private": true`, run `bun run build` in `mcp/`, publish `planny-mcp`, then submit
-`server.json`. That is a release decision, not something this branch does.
+so `server.json` is the file that matters for them. The manifests reference
+`planny-mcp@0.1.0`. Submit them after the 0.1.0 publish completes; nothing has been
+submitted yet.
