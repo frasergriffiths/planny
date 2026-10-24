@@ -19,6 +19,14 @@
 
 export const PLUR = 'https://use-planny.vercel.app';
 
+// Every link that points at planny or away from it carries a `ref` so inbound visits can be
+// told apart by surface: a visit to `/?ref=plan` came from a published plan's footer, a
+// `?ref=site` visit came from the product site. Analytics reads the first page's URL, so
+// the parameter survives the click without a redirect or a cookie.
+export function withRef(url: string, ref: string): string {
+  return `${url}${url.includes('?') ? '&' : '?'}ref=${encodeURIComponent(ref)}`;
+}
+
 const LINE = '#262626'; // tokens.json: --line
 const BAND = '#000000'; // plan template: --paper
 const TEXT = '#d4d4d4'; // 14.2:1 on the band, above the 4.5:1 floor at 11px
@@ -138,9 +146,9 @@ const FOOTER_CSS = '<style data-planny-attribution-style>'
   + `@media print{${FOOTER_SELECTOR}{display:none!important}}`
   + '</style>';
 
-export function planFooter(): string {
+export function planFooter(ref = 'plan'): string {
   return `${FOOTER_CSS}<footer data-planny-attribution style="${FOOTER_STYLE}">`
-    + `<a href="${PLUR}" rel="noopener" style="${FOOTER_LINK_STYLE}">Made with Planny</a>`
+    + `<a href="${withRef(PLUR, ref)}" rel="noopener" style="${FOOTER_LINK_STYLE}">Made with Planny</a>`
     + '</footer>';
 }
 
@@ -151,9 +159,9 @@ const INVITE_STYLE = 'margin:28px 0 0;font-family:' + SANS
   + `;font-size:14px;line-height:1.5;color:${TEXT}`;
 const INVITE_LINK_STYLE = `color:${TEXT_STRONG};text-decoration:underline;text-underline-offset:2px`;
 
-export function publishInvite(): string {
+export function publishInvite(ref = 'invite'): string {
   return `<p data-planny-invite style="${INVITE_STYLE}">Have a plan of your own? `
-    + `<a href="${PLUR}" rel="noopener" style="${INVITE_LINK_STYLE}">Publish it with Planny</a>.</p>`;
+    + `<a href="${withRef(PLUR, ref)}" rel="noopener" style="${INVITE_LINK_STYLE}">Publish it with Planny</a>.</p>`;
 }
 
 function insertBefore(html: string, marker: string, snippet: string): string {
@@ -161,13 +169,13 @@ function insertBefore(html: string, marker: string, snippet: string): string {
   return at === -1 ? `${html}\n${snippet}` : `${html.slice(0, at)}${snippet}\n${html.slice(at)}`;
 }
 
-export function withPlanAttribution(html: string, enabled: boolean): string {
-  return enabled ? insertBefore(html, '</body>', planFooter()) : html;
+export function withPlanAttribution(html: string, enabled: boolean, ref = 'plan'): string {
+  return enabled ? insertBefore(html, '</body>', planFooter(ref)) : html;
 }
 
 // The local string pages carry their own <main>, so the invite can go inside it.
-export function withPublishInvite(html: string, enabled: boolean): string {
-  return enabled ? insertBefore(html, '</main>', publishInvite()) : html;
+export function withPublishInvite(html: string, enabled: boolean, ref = 'invite'): string {
+  return enabled ? insertBefore(html, '</main>', publishInvite(ref)) : html;
 }
 
 // The built React pages render into #root, so a server-side insertion lands outside the

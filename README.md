@@ -32,6 +32,34 @@ The skill ships four plan templates: [project](skills/planny/template.html), [la
 
 Plans can include a styled code block with static syntax highlighting and a Copy button added by the viewer, plus an inline [Heroicons set](skills/planny/reference/icons.md). The [component reference](skills/planny/reference/components.md) documents both.
 
+## Or try it in the browser
+
+On the deployed site, the home page has a paste box. Paste one self-contained HTML page, click **Get a link**, and planny returns a link plus a delete key. No account, no terminal. The local server serves the plain server-rendered page instead.
+
+The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 4 MiB cap as every other upload. Two things differ: a demo link expires after 24 hours, and demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500). A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
+
+## MCP server
+
+[`mcp/`](mcp) is a thin MCP wrapper over the same HTTP API. Two tools: `publish_plan` (name, html, duration → link, expiry, delete key) and `delete_plan` (id and delete key). It has no read or list tool, because the API has no metadata or collection route to wrap.
+
+npm registry publication is deferred. Version 0.1.0 is distributed as a version-pinned, immutable GitHub Release tarball:
+
+```sh
+npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+claude mcp add --transport stdio planny -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+```
+
+OpenBot runs that same command. Set `PLANNY_URL` to point it at a self-hosted instance. If you cannot use the release asset, build from a clone and point the client at the absolute `mcp/dist/index.js` path:
+
+```sh
+git clone https://github.com/frasergriffiths/planny.git
+cd planny/mcp
+bun install
+bun run build
+```
+
+See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
+
 ## How it works
 
 1. An agent sends raw `text/html` to `POST /plans` with a name and a duration.
@@ -71,6 +99,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `GET /` | Home page. |
 | `GET /sample` | The generated sample plan, with the plan CSP and the footer. |
 | `POST /plans?name=&duration=` | Upload raw `text/html`. Returns `url`, `expiresAt`, `deleteKey` and `removed`. |
+| `POST /demo/plans` | The home page box. Same body and sanitiser, fixed 24-hour life, separate monthly counter. |
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
@@ -100,7 +129,7 @@ bun run local:uninstall           # plan data stays
 bun run local:uninstall -- --purge
 ```
 
-The LaunchAgent (`dev.planny.local`) runs `bun local/server.ts` with `PLANNY_DATA_DIR`. If Bun or the repo moves, run install again.
+The LaunchAgent (`dev.planny.local`) runs `bun server.ts` with `PLANNY_DATA_DIR`. If Bun or the repo moves, run install again.
 
 Operator commands:
 
@@ -128,6 +157,7 @@ Core production settings:
 | `PLANNY_ADDRESS_KEY` | Recommended stable keyed hash of client addresses for rates and pauses. If unset, the Blob token is used; rotating either resets every derived address and rate limit. |
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. Defaults to `https://use-planny.vercel.app`; set it for a self-hosted instance. |
 | `PLANNY_ATTRIBUTION` | `on` (default) adds the "Made with Planny" footer to each plan and the publish line to 404/410 pages. Set `off` to remove both. Aliases: `off` also accepts `0`, `false`, `no`, `disable`, `disabled`, `none`; `on` accepts `1`, `true`, `yes`, `enabled`. Anything else keeps the default, `on`. |
+| `PLANNY_DEMO_MONTHLY_UPLOADS` | Uploads allowed from the home page demo box each month. Default 500, on its own counter so it never spends `PLANNY_MONTHLY_UPLOADS`. |
 
 The optional limit variables are in `.env.example`, including the plan lifetime, cache TTL, storage and read budgets, and per-address rates. `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY` are connection metadata, not app config. Operator settings for takedown and reset are covered in the [self-hosting guide](docs/self-hosting.md).
 
@@ -197,7 +227,7 @@ bun test --isolate --concurrency=1   # the test suite alone
 
 The suite covers the sanitiser against hostile markup, plan states, limits and guards, the view path, rate limits and resets, error pages and headers, the local store and migration, the Vercel entry with a fake environment, the deploy helper, the token/sample generators, and the React card contract. The real Blob calls and cache purges need a deployed smoke test; they are not unit-testable without a Vercel project.
 
-CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run build`, `bun test --isolate --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
+CI runs `bun install --frozen-lockfile`, `bun run typecheck`, `bun run mcp:typecheck`, `bun run build`, `bun test --isolate --concurrency=1`, then the token, sample and skill-error checks (`bun run scripts/generate-tokens.ts --check`, `bun run scripts/generate-sample.ts --check` and `bun run scripts/generate-skill-errors.ts --check`). The five Live Blob tests skip without credentials; that is expected in CI. A release candidate should also show the live Blob tests as skipped without credentials, then pass the deployed smoke checks above.
 
 ## Project layout
 
@@ -207,6 +237,7 @@ src/            Hono app, stores, sanitiser, records, pages, limits
 web/            React home, 404/410/503 pages and the Vite build
 public/sample/  Sample body and generated sample
 skills/planny/  The agent skill, four plan templates and the component and writing references
+mcp/            MCP server over the HTTP API, with prepared directory manifests
 scripts/        Generators, deploy and admin helpers
 local/          Local SQLite server and LaunchAgent
 test/           Unit and integration tests

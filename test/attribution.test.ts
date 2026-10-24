@@ -61,7 +61,7 @@ test('a published plan ends with the viewer footer and keeps the plan CSP', asyn
     const body = await response.text();
 
     expect(footerCount(body)).toBe(1);
-    expect(body).toContain(`href="${PLUR}"`);
+    expect(body).toContain(`href="${PLUR}?ref=plan"`);
     expect(body).toContain('Made with Planny');
     // The footer is the viewer's, and it sits after the plan and after the copy script.
     expect(body.indexOf('<h1>Hello</h1>')).toBeLessThan(body.indexOf('<footer data-planny-attribution'));
@@ -120,7 +120,7 @@ test('the sample carries the same footer and the plan policy', async () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(footerCount(body)).toBe(1);
-    expect(body).toContain(`href="${PLUR}"`);
+    expect(body).toContain(`href="${PLUR}?ref=sample"`);
     expect(body.split('<script>').length - 1).toBe(1);
     const csp = response.headers.get('content-security-policy') ?? '';
     expect(csp).toContain('sandbox allow-scripts allow-top-navigation-by-user-activation');
@@ -164,7 +164,7 @@ test('the 404 and 410 plan pages invite the reader to publish', async () => {
     expect(missing.status).toBe(404);
     const missingBody = await missing.text();
     expect(missingBody).toContain('data-planny-invite');
-    expect(missingBody).toContain(`href="${PLUR}"`);
+    expect(missingBody).toContain(`href="${PLUR}?ref=missing"`);
     expect(missingBody).toContain('Publish it with Planny');
     // Inside <main>, before </body>: visible in the page, not appended after </html>.
     expect(missingBody.indexOf('<main>')).toBeLessThan(missingBody.indexOf('data-planny-invite'));

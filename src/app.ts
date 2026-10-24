@@ -3,7 +3,7 @@ import * as pages from './pages.js';
 import { PAGES } from './generated-pages.js';
 import { createRecords, type PlanRecord } from './records.js';
 import { SanitizeTooDeepError, SanitizeTooManyAttributesError, sanitize } from './sanitize.js';
-import { MiB, type AppConfig } from './config.js';
+import { DAY_MS, MiB, type AppConfig } from './config.js';
 import type { Store } from './stores/local.js';
 import { ApiError, badType, isHtmlType, parseDuration } from './validate.js';
 import { StoreUnavailableError } from './stores/blob.js';
@@ -21,6 +21,9 @@ import { PLAN_SCRIPT_HASH, PLAN_SCRIPT_TAG } from './plan-script.js';
 import { withInviteFlag, withPlanAttribution, withPublishInvite } from './attribution.js';
 
 const NEVER = Number.MAX_SAFE_INTEGER;
+// The homepage box has no name field, so every demo plan carries the same label. It is a
+// plan name, never a URL fragment: the link is still the random id.
+const DEMO_NAME = 'Demo plan';
 // A served plan is the only page a reader reaches from someone else's link, so it carries
 // the viewer's footer. Plan-authored links are stripped, so that footer is the only anchor
 // in the document, and this one narrow permission lets a click on it navigate when the
@@ -33,8 +36,8 @@ const PLAN_RULES = "default-src 'none'; "
   + "form-action 'none'; frame-ancestors 'none'";
 const PLAN_CSP = `sandbox allow-scripts allow-top-navigation-by-user-activation; ${PLAN_RULES}`;
 const PLAN_CSP_STRICT = `sandbox allow-scripts; ${PLAN_RULES}`;
-const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; "
-  + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const SITE_CSP = "default-src 'none'; script-src 'unsafe-inline' 'self'; style-src 'unsafe-inline'; img-src data:; "
+  + "connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 function withPlanScript(html: string): string {
   const end = html.lastIndexOf('</body>');
@@ -42,7 +45,7 @@ function withPlanScript(html: string): string {
 }
 
 function samplePage(attribution: boolean): string {
-  return withPlanAttribution(withPlanScript(PAGES.sample), attribution);
+  return withPlanAttribution(withPlanScript(PAGES.sample), attribution, 'sample');
 }
 
 export interface Logger {
@@ -93,7 +96,9 @@ const deleteKeySchema = z.string().min(1);
 export interface App extends Hono<AppEnv> {
   sweep(options?: { limit?: number }): Promise<Array<{ id: string; reason: string; outcome: string }>>;
   takedown(id: string): Promise<{ outcome: string; purged: boolean }>;
-  resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all'): Promise<{ reads: number; bytes: number; uploads: number }>;
+  resetMonth(counter: 'reads' | 'bytes' | 'uploads' | 'demo' | 'owner' | 'all'): Promise<{
+    reads: number; bytes: number; uploads: number; demoUploads: number; ownerBytes: number;
+  }>;
   uploadsEnabled(): Promise<boolean>;
   setUploadsEnabled(enabled: boolean): Promise<void>;
 }
@@ -111,9 +116,9 @@ export function createApp(deps: AppDeps): App {
   // A missing or removed plan is warm traffic. The local pages take the invite inside
   // their <main>; the built React pages render after #root, so only these responses mark
   // <html> and Page renders the invite inside the visible card.
-  const errorPage = (built: string, local: () => string): string => build === 'vercel'
+  const errorPage = (built: string, local: () => string, ref: string): string => build === 'vercel'
     ? withInviteFlag(built, config.attribution)
-    : withPublishInvite(local(), config.attribution);
+    : withPublishInvite(local(), config.attribution, ref);
 
   function background(task: Promise<unknown>): void {
     const safe = task.catch((error: unknown) => log.error('planny: background task failed', error));
@@ -207,7 +212,7 @@ export function createApp(deps: AppDeps): App {
     return Buffer.concat(chunks, total);
   }
 
-  function reservationError(outcome: string, at: number): ApiError {
+  function reservationError(outcome: string, at: number, demo = false): ApiError {
     if (outcome === 'site_bytes') {
       return new ApiError(503, 'storage_full', 'planny has no room for new plans right now. Try again later.');
     }
@@ -219,6 +224,13 @@ export function createApp(deps: AppDeps): App {
       );
     }
     if (outcome === 'monthly_uploads') {
+      if (demo) {
+        return new ApiError(
+          503,
+          'demo_upload_monthly_limit',
+          `The demo box has used its uploads for this month. Uploads resume ${pages.formatUtc(pages.nextMonthStart(at))}. Publishing through the API is unaffected.`,
+        );
+      }
       return new ApiError(
         503,
         'site_upload_monthly_limit',
@@ -270,7 +282,8 @@ export function createApp(deps: AppDeps): App {
     return results;
   }
 
-  async function upload(request: Request, address: string): Promise<Response> {
+  async function upload(request: Request, address: string, options: { demo?: boolean } = {}): Promise<Response> {
+    const demo = options.demo === true;
     if (!(await uploadsAllowed())) {
       throw new ApiError(503, 'uploads_paused', 'Uploads are paused right now. Try again later.');
     }
@@ -298,17 +311,27 @@ export function createApp(deps: AppDeps): App {
     }
     try {
       if (!isHtmlType(request.headers.get('content-type'))) throw badType();
-      const parsedQuery = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-      if (!parsedQuery.success) throw new ApiError(400, 'invalid_query', 'Use ?name= and ?duration= only.');
-      const parsedName = nameSchema.safeParse(parsedQuery.data.name ?? '');
-      if (!parsedName.success) {
-        const empty = parsedName.error.issues.some((issue) => issue.message === 'empty');
-        throw empty
-          ? new ApiError(400, 'name_required', 'Add a name with ?name=. Example: name=Q4%20rollout')
-          : new ApiError(400, 'name_too_long', 'Names can be up to 120 characters.');
+      let name: string;
+      let durationMs: number;
+      if (demo) {
+        // The homepage box is one paste and one click: no query string to get wrong, and a
+        // short life so demo links do not accumulate. The sanitiser below is the same one
+        // every other upload passes through.
+        name = DEMO_NAME;
+        durationMs = DAY_MS;
+      } else {
+        const parsedQuery = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+        if (!parsedQuery.success) throw new ApiError(400, 'invalid_query', 'Use ?name= and ?duration= only.');
+        const parsedName = nameSchema.safeParse(parsedQuery.data.name ?? '');
+        if (!parsedName.success) {
+          const empty = parsedName.error.issues.some((issue) => issue.message === 'empty');
+          throw empty
+            ? new ApiError(400, 'name_required', 'Add a name with ?name=. Example: name=Q4%20rollout')
+            : new ApiError(400, 'name_too_long', 'Names can be up to 120 characters.');
+        }
+        name = parsedName.data;
+        durationMs = parseDuration(parsedQuery.data.duration ?? null, config);
       }
-      const name = parsedName.data;
-      const durationMs = parseDuration(parsedQuery.data.duration ?? null, config);
       const raw = await readBody(request);
       let text: string;
       try {
@@ -344,10 +367,11 @@ export function createApp(deps: AppDeps): App {
         name,
         expiresAt,
         deleteKeyHash: sha256Hex(deleteKey),
+        ...(demo ? { uploadCounter: 'uploads:demo' as const } : {}),
         limits: {
           site: config.siteBytes,
           owner: config.ownerBytes,
-          monthlyUploads: config.monthly.uploads,
+          monthlyUploads: demo ? config.monthly.demoUploads : config.monthly.uploads,
         },
       } as const;
       let reserved = await records.reserve(reservation);
@@ -355,7 +379,7 @@ export function createApp(deps: AppDeps): App {
         await sweep({ limit: 50 }).catch((error: unknown) => log.error('planny: sweep before retry failed', error));
         reserved = await records.reserve(reservation);
       }
-      if (reserved !== 'ok') throw reservationError(reserved, at);
+      if (reserved !== 'ok') throw reservationError(reserved, at, demo);
 
       try {
         await store.blobs.put(id, bytes);
@@ -380,6 +404,7 @@ export function createApp(deps: AppDeps): App {
         bytes: bytes.byteLength,
         deleteKey,
         delete: { method: 'DELETE', url: `${origin}/p/${id}`, header: 'Authorization: Bearer <deleteKey>' },
+        ...(demo ? { demo: true, demoExpiresHours: DAY_MS / (60 * 60 * 1000) } : {}),
         removed: cleaned.removed,
       });
     } catch (error) {
@@ -394,15 +419,15 @@ export function createApp(deps: AppDeps): App {
   function unavailable(record: PlanRecord): Response {
     const gone = { 'x-robots-tag': 'noindex' };
     if (record.hidden || record.reason === 'takedown') {
-      return page(410, errorPage(PAGES.gone, () => pages.takedown({ build, removedAt: record.removedAt })), gone);
+      return page(410, errorPage(PAGES.gone, () => pages.takedown({ build, removedAt: record.removedAt }), 'takedown'), gone);
     }
     if (record.reason === 'deleted') {
-      return page(410, errorPage(PAGES.gone, () => pages.deleted({ build, removedAt: record.removedAt })), gone);
+      return page(410, errorPage(PAGES.gone, () => pages.deleted({ build, removedAt: record.removedAt }), 'deleted'), gone);
     }
     if (record.reason === 'expired' || record.state === 'live') {
-      return page(410, errorPage(PAGES.gone, () => pages.expired({ build, expiresAt: record.expiresAt, name: record.name })), gone);
+      return page(410, errorPage(PAGES.gone, () => pages.expired({ build, expiresAt: record.expiresAt, name: record.name }), 'expired'), gone);
     }
-    return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build })));
+    return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build }), 'missing'));
   }
 
   async function view(rawId: string, request: Request, address: string, withQuery: boolean): Promise<Response> {
@@ -412,9 +437,9 @@ export function createApp(deps: AppDeps): App {
     if (!limit.allowed) {
       return page(429, build === 'vercel' ? PAGES.gone : pages.rateLimited({ build, retryAfter: limit.retryAfter }), { 'retry-after': String(limit.retryAfter) });
     }
-    if (withQuery || !isPlanId(id)) return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build })));
+    if (withQuery || !isPlanId(id)) return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build }), 'missing'));
     const record = await records.get(id);
-    if (!record || record.state === 'pending') return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build })));
+    if (!record || record.state === 'pending') return page(404, errorPage(PAGES.notFound, () => pages.notFound({ build }), 'missing'));
     if (record.state === 'live' && !record.hidden && record.expiresAt > at) {
       const result = await records.view({
         id,
@@ -496,14 +521,14 @@ export function createApp(deps: AppDeps): App {
   }
 
   const adminResetSchema = z.object({
-    counter: z.enum(['reads', 'bytes', 'uploads', 'owner', 'all']),
+    counter: z.enum(['reads', 'bytes', 'uploads', 'demo', 'owner', 'all']),
     owner: z.string().regex(/^[0-9a-f]{64}$/).optional(),
   });
 
   async function resetMonth(
-    counter: 'reads' | 'bytes' | 'uploads' | 'owner' | 'all',
+    counter: 'reads' | 'bytes' | 'uploads' | 'demo' | 'owner' | 'all',
     owner?: string,
-  ): Promise<{ reads: number; bytes: number; uploads: number; ownerBytes: number }> {
+  ): Promise<{ reads: number; bytes: number; uploads: number; demoUploads: number; ownerBytes: number }> {
     return records.resetMonth(now(), counter, owner);
   }
 
@@ -555,6 +580,7 @@ export function createApp(deps: AppDeps): App {
 
   app.onError((error, c) => {
     const api = c.req.path === '/plans'
+      || c.req.path === '/demo/plans'
       || c.req.path.startsWith('/admin/')
       || (c.req.path.startsWith('/p/') && c.req.method !== 'GET' && c.req.method !== 'HEAD');
     if (error instanceof StoreUnavailableError) {
@@ -642,6 +668,14 @@ export function createApp(deps: AppDeps): App {
     throw new ApiError(405, 'method_not_allowed', 'Upload a plan with POST /plans.', { allow: 'POST' });
   });
 
+  // The homepage demo box. Same sanitiser and same body cap as /plans, but a fixed 24-hour
+  // life and a separate monthly counter, so a public demo can never spend the site-wide
+  // upload budget. It is a thin alias rather than a second upload path on purpose.
+  app.post('/demo/plans', async (c) => upload(c.req.raw, c.get('address'), { demo: true }) as Promise<Response>);
+  app.all('/demo/plans', () => {
+    throw new ApiError(405, 'method_not_allowed', 'Publish a demo plan with POST /demo/plans.', { allow: 'POST' });
+  });
+
   app.get('/p/:id/raw', (c) => c.redirect(`/p/${c.req.param('id')}`, 301));
   app.on(['HEAD'], '/p/:id/raw', (c) => c.body(null, 301, { location: `/p/${c.req.param('id')}` }));
   app.get('/p/:id', (c) => view(c.req.param('id'), c.req.raw, c.get('address'), new URL(c.req.url).search !== ''));
@@ -676,7 +710,7 @@ export function createApp(deps: AppDeps): App {
     }
     const parsed = adminResetSchema.safeParse(body);
     if (!parsed.success) {
-      return json(400, { error: { code: 'invalid_reset', message: 'Send {"counter":"reads"|"bytes"|"uploads"|"owner"|"all"}, and owner for owner.' } });
+      return json(400, { error: { code: 'invalid_reset', message: 'Send {"counter":"reads"|"bytes"|"uploads"|"demo"|"owner"|"all"}, and owner for owner.' } });
     }
     if (parsed.data.counter === 'owner' && !parsed.data.owner) {
       return json(400, { error: { code: 'invalid_reset', message: 'An owner reset needs the hashed address in "owner".' } });

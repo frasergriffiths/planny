@@ -1,6 +1,6 @@
 ---
 name: planny
-description: Publish plans, reports, roadmaps and HTML one-pagers as shareable links, with the delete key kept in a 0600 file. Ships project, launch, research and decision templates.
+description: Publish, share and link an HTML plan, report or roadmap: the agent writes one page, planny returns a URL with an expiry and a delete key kept in a 0600 file. Ships project, launch, research and decision templates.
 ---
 
 # planny
@@ -14,7 +14,7 @@ Use this when someone wants a plan, report, roadmap or one-pager published as a 
 - `reference/components.md` has charts, Gantt, decision matrix, risk register, KPI snippets, the code block contract and the copy button. `reference/icons.md` has 18 inline Heroicons. `reference/errors.md` lists the status codes.
 - Code blocks use `.code-block` with optional `.code-head`, a `pre code` pair and static `.tok-*` spans. The plan viewer injects the Copy button; never add your own script or button.
 
-Rules: no scripts, links, forms, frames, external files or external fonts; CSS, inline SVG, tables and `data:image/` images are fine. Name 1 to 120 characters, duration `h/d/w/m/y` from 1 hour to 100 years.
+Rules: no scripts, links, forms, frames, external files or external fonts; CSS, inline SVG, tables and `data:image/` images are fine. Name 1 to 120 characters, duration `h/d/w/y` from 1 hour to 100 years.
 
 ## Workflow
 

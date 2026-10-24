@@ -40,7 +40,7 @@ function vercelConfig() {
         });
       }
       if (!app) {
-        const api = url.pathname === '/plans' || url.pathname.startsWith('/admin/')
+        const api = url.pathname === '/plans' || url.pathname === '/demo/plans' || url.pathname.startsWith('/admin/')
           || (url.pathname.startsWith('/p/') && request.method !== 'GET' && request.method !== 'HEAD');
         return api
           ? new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'planny is not configured yet. Try again later.' } })}\n`, {

@@ -8,6 +8,9 @@ All notable changes to planny are recorded here. The format follows
 
 ### Fixed
 
+- The skill's duration examples and its publish helper now list only `h`, `d`, `w`
+  and `y`, which is what the API accepts. Months were documented and accepted by the
+  helper but rejected by `parseDuration`.
 - One upload can no longer burn minutes of server CPU. parse5 handles attribute
   counts super-linearly, and a probe put 60,000 attributes (937 KB, under the 4 MiB
   cap) on one request against production: 22.5 seconds of wall time, trending to
@@ -73,11 +76,41 @@ All notable changes to planny are recorded here. The format follows
 - `/sample` carries the same footer, so the demo page advertises planny too.
 - `PLANNY_ATTRIBUTION` (default `on`); setting it to `off` removes both lines for
   self-hosters.
+- A paste-and-publish box on the deployed home page. Paste one HTML page, click **Get a link**,
+  get a URL and a delete key. It posts to the new `POST /demo/plans`, which runs the same
+  sanitiser and 4 MiB cap, fixes the life at 24 hours, and charges its own monthly counter
+  (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500) instead of `PLANNY_MONTHLY_UPLOADS`. A
+  public demo cannot spend the site-wide upload budget, and an exhausted demo allowance
+  leaves the API working.
+- `@vercel/analytics` on the deployed home, 404, 410 and 503 pages.
+- A `ref` parameter on every outbound link: `?ref=plan` from a plan footer, `sample` from
+  the sample, `missing`/`expired`/`deleted`/`takedown` from the plan error pages, and
+  `site` from the product links. Analytics can tell a plan-driven visit from a direct one.
+- `mcp/`, an MCP server wrapping the existing HTTP API: `publish_plan` and `delete_plan`.
+  It has no read or list tool because the API has no collection or metadata route. Includes
+  a `planny-mcp@0.1.0` tarball distributed as a GitHub Release asset (npm publication is
+  deferred), a README with Claude Code, Claude Desktop, Cursor, VS Code and Codex configs,
+  and prepared (unsubmitted) manifests for Smithery, Glama, PulseMCP and mcp.so.
 
 ### Changed
 
 - The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
   footer link works without scripts, fetches or any other sandbox permission.
+- The site CSP now allows `'self'` in `script-src` and adds `connect-src 'self'`, because
+  the analytics script is served from the same origin and the demo box posts with `fetch`.
+  No third-party origin is allowed.
+- The skill description now leads with publish, share and link so it is findable when
+  someone searches skills.sh for a plan or a report.
+- The privacy notice covers Vercel Web Analytics, and `admin reset demo` clears the
+  demo counter without touching the site-wide upload quota. A preview deployment now
+  refuses `/demo/plans` as it already refused `/plans`.
+- The MCP setup docs lead with the version-pinned GitHub Release tarball
+  (`npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`)
+  and keep the clone-and-build fallback. The client configs for Claude Code, Claude
+  Desktop, Cursor, VS Code and Codex use that URL. `bun run verify` in `mcp/` builds the
+  server and runs a real stdio end-to-end check against a temporary local store.
+- The local `dev` and `start` scripts start `server.ts` again, so the documented
+  `bun run dev` command works.
 
 ## 1.2.0 — 2026-10-20
 

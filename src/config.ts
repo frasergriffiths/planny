@@ -10,6 +10,11 @@ export interface RateLimit {
 
 export interface MonthlyLimits {
   uploads: number;
+  /**
+   * Uploads allowed from the homepage demo box, on their own counter. A demo upload
+   * never touches `uploads`, so a public demo cannot spend the site-wide budget.
+   */
+  demoUploads: number;
   reads: number;
   readBytes: number;
 }
@@ -83,6 +88,7 @@ export function loadConfig(env: Env = process.env): AppConfig {
     uploadsPerMonth: setting(env.PLANNY_UPLOADS_PER_MONTH, 500),
     monthly: {
       uploads: setting(env.PLANNY_MONTHLY_UPLOADS, 5000),
+      demoUploads: setting(env.PLANNY_DEMO_MONTHLY_UPLOADS, 500),
       reads: setting(env.PLANNY_MONTHLY_READS, 1_500_000),
       readBytes: setting(env.PLANNY_MONTHLY_READ_BYTES, 200 * 1024 * MiB),
     },

@@ -1,6 +1,6 @@
 # Privacy notice
 
-**Effective 20 October 2026. Last updated 20 October 2026.**
+**Effective 20 October 2026. Last updated 24 October 2026.**
 
 planny is operated by Fraser Griffiths ("we", "us", "our"). This notice explains what
 we collect when you publish or read a plan, why we use it, and what rights you have.
@@ -17,6 +17,7 @@ you are the controller for your instance and this notice does not apply to it.
 | A hash of the delete key | When a plan is published | To authorise deletion without storing the key itself |
 | Technical identifiers such as the plan ID and claim ID | During publishing and deletion | To keep the record consistent and recover from interrupted writes |
 | Request logs | When you use the service | Vercel, our hosting provider, processes standard request logs such as IP address, user agent and timestamp under its own terms |
+| Page views and referrers | When you visit the deployed site | Vercel Web Analytics records the page URL (including a `ref` parameter), referrer, approximate location, device, browser and timestamp to produce aggregate traffic counts. It does not use third-party cookies; Vercel identifies a visitor with a hash created from the incoming request and discards that session after 24 hours |
 
 We do not operate accounts, we do not set advertising cookies, and we do not sell
 plan content or address data.
@@ -35,6 +36,7 @@ We use the data to:
 
 - publish, store, serve and delete plans;
 - enforce the limits, rate limits and pauses described in the README;
+- measure aggregate traffic and see which pages are read;
 - investigate abuse, security reports and takedown requests;
 - keep the service available and fix faults; and
 - meet legal and accounting obligations.
@@ -44,14 +46,16 @@ Our lawful bases are:
 - **Contract or steps before a contract** for publishing and serving a plan you
   asked us to publish;
 - **Legitimate interests** for security, abuse prevention, rate limiting, service
-  reliability and keeping a minimal record after a plan is gone;
+  reliability, measuring aggregate traffic and keeping a minimal record after a plan
+  is gone;
 - **Legal obligation** where we must keep or disclose something; and
 - **Consent** only where we ask for it separately. We do not rely on consent for
   the core service.
 
 ## Who receives it
 
-- **Vercel** hosts the function, the Blob store, the edge cache and request logs.
+- **Vercel** hosts the function, the Blob store, the edge cache, request logs and Web
+  Analytics.
 - **Our email provider** processes takedown and legal correspondence sent to the
   contact below.
 - **Professional advisers, auditors or authorities** where the law requires it or
@@ -75,6 +79,8 @@ mechanisms.
   different retention period. The record may be kept for legal, security,
   abuse-prevention and operational reasons.
 - **Request logs** are retained by Vercel under its terms and its configured retention.
+- **Page views** are aggregated by Vercel under its terms; the visitor session hash
+  used to count unique visits is discarded after 24 hours.
 
 ## Your rights
 

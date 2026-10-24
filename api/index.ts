@@ -34,7 +34,8 @@ export default {
   async fetch(request: Request): Promise<Response> {
     await purgePlanTags();
     const url = new URL(request.url);
-    if (process.env.VERCEL_ENV === 'preview' && (url.pathname === '/plans' || url.pathname.startsWith('/admin/'))) {
+    if (process.env.VERCEL_ENV === 'preview'
+      && (url.pathname === '/plans' || url.pathname === '/demo/plans' || url.pathname.startsWith('/admin/'))) {
       return new Response(`${JSON.stringify({ error: { code: 'planny_not_configured', message: 'Uploads are disabled on preview deployments.' } })}\n`, {
         status: 503, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
       });
@@ -90,9 +91,12 @@ export default {
       const pageHeaders = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
       const jsonHeaders = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-planny-build': 'vercel' };
       const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-      if (url.pathname === '/plans') {
+      if (url.pathname === '/plans' || url.pathname === '/demo/plans') {
         if (method !== 'POST') {
-          return new Response(`${JSON.stringify({ error: { code: 'method_not_allowed', message: 'Upload a plan with POST /plans.' } })}\n`, {
+          const message = url.pathname === '/plans'
+            ? 'Upload a plan with POST /plans.'
+            : 'Publish a demo plan with POST /demo/plans.';
+          return new Response(`${JSON.stringify({ error: { code: 'method_not_allowed', message } })}\n`, {
             status: 405, headers: { ...jsonHeaders, allow: 'POST' },
           });
         }

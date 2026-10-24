@@ -42,10 +42,10 @@ export const ERROR_CODES: readonly ErrorCode[] = [
     code: 'invalid_duration',
     status: 400,
     scope: 'upload',
-    when: 'The duration is not a number plus h, d, w, m or y.',
+    when: 'The duration is not a number plus h, d, w or y.',
     retry: 'none',
     response: 'json',
-    notes: 'Examples: 12h, 30d, 2w, 6m, 1y.',
+    notes: 'Examples: 12h, 30d, 2w, 1y.',
   },
   {
     code: 'duration_too_short',

@@ -52,8 +52,13 @@ objects directly. Do not create one.
    PLANNY_BUILD=vercel bun run admin reset reads
    PLANNY_BUILD=vercel bun run admin reset bytes
    PLANNY_BUILD=vercel bun run admin reset uploads
+   PLANNY_BUILD=vercel bun run admin reset demo
    PLANNY_BUILD=vercel bun run admin reset all
    ```
+
+   The demo box has its own monthly quota. `reset uploads` and `reset all` do not
+   clear it; use `reset demo` when the demo allowance, not the site-wide upload
+   budget, is exhausted.
 
 5. To stop uploads without stopping reads (the switch is written to
    `config/kill.json`):
