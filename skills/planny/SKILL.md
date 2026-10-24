@@ -1,6 +1,6 @@
 ---
 name: planny
-description: Publish plans, reports, roadmaps and HTML one-pagers as shareable links, with the delete key kept in a 0600 file. Ships project, launch, research and decision templates.
+description: Publish, share and link an HTML plan, report or roadmap: the agent writes one page, planny returns a URL with an expiry and a delete key kept in a 0600 file. Ships project, launch, research and decision templates.
 ---
 
 # planny

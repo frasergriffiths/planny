@@ -73,11 +73,30 @@ All notable changes to planny are recorded here. The format follows
 - `/sample` carries the same footer, so the demo page advertises planny too.
 - `PLANNY_ATTRIBUTION` (default `on`); setting it to `off` removes both lines for
   self-hosters.
+- A paste-and-publish box on the home page. Paste one HTML page, click **Get a link**,
+  get a URL and a delete key. It posts to the new `POST /demo/plans`, which runs the same
+  sanitiser and 4 MiB cap, fixes the life at 24 hours, and charges its own monthly counter
+  (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500) instead of `PLANNY_MONTHLY_UPLOADS`. A
+  public demo cannot spend the site-wide upload budget, and an exhausted demo allowance
+  leaves the API working.
+- `@vercel/analytics` on the home, 404, 410 and 503 pages.
+- A `ref` parameter on every outbound link: `?ref=plan` from a plan footer, `sample` from
+  the sample, `missing`/`expired`/`deleted`/`takedown` from the plan error pages, and
+  `site` from the product links. Analytics can tell a plan-driven visit from a direct one.
+- `mcp/`, an MCP server wrapping the existing HTTP API: `publish_plan` and `delete_plan`.
+  It has no read or list tool because the API has no collection or metadata route. Includes
+  a README with Claude Code and Cursor config, and prepared (unsubmitted) manifests for
+  Smithery, Glama, PulseMCP and mcp.so.
 
 ### Changed
 
 - The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
   footer link works without scripts, fetches or any other sandbox permission.
+- The site CSP now allows `'self'` in `script-src` and adds `connect-src 'self'`, because
+  the analytics script is served from the same origin and the demo box posts with `fetch`.
+  No third-party origin is allowed.
+- The skill description now leads with publish, share and link so it is findable when
+  someone searches skills.sh for a plan or a report.
 
 ## 1.2.0 — 2026-10-20
 
