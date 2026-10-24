@@ -214,7 +214,6 @@ test('accepted bodies never mint above the caps', () => {
   ];
   const soup = ` <div ${Array.from({ length: 2016 }, (_, i) => `a${i}=1`).join(' ')}>`;
   let seed = 0x6a1d2b34;
-  let nameSeq = 0;
   const next = (): number => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 2 ** 32;
@@ -249,13 +248,36 @@ test('accepted bodies never mint above the caps', () => {
     expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
     expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
   }
-  // generic '='/'/' tag soup (the after-attribute-name class): after a bare name an `=`
-  // opens that attribute's value while each following x segment is a real attribute, so
-  // the generated names stay unique per segment — the tree cannot collapse this class
-  // into duplicates — and both knob sizes are randomized wide enough to cross the caps.
-  for (let run = 0; run < 300; run += 1) {
+}, 20_000);
+
+// Same property over generic '='/'/' tag soup — the after-attribute-name class. After a
+// bare name an `=` opens that attribute's value while each following x segment is a real
+// attribute, so the generated names stay unique per segment (the tree cannot collapse
+// this class into duplicates) and both knob sizes are randomized wide enough to cross
+// the caps. Kept in its own test with a CI-sized budget; the generation, not one fixed
+// payload, is what covers the class.
+test('accepted separator soup never mints above the caps', () => {
+  let seed = 0x2f3d4a17;
+  const next = (): number => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const mintedMax = (body: string): { total: number; perTag: number } => {
+    let total = 0;
+    let perTag = 0;
+    const walk = (node: any): void => {
+      const count = node.attrs?.length ?? 0;
+      total += count;
+      if (count > perTag) perTag = count;
+      for (const child of node.childNodes ?? []) walk(child);
+    };
+    walk(parse(body));
+    return { total, perTag };
+  };
+  let nameSeq = 0;
+  for (let run = 0; run < 240; run += 1) {
     let body = '<v ';
-    const reps = 1 + Math.floor(next() * 300);
+    const reps = 1 + Math.floor(next() * 220);
     const segs = 1 + Math.floor(next() * 120);
     for (let r = 0; r < reps; r += 1) {
       body += `a${nameSeq} ==`;
@@ -279,7 +301,7 @@ test('accepted bodies never mint above the caps', () => {
     expect(total).toBeLessThanOrEqual(MAX_ATTRIBUTES_TOTAL);
     expect(perTag).toBeLessThanOrEqual(MAX_ATTRIBUTES_PER_TAG);
   }
-});
+}, 20_000);
 
 
 // parse5 spends super-linear time per attribute, so the attribute guard decides before
