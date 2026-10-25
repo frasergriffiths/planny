@@ -12,8 +12,6 @@ All notable changes to planny are recorded here. The format follows
   `/%64emo/plans` and `/%70lans` are refused like `/demo/plans` and `/plans` instead of
   falling through to the unknown-path 404. Malformed escapes keep the raw path and never
   throw.
-- The home demo box replaces its form with the result after a successful publish, so a
-  second click cannot create a duplicate plan.
 - The MCP end-to-end check forces `PLANNY_STORE=local` and clears `DATABASE_URL` for the
   child server, so an exported production storage setting cannot point the test at a real
   database.
@@ -85,14 +83,13 @@ All notable changes to planny are recorded here. The format follows
 - `/sample` carries the same footer, so the demo page advertises planny too.
 - `PLANNY_ATTRIBUTION` (default `on`); setting it to `off` removes both lines for
   self-hosters.
-- A paste-and-publish box on the deployed home page. Paste one HTML page, click **Get a link**,
-  get a URL and a delete key. It posts to the new `POST /demo/plans`, which runs the same
-  sanitiser and 4 MiB cap, fixes the life at 24 hours, and charges its own monthly counter
-  (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500) instead of `PLANNY_MONTHLY_UPLOADS`. A
-  public demo cannot spend the site-wide upload budget, and an exhausted demo allowance
-  leaves the API working. Each address gets a smaller share of that allowance on its own
-  counters (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`, default 2, and
-  `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5), so one visitor cannot drain it.
+- `POST /demo/plans`, a demo upload endpoint: same sanitiser and 4 MiB cap, a fixed
+  24-hour life, and its own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500)
+  instead of `PLANNY_MONTHLY_UPLOADS`. A public demo cannot spend the site-wide upload
+  budget, and an exhausted demo allowance leaves the API working. Each address gets a
+  smaller share of that allowance on its own counters (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`,
+  default 2, and `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5), so one visitor cannot
+  drain it. The home page does not link to this endpoint.
 - `@vercel/analytics` on the deployed home, 404, 410 and 503 pages.
 - A `ref` parameter on every outbound link: `?ref=plan` from a plan footer, `sample` from
   the sample, `missing`/`expired`/`deleted`/`takedown` from the plan error pages, and
@@ -106,14 +103,13 @@ All notable changes to planny are recorded here. The format follows
 ### Changed
 
 - The home page now leads with the agent skill, follows it with a new MCP server section
-  (the `npx -y` tarball command and a pasteable stdio JSON config), and moves the demo box
-  below the MCP section with one intro line, a taller editor and a larger button. Header and
-  hero links cover skill, sample and MCP, and every copy control is now an icon button with
-  no visible "Copy" label.
+  (the `npx -y` tarball command and a pasteable Claude Desktop and Claude Code JSON config),
+  and removes the demo paste box. Header and hero links cover skill, sample and MCP, and
+  every copy control is now an icon button with no visible "Copy" label.
 - The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
   footer link works without scripts, fetches or any other sandbox permission.
 - The site CSP now allows `'self'` in `script-src` and adds `connect-src 'self'`, because
-  the analytics script is served from the same origin and the demo box posts with `fetch`.
+  the analytics script is served from the same origin and sends its events there.
   No third-party origin is allowed.
 - The skill description now leads with publish, share and link so it is findable when
   someone searches skills.sh for a plan or a report.

@@ -67,18 +67,17 @@ function CheckGlyph() {
 
 // The one icon-only copy control: a 7x7 square with the copy glyph, a check while the
 // clipboard write is acknowledged, and the same sr-only live region for everyone.
-function IconCopy({ copied, onClick, label, bordered = false }: {
+function IconCopy({ copied, onClick, label }: {
   copied: boolean;
   onClick: () => void;
   label: string;
-  bordered?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white ${bordered ? 'border border-line hover:border-zinc-600' : ''}`}
+      className="flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
     >
       {copied ? <CheckGlyph /> : <CopyGlyph />}
       <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
@@ -121,123 +120,6 @@ function McpCommand() {
     <div className="flex w-full max-w-full items-start gap-2">
       <code className="block min-w-0 flex-1 break-words whitespace-pre-wrap font-mono text-sm leading-relaxed text-white">{MCP_COMMAND}</code>
       <IconCopy copied={copied} onClick={copy} label="Copy MCP install command" />
-    </div>
-  );
-}
-
-function CopyButton({ value, label }: { value: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <IconCopy
-      copied={copied}
-      bordered
-      label={label}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        } catch {
-          setCopied(false);
-        }
-      }}
-    />
-  );
-}
-
-type PublishState =
-  | { status: 'idle' }
-  | { status: 'sending' }
-  | { status: 'done'; url: string; deleteKey: string; expiresAt: string }
-  | { status: 'error'; message: string };
-
-// The demo box posts to its own endpoint, which has a fixed 24-hour life and a separate
-// monthly counter, so a public demo cannot spend the site-wide upload budget. It is the same
-// sanitiser and the same body cap as an agent's upload; the server decides that, not this form.
-function PublishBox() {
-  const [html, setHtml] = useState('');
-  const [state, setState] = useState<PublishState>({ status: 'idle' });
-  const sending = state.status === 'sending';
-  const canPublish = !sending && html.trim().length > 0;
-
-  const publish = async () => {
-    if (!canPublish) return;
-    setState({ status: 'sending' });
-    try {
-      const response = await fetch('/demo/plans', {
-        method: 'POST',
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-        body: html,
-      });
-      const data = (await response.json().catch(() => ({}))) as {
-        url?: string;
-        deleteKey?: string;
-        expiresAt?: string;
-        error?: { message?: string };
-      };
-      if (!response.ok || !data.url || !data.deleteKey || !data.expiresAt) {
-        setState({ status: 'error', message: data.error?.message ?? `Publishing failed (${response.status}).` });
-        return;
-      }
-      setState({ status: 'done', url: data.url, deleteKey: data.deleteKey, expiresAt: data.expiresAt });
-    } catch {
-      setState({ status: 'error', message: 'Could not reach planny. Check your connection and try again.' });
-    }
-  };
-
-  // Once the plan is published the form is replaced, not just disabled: a second click
-  // cannot publish a duplicate plan, and the only way to start again is an explicit reload.
-  if (state.status === 'done') {
-    return (
-      <div className="mt-6 plan-card">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Published · your link</p>
-        <p className="mt-2 break-all text-sm">
-          <a href={state.url} className="text-white underline underline-offset-2 hover:text-zinc-300">{state.url}</a>
-        </p>
-        <p className="mt-2 font-mono text-xs text-zinc-500">Expires {new Date(state.expiresAt).toLocaleString()}</p>
-        <div className="mt-5 border-t border-line pt-4">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Delete key — copy it now</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <code className="break-all font-mono text-xs text-zinc-300">{state.deleteKey}</code>
-            <CopyButton value={state.deleteKey} label="Copy delete key" />
-          </div>
-          <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-            planny shows this once. It is the only way to delete the plan early; the link expires in 24 hours either way.
-          </p>
-        </div>
-        <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-          The box closes after a publish so a second click cannot create a duplicate. Reload the page to publish another plan.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-6">
-      <label htmlFor="plan-html" className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your HTML</label>
-      <textarea
-        id="plan-html"
-        value={html}
-        onChange={(event) => setHtml(event.target.value)}
-        spellCheck={false}
-        placeholder={'<!doctype html>\n<html><body><h1>Q4 rollout</h1><p>One page, one link.</p></body></html>'}
-        className="mt-2 h-64 w-full resize-y rounded-card border border-line bg-transparent p-4 font-mono text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-700 focus:border-zinc-600 focus:outline-none"
-      />
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={publish}
-          disabled={!canPublish}
-          className="cursor-pointer rounded-full bg-white px-6 py-3.5 text-base font-medium text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
-        >
-          {sending ? 'Publishing…' : 'Get a link'}
-        </button>
-        <p className="font-mono text-xs text-zinc-500">Expires in 24 hours. No account.</p>
-      </div>
-
-      {state.status === 'error' ? (
-        <p role="alert" className="mt-4 text-sm text-red-400">{state.message}</p>
-      ) : null}
     </div>
   );
 }
@@ -354,15 +236,6 @@ export function Page({ kind }: { kind: PageKind }) {
                 <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/mcp/README.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">MCP setup docs</a>
                 <a href={withRef('https://github.com/frasergriffiths/planny/releases/tag/mcp-v0.1.0', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">mcp-v0.1.0 release</a>
               </p>
-            </section>
-
-            <section id="try" className="border-t border-line py-14">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Demo</p>
-              <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Publish a page yourself.</h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                Paste one self-contained HTML page; the server strips scripts, links and frames before it goes live.
-              </p>
-              <PublishBox />
             </section>
 
             <section id="how" className="grid gap-6 border-t border-line py-14 md:grid-cols-3">
