@@ -385,7 +385,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Questions</h2>
               <dl className="mt-6 max-w-3xl">
                 {[
-                  ['Do I need an account?', 'No. Paste the HTML, choose a lifetime, keep the delete key.'],
+                  ['Do I need an account?', 'No. Publish through the agent skill, the MCP server or the API, choose a lifetime, and keep the delete key.'],
                   ['How long does a link last, and can I delete it early?', 'One hour to 100 years; it expires on its own, or delete it with the delete key returned at upload.'],
                   ['Is the link private?', 'No. Anyone with the link can read it. Plans are not listed, but a shared link can be indexed, so keep out secrets and personal data.'],
                   ['What can I publish?', 'One self-contained HTML file up to 4 MiB. Scripts, links, forms, frames, external files and fonts are stripped; CSS, inline SVG, tables and data: images work. That makes plans unsuitable for reports that need clickable sources.'],

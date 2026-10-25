@@ -97,8 +97,11 @@ built from a clone, replace the command and arguments with the fallback at the e
 section.
 
 The examples publish to the hosted service. To use a self-hosted instance, add
-`"env": {"PLANNY_URL": "https://plans.example.com"}` to a JSON entry, or a
-`[mcp_servers.planny.env]` table with `PLANNY_URL` to the Codex TOML. `PLANNY_URL` is an
+`PLANNY_URL` to the server's environment in the client's own form: `--env
+PLANNY_URL=https://plans.example.com` for the Claude Code CLI, `"env": {"PLANNY_URL":
+"https://plans.example.com"}` for a JSON entry, a `[mcp_servers.planny.env]` table with
+`PLANNY_URL` for the Codex TOML, or `"environment": {"PLANNY_URL":
+"https://plans.example.com"}` under `mcp.servers.planny` for OpenCode. `PLANNY_URL` is an
 origin, not an upload URL.
 
 ### Claude Code
@@ -257,6 +260,25 @@ The CLI writes the same entry without disturbing the rest of the file:
 
 ```sh
 opencode mcp add planny --global -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+```
+
+For a self-hosted instance, use OpenCode's `environment` field; `env` is not an OpenCode
+field:
+
+```jsonc
+{
+  "mcp": {
+    "servers": {
+      "planny": {
+        "type": "local",
+        "command": ["npx", "-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
+        "environment": {
+          "PLANNY_URL": "https://plans.example.com"
+        }
+      }
+    }
+  }
+}
 ```
 
 Set `"disabled": true` on the entry to keep it configured without connecting it; there is
