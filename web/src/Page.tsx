@@ -6,16 +6,90 @@ export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
 const MCP_TARBALL = 'https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz';
 const MCP_COMMAND = `npx -y ${MCP_TARBALL}`;
-// A compact block for the Claude Desktop and Claude Code mcpServers shape; the README
-// carries the Cursor, VS Code and Codex variants.
-const MCP_CONFIG = `{
+
+const MCP_CLIENT_IDS = ['claude-code', 'claude-desktop', 'cursor', 'vscode', 'codex', 'opencode'] as const;
+type McpClientId = typeof MCP_CLIENT_IDS[number];
+
+interface McpClientConfig {
+  readonly label: string;
+  /** The file path or command shown above the config block. */
+  readonly where: string;
+  readonly snippet: string;
+  readonly copyLabel?: string;
+  readonly note?: string;
+}
+
+// Each snippet is the same shape mcp/README.md documents for that client. The optional
+// PLANNY_URL env is omitted here to keep the panel short; the README shows it.
+const MCP_CLIENTS: Record<McpClientId, McpClientConfig> = {
+  'claude-code': {
+    label: 'Claude Code',
+    where: 'Terminal (run once)',
+    snippet: `claude mcp add --transport stdio planny -- npx -y ${MCP_TARBALL}`,
+    copyLabel: 'Copy Claude Code command',
+  },
+  'claude-desktop': {
+    label: 'Claude Desktop',
+    where: 'macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json',
+    snippet: `{
   "mcpServers": {
     "planny": {
       "command": "npx",
       "args": ["-y", "${MCP_TARBALL}"]
     }
   }
-}`;
+}`,
+  },
+  cursor: {
+    label: 'Cursor',
+    where: '~/.cursor/mcp.json or .cursor/mcp.json',
+    snippet: `{
+  "mcpServers": {
+    "planny": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "${MCP_TARBALL}"]
+    }
+  }
+}`,
+  },
+  vscode: {
+    label: 'VS Code',
+    where: '.vscode/mcp.json',
+    snippet: `{
+  "servers": {
+    "planny": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "${MCP_TARBALL}"]
+    }
+  }
+}`,
+  },
+  codex: {
+    label: 'Codex',
+    where: '~/.codex/config.toml',
+    snippet: `[mcp_servers.planny]
+command = "npx"
+args = ["-y", "${MCP_TARBALL}"]`,
+  },
+  opencode: {
+    label: 'OpenCode',
+    where: '~/.config/opencode/opencode.jsonc',
+    snippet: `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "planny": {
+        "type": "local",
+        "command": ["npx", "-y", "${MCP_TARBALL}"]
+      }
+    }
+  }
+}`,
+    note: `CLI: opencode mcp add planny --global -- npx -y ${MCP_TARBALL}`,
+  },
+};
 // Keep in step with PLUR in src/attribution.ts. The server marks the flag on <html>.
 const PLUR = 'https://use-planny.vercel.app';
 
@@ -85,17 +159,22 @@ function IconCopy({ copied, onClick, label }: {
   );
 }
 
-function InstallCommand() {
+function useCopy(value: string) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(INSTALL_COMMAND);
+      await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
     }
   };
+  return { copied, copy };
+}
+
+function InstallCommand() {
+  const { copied, copy } = useCopy(INSTALL_COMMAND);
   return (
     <div className="flex w-fit max-w-full items-center gap-2">
       <code className="block min-w-0 overflow-x-auto whitespace-nowrap font-mono text-sm text-white">{INSTALL_COMMAND}</code>
@@ -106,20 +185,57 @@ function InstallCommand() {
 
 // The MCP command is longer than a phone line, so it wraps instead of scrolling the page.
 function McpCommand() {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(MCP_COMMAND);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
+  const { copied, copy } = useCopy(MCP_COMMAND);
   return (
     <div className="flex w-full max-w-full items-start gap-2">
       <code className="block min-w-0 flex-1 break-words whitespace-pre-wrap font-mono text-sm leading-relaxed text-white">{MCP_COMMAND}</code>
       <IconCopy copied={copied} onClick={copy} label="Copy MCP install command" />
+    </div>
+  );
+}
+
+function McpPanelCopy({ value, label }: { value: string; label: string }) {
+  const { copied, copy } = useCopy(value);
+  return <IconCopy copied={copied} onClick={copy} label={label} />;
+}
+
+// One client at a time keeps the section compact. The buttons are a labelled toggle group,
+// so the selected client is exposed with aria-pressed rather than as a visual-only state.
+function McpClients() {
+  const [active, setActive] = useState<McpClientId>('claude-code');
+  const client = MCP_CLIENTS[active];
+  const copyLabel = client.copyLabel ?? `Copy ${client.label} config`;
+  return (
+    <div className="mt-5">
+      <div role="group" aria-label="MCP client" className="flex flex-wrap gap-2">
+        {MCP_CLIENT_IDS.map((id) => {
+          const selected = id === active;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={selected}
+              aria-controls="mcp-client-panel"
+              onClick={() => setActive(id)}
+              className={`cursor-pointer rounded-full border px-3 py-1.5 font-mono text-xs focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white ${selected ? 'border-white bg-white text-black' : 'border-line text-zinc-400 hover:border-zinc-600 hover:text-white'}`}
+            >
+              {MCP_CLIENTS[id].label}
+            </button>
+          );
+        })}
+      </div>
+      <div id="mcp-client-panel" role="region" aria-label={`${client.label} setup`} className="mt-4">
+        <div className="flex items-start gap-3">
+          <code className="min-w-0 flex-1 break-words font-mono text-xs leading-relaxed text-zinc-400">{client.where}</code>
+          <McpPanelCopy key={active} value={client.snippet} label={copyLabel} />
+        </div>
+        <pre className="mt-2 max-w-full overflow-x-auto rounded-card border border-line bg-zinc-950/40 p-4 font-mono text-xs leading-relaxed text-zinc-300">
+          <code>{client.snippet}</code>
+        </pre>
+        {client.note ? (
+          <p className="mt-2 max-w-full break-words font-mono text-xs leading-relaxed text-zinc-500">{client.note}</p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -217,7 +333,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">MCP server</p>
               <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Connect planny as an MCP server.</h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                Two tools, <code className="text-zinc-400">publish_plan</code> and <code className="text-zinc-400">delete_plan</code>, with no API key. Works with Claude Code, Claude Desktop, Cursor, VS Code, Codex and any stdio client.
+                Two tools, <code className="text-zinc-400">publish_plan</code> and <code className="text-zinc-400">delete_plan</code>, with no API key. Works with Claude Code, Claude Desktop, Cursor, VS Code, Codex, OpenCode and any stdio client.
               </p>
               <div className="mt-6 max-w-full">
                 <McpCommand />
@@ -225,13 +341,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="mt-4 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
                 Node 22+ with npm/npx. Installs the version-pinned GitHub Release tarball; Bun is only for the clone-and-build fallback. A self-hosted instance sets <code className="text-zinc-400">PLANNY_URL</code>.
               </p>
-              <p className="mt-5 font-mono text-xs text-zinc-500">For Claude Desktop and Claude Code:</p>
-              <pre className="mt-2 max-w-full overflow-x-auto rounded-card border border-line bg-zinc-950/40 p-4 font-mono text-xs leading-relaxed text-zinc-300">
-                <code>{MCP_CONFIG}</code>
-              </pre>
-              <p className="mt-2 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
-                Cursor, VS Code and Codex use their own config shapes; the setup docs cover each.
-              </p>
+              <McpClients />
               <p className="mt-6 flex flex-wrap gap-4 font-mono text-xs">
                 <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/mcp/README.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">MCP setup docs</a>
                 <a href={withRef('https://github.com/frasergriffiths/planny/releases/tag/mcp-v0.1.0', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">mcp-v0.1.0 release</a>

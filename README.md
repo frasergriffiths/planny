@@ -56,7 +56,7 @@ bun install
 bun run build
 ```
 
-See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
+See [mcp/README.md](mcp/README.md) for Claude Code, Claude Desktop, Cursor, VS Code, Codex and OpenCode configs, the capability and error tables, and the `bun run verify` end-to-end check.
 
 ## How it works
 

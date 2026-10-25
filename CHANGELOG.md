@@ -97,15 +97,16 @@ All notable changes to planny are recorded here. The format follows
 - `mcp/`, an MCP server wrapping the existing HTTP API: `publish_plan` and `delete_plan`.
   It has no read or list tool because the API has no collection or metadata route. Includes
   a `planny-mcp@0.1.0` tarball distributed as a GitHub Release asset (npm publication is
-  deferred), a README with Claude Code, Claude Desktop, Cursor, VS Code and Codex configs,
-  and prepared (unsubmitted) manifests for Smithery, Glama, PulseMCP and mcp.so.
+  deferred), a README with Claude Code, Claude Desktop, Cursor, VS Code, Codex and OpenCode
+  configs, and prepared (unsubmitted) manifests for Smithery, Glama, PulseMCP and mcp.so.
 
 ### Changed
 
 - The home page now leads with the agent skill, follows it with a new MCP server section
-  (the `npx -y` tarball command and a pasteable Claude Desktop and Claude Code JSON config),
-  and removes the demo paste box. Header and hero links cover skill, sample and MCP, and
-  every copy control is now an icon button with no visible "Copy" label.
+  (the `npx -y` tarball command and a six-client setup switcher for Claude Code, Claude
+  Desktop, Cursor, VS Code, Codex and OpenCode), and removes the demo paste box. Header and
+  hero links cover skill, sample and MCP, and every copy control is now an icon button with
+  no visible "Copy" label.
 - The plan sandbox adds `allow-top-navigation-by-user-activation`, so the viewer's
   footer link works without scripts, fetches or any other sandbox permission.
 - The site CSP now allows `'self'` in `script-src` and adds `connect-src 'self'`, because
@@ -119,7 +120,7 @@ All notable changes to planny are recorded here. The format follows
 - The MCP setup docs lead with the version-pinned GitHub Release tarball
   (`npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz`)
   and keep the clone-and-build fallback. The client configs for Claude Code, Claude
-  Desktop, Cursor, VS Code and Codex use that URL. `bun run verify` in `mcp/` builds the
+  Desktop, Cursor, VS Code, Codex and OpenCode use that URL. `bun run verify` in `mcp/` builds the
   server and runs a real stdio end-to-end check against a temporary local store. The docs
   call the URL version-pinned rather than immutable, and say OpenBot installs the tarball
   locally instead of running `npx` on every launch.
