@@ -94,8 +94,15 @@ PLANNY_URL=https://use-planny.vercel.app bun /absolute/path/to/planny/mcp/dist/i
 
 All examples use the GitHub Release tarball through `npx -y` with the full URL. If you
 built from a clone, replace the command and arguments with the fallback at the end of this
-section. Replace `PLANNY_URL` only if you self-host; the value is an origin, not an upload
-URL.
+section.
+
+The examples publish to the hosted service. To use a self-hosted instance, add
+`PLANNY_URL` to the server's environment in the client's own form: `--env
+PLANNY_URL=https://plans.example.com` for the Claude Code CLI, `"env": {"PLANNY_URL":
+"https://plans.example.com"}` for a JSON entry, a `[mcp_servers.planny.env]` table with
+`PLANNY_URL` for the Codex TOML, or `"environment": {"PLANNY_URL":
+"https://plans.example.com"}` under `mcp.servers.planny` for OpenCode. `PLANNY_URL` is an
+origin, not an upload URL.
 
 ### Claude Code
 
@@ -129,10 +136,7 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
     }
   }
 }
@@ -141,7 +145,7 @@ Claude Code also reads project-scoped JSON from `.mcp.json` at the repository ro
 The same entry can be added without editing the file:
 
 ```sh
-claude mcp add-json planny '{"type":"stdio","command":"npx","args":["-y","https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],"env":{"PLANNY_URL":"https://use-planny.vercel.app"}}'
+claude mcp add-json planny '{"type":"stdio","command":"npx","args":["-y","https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]}'
 ```
 
 A project-scoped `.mcp.json` server needs approval the first time Claude Code opens the
@@ -161,10 +165,7 @@ Use a top-level `mcpServers` object:
   "mcpServers": {
     "planny": {
       "command": "npx",
-      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
     }
   }
 }
@@ -185,10 +186,7 @@ Use `~/.cursor/mcp.json` for all projects or `.cursor/mcp.json` in a project. Cu
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
     }
   }
 }
@@ -208,10 +206,7 @@ object, not `mcpServers`:
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
     }
   }
 }
@@ -228,19 +223,67 @@ required there.
 ### Codex CLI
 
 Edit `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project. Codex uses a
-`mcp_servers` table per server and a nested `env` table:
+`mcp_servers` table per server:
 
 ```toml
 [mcp_servers.planny]
 command = "npx"
 args = ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
-
-[mcp_servers.planny.env]
-PLANNY_URL = "https://use-planny.vercel.app"
 ```
 
 Restart Codex after saving. The `command` and `args` fields are the same stdio contract as
 the JSON clients above.
+
+### OpenCode
+
+OpenCode V2 reads global config from `~/.config/opencode/opencode.jsonc` (or
+`opencode.json`), and project config from `opencode.jsonc` or
+`.opencode/opencode.jsonc`. A local MCP server lives under `mcp.servers`, not directly
+under `mcp`, uses `"type": "local"`, and keeps the executable and arguments together in one
+`command` array:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "planny": {
+        "type": "local",
+        "command": ["npx", "-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
+      }
+    }
+  }
+}
+```
+
+The CLI writes the same entry without disturbing the rest of the file:
+
+```sh
+opencode mcp add planny --global -- npx -y https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz
+```
+
+For a self-hosted instance, use OpenCode's `environment` field; `env` is not an OpenCode
+field:
+
+```jsonc
+{
+  "mcp": {
+    "servers": {
+      "planny": {
+        "type": "local",
+        "command": ["npx", "-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
+        "environment": {
+          "PLANNY_URL": "https://plans.example.com"
+        }
+      }
+    }
+  }
+}
+```
+
+Set `"disabled": true` on the entry to keep it configured without connecting it; there is
+no `enabled` field. OpenCode watches the config and reloads after a save, so no restart is
+needed.
 
 ### Generic stdio JSON
 
@@ -252,10 +295,7 @@ Most MCP clients accept this shape under `mcpServers`:
     "planny": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["-y", "https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz"]
     }
   }
 }
@@ -276,10 +316,7 @@ absolute path to the built file:
     "planny": {
       "type": "stdio",
       "command": "node",
-      "args": ["/absolute/path/to/planny/mcp/dist/index.js"],
-      "env": {
-        "PLANNY_URL": "https://use-planny.vercel.app"
-      }
+      "args": ["/absolute/path/to/planny/mcp/dist/index.js"]
     }
   }
 }
@@ -566,6 +603,8 @@ server is working correctly when it returns these.
 - VS Code: **MCP: List Servers → Show Output**.
 - Codex: restart after editing `config.toml`; check the terminal that launched Codex for
   startup errors.
+- OpenCode: `opencode mcp list` shows connection state; the log is at
+  `~/.local/share/opencode/log/opencode.log`.
 
 ## Directory manifests
 

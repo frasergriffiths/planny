@@ -56,7 +56,7 @@ objects directly. Do not create one.
    PLANNY_BUILD=vercel bun run admin reset all
    ```
 
-   The demo box has its own monthly quota. `reset uploads` and `reset all` do not
+   The demo endpoint has its own monthly quota. `reset uploads` and `reset all` do not
    clear it; use `reset demo` when the demo allowance, not the site-wide upload
    budget, is exhausted. The smaller per-address demo caps
    (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY` and `..._MONTH`) are not cleared by

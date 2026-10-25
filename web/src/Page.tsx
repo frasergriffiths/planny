@@ -6,16 +6,90 @@ export type PageKind = 'home' | 'notfound' | 'gone' | 'paused';
 const INSTALL_COMMAND = 'npx skills add frasergriffiths/planny --skill planny';
 const MCP_TARBALL = 'https://github.com/frasergriffiths/planny/releases/download/mcp-v0.1.0/planny-mcp-0.1.0.tgz';
 const MCP_COMMAND = `npx -y ${MCP_TARBALL}`;
-// A compact block for the Claude Desktop and Claude Code mcpServers shape; the README
-// carries the Cursor, VS Code and Codex variants.
-const MCP_CONFIG = `{
+
+const MCP_CLIENT_IDS = ['claude-code', 'claude-desktop', 'cursor', 'vscode', 'codex', 'opencode'] as const;
+type McpClientId = typeof MCP_CLIENT_IDS[number];
+
+interface McpClientConfig {
+  readonly label: string;
+  /** The file path or command shown above the config block. */
+  readonly where: string;
+  readonly snippet: string;
+  readonly copyLabel?: string;
+  readonly note?: string;
+}
+
+// Each snippet is the same shape mcp/README.md documents for that client. The optional
+// PLANNY_URL env is omitted here to keep the panel short; the README shows it.
+const MCP_CLIENTS: Record<McpClientId, McpClientConfig> = {
+  'claude-code': {
+    label: 'Claude Code',
+    where: 'Terminal (run once)',
+    snippet: `claude mcp add --transport stdio planny -- npx -y ${MCP_TARBALL}`,
+    copyLabel: 'Copy Claude Code command',
+  },
+  'claude-desktop': {
+    label: 'Claude Desktop',
+    where: 'macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json',
+    snippet: `{
   "mcpServers": {
     "planny": {
       "command": "npx",
       "args": ["-y", "${MCP_TARBALL}"]
     }
   }
-}`;
+}`,
+  },
+  cursor: {
+    label: 'Cursor',
+    where: '~/.cursor/mcp.json or .cursor/mcp.json',
+    snippet: `{
+  "mcpServers": {
+    "planny": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "${MCP_TARBALL}"]
+    }
+  }
+}`,
+  },
+  vscode: {
+    label: 'VS Code',
+    where: '.vscode/mcp.json',
+    snippet: `{
+  "servers": {
+    "planny": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "${MCP_TARBALL}"]
+    }
+  }
+}`,
+  },
+  codex: {
+    label: 'Codex',
+    where: '~/.codex/config.toml',
+    snippet: `[mcp_servers.planny]
+command = "npx"
+args = ["-y", "${MCP_TARBALL}"]`,
+  },
+  opencode: {
+    label: 'OpenCode',
+    where: '~/.config/opencode/opencode.jsonc',
+    snippet: `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "planny": {
+        "type": "local",
+        "command": ["npx", "-y", "${MCP_TARBALL}"]
+      }
+    }
+  }
+}`,
+    note: `CLI: opencode mcp add planny --global -- npx -y ${MCP_TARBALL}`,
+  },
+};
 // Keep in step with PLUR in src/attribution.ts. The server marks the flag on <html>.
 const PLUR = 'https://use-planny.vercel.app';
 
@@ -67,18 +141,17 @@ function CheckGlyph() {
 
 // The one icon-only copy control: a 7x7 square with the copy glyph, a check while the
 // clipboard write is acknowledged, and the same sr-only live region for everyone.
-function IconCopy({ copied, onClick, label, bordered = false }: {
+function IconCopy({ copied, onClick, label }: {
   copied: boolean;
   onClick: () => void;
   label: string;
-  bordered?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white ${bordered ? 'border border-line hover:border-zinc-600' : ''}`}
+      className="flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-bar text-zinc-400 hover:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white"
     >
       {copied ? <CheckGlyph /> : <CopyGlyph />}
       <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
@@ -86,17 +159,22 @@ function IconCopy({ copied, onClick, label, bordered = false }: {
   );
 }
 
-function InstallCommand() {
+function useCopy(value: string) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(INSTALL_COMMAND);
+      await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
     }
   };
+  return { copied, copy };
+}
+
+function InstallCommand() {
+  const { copied, copy } = useCopy(INSTALL_COMMAND);
   return (
     <div className="flex w-fit max-w-full items-center gap-2">
       <code className="block min-w-0 overflow-x-auto whitespace-nowrap font-mono text-sm text-white">{INSTALL_COMMAND}</code>
@@ -107,16 +185,7 @@ function InstallCommand() {
 
 // The MCP command is longer than a phone line, so it wraps instead of scrolling the page.
 function McpCommand() {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(MCP_COMMAND);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
+  const { copied, copy } = useCopy(MCP_COMMAND);
   return (
     <div className="flex w-full max-w-full items-start gap-2">
       <code className="block min-w-0 flex-1 break-words whitespace-pre-wrap font-mono text-sm leading-relaxed text-white">{MCP_COMMAND}</code>
@@ -125,119 +194,48 @@ function McpCommand() {
   );
 }
 
-function CopyButton({ value, label }: { value: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <IconCopy
-      copied={copied}
-      bordered
-      label={label}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        } catch {
-          setCopied(false);
-        }
-      }}
-    />
-  );
+function McpPanelCopy({ value, label }: { value: string; label: string }) {
+  const { copied, copy } = useCopy(value);
+  return <IconCopy copied={copied} onClick={copy} label={label} />;
 }
 
-type PublishState =
-  | { status: 'idle' }
-  | { status: 'sending' }
-  | { status: 'done'; url: string; deleteKey: string; expiresAt: string }
-  | { status: 'error'; message: string };
-
-// The demo box posts to its own endpoint, which has a fixed 24-hour life and a separate
-// monthly counter, so a public demo cannot spend the site-wide upload budget. It is the same
-// sanitiser and the same body cap as an agent's upload; the server decides that, not this form.
-function PublishBox() {
-  const [html, setHtml] = useState('');
-  const [state, setState] = useState<PublishState>({ status: 'idle' });
-  const sending = state.status === 'sending';
-  const canPublish = !sending && html.trim().length > 0;
-
-  const publish = async () => {
-    if (!canPublish) return;
-    setState({ status: 'sending' });
-    try {
-      const response = await fetch('/demo/plans', {
-        method: 'POST',
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-        body: html,
-      });
-      const data = (await response.json().catch(() => ({}))) as {
-        url?: string;
-        deleteKey?: string;
-        expiresAt?: string;
-        error?: { message?: string };
-      };
-      if (!response.ok || !data.url || !data.deleteKey || !data.expiresAt) {
-        setState({ status: 'error', message: data.error?.message ?? `Publishing failed (${response.status}).` });
-        return;
-      }
-      setState({ status: 'done', url: data.url, deleteKey: data.deleteKey, expiresAt: data.expiresAt });
-    } catch {
-      setState({ status: 'error', message: 'Could not reach planny. Check your connection and try again.' });
-    }
-  };
-
-  // Once the plan is published the form is replaced, not just disabled: a second click
-  // cannot publish a duplicate plan, and the only way to start again is an explicit reload.
-  if (state.status === 'done') {
-    return (
-      <div className="mt-6 plan-card">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Published · your link</p>
-        <p className="mt-2 break-all text-sm">
-          <a href={state.url} className="text-white underline underline-offset-2 hover:text-zinc-300">{state.url}</a>
-        </p>
-        <p className="mt-2 font-mono text-xs text-zinc-500">Expires {new Date(state.expiresAt).toLocaleString()}</p>
-        <div className="mt-5 border-t border-line pt-4">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Delete key — copy it now</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <code className="break-all font-mono text-xs text-zinc-300">{state.deleteKey}</code>
-            <CopyButton value={state.deleteKey} label="Copy delete key" />
-          </div>
-          <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-            planny shows this once. It is the only way to delete the plan early; the link expires in 24 hours either way.
-          </p>
-        </div>
-        <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-          The box closes after a publish so a second click cannot create a duplicate. Reload the page to publish another plan.
-        </p>
-      </div>
-    );
-  }
-
+// One client at a time keeps the section compact. The buttons are a labelled toggle group,
+// so the selected client is exposed with aria-pressed rather than as a visual-only state.
+function McpClients() {
+  const [active, setActive] = useState<McpClientId>('claude-code');
+  const client = MCP_CLIENTS[active];
+  const copyLabel = client.copyLabel ?? `Copy ${client.label} config`;
   return (
-    <div className="mt-6">
-      <label htmlFor="plan-html" className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">Your HTML</label>
-      <textarea
-        id="plan-html"
-        value={html}
-        onChange={(event) => setHtml(event.target.value)}
-        spellCheck={false}
-        placeholder={'<!doctype html>\n<html><body><h1>Q4 rollout</h1><p>One page, one link.</p></body></html>'}
-        className="mt-2 h-64 w-full resize-y rounded-card border border-line bg-transparent p-4 font-mono text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-700 focus:border-zinc-600 focus:outline-none"
-      />
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={publish}
-          disabled={!canPublish}
-          className="cursor-pointer rounded-full bg-white px-6 py-3.5 text-base font-medium text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
-        >
-          {sending ? 'Publishing…' : 'Get a link'}
-        </button>
-        <p className="font-mono text-xs text-zinc-500">Expires in 24 hours. No account.</p>
+    <div className="mt-5">
+      <div role="group" aria-label="MCP client" className="flex flex-wrap gap-2">
+        {MCP_CLIENT_IDS.map((id) => {
+          const selected = id === active;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={selected}
+              aria-controls="mcp-client-panel"
+              onClick={() => setActive(id)}
+              className={`cursor-pointer rounded-full border px-3 py-1.5 font-mono text-xs focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-white ${selected ? 'border-white bg-white text-black' : 'border-line text-zinc-400 hover:border-zinc-600 hover:text-white'}`}
+            >
+              {MCP_CLIENTS[id].label}
+            </button>
+          );
+        })}
       </div>
-
-      {state.status === 'error' ? (
-        <p role="alert" className="mt-4 text-sm text-red-400">{state.message}</p>
-      ) : null}
+      <div id="mcp-client-panel" role="region" aria-label={`${client.label} setup`} className="mt-4">
+        <div className="flex items-start gap-3">
+          <code className="min-w-0 flex-1 break-words font-mono text-xs leading-relaxed text-zinc-400">{client.where}</code>
+          <McpPanelCopy key={active} value={client.snippet} label={copyLabel} />
+        </div>
+        <pre className="mt-2 max-w-full overflow-x-auto rounded-card border border-line bg-zinc-950/40 p-4 font-mono text-xs leading-relaxed text-zinc-300">
+          <code>{client.snippet}</code>
+        </pre>
+        {client.note ? (
+          <p className="mt-2 max-w-full break-words font-mono text-xs leading-relaxed text-zinc-500">{client.note}</p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -335,7 +333,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">MCP server</p>
               <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Connect planny as an MCP server.</h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                Two tools, <code className="text-zinc-400">publish_plan</code> and <code className="text-zinc-400">delete_plan</code>, with no API key. Works with Claude Code, Claude Desktop, Cursor, VS Code, Codex and any stdio client.
+                Two tools, <code className="text-zinc-400">publish_plan</code> and <code className="text-zinc-400">delete_plan</code>, with no API key. Works with Claude Code, Claude Desktop, Cursor, VS Code, Codex, OpenCode and any stdio client.
               </p>
               <div className="mt-6 max-w-full">
                 <McpCommand />
@@ -343,26 +341,11 @@ export function Page({ kind }: { kind: PageKind }) {
               <p className="mt-4 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
                 Node 22+ with npm/npx. Installs the version-pinned GitHub Release tarball; Bun is only for the clone-and-build fallback. A self-hosted instance sets <code className="text-zinc-400">PLANNY_URL</code>.
               </p>
-              <p className="mt-5 font-mono text-xs text-zinc-500">For Claude Desktop and Claude Code:</p>
-              <pre className="mt-2 max-w-full overflow-x-auto rounded-card border border-line bg-zinc-950/40 p-4 font-mono text-xs leading-relaxed text-zinc-300">
-                <code>{MCP_CONFIG}</code>
-              </pre>
-              <p className="mt-2 max-w-xl font-mono text-xs leading-relaxed text-zinc-500">
-                Cursor, VS Code and Codex use their own config shapes; the setup docs cover each.
-              </p>
+              <McpClients />
               <p className="mt-6 flex flex-wrap gap-4 font-mono text-xs">
                 <a href={withRef('https://github.com/frasergriffiths/planny/blob/main/mcp/README.md', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">MCP setup docs</a>
                 <a href={withRef('https://github.com/frasergriffiths/planny/releases/tag/mcp-v0.1.0', REF)} target="_blank" rel="noreferrer" className="text-zinc-400 no-underline hover:text-white">mcp-v0.1.0 release</a>
               </p>
-            </section>
-
-            <section id="try" className="border-t border-line py-14">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Demo</p>
-              <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Publish a page yourself.</h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-                Paste one self-contained HTML page; the server strips scripts, links and frames before it goes live.
-              </p>
-              <PublishBox />
             </section>
 
             <section id="how" className="grid gap-6 border-t border-line py-14 md:grid-cols-3">
@@ -402,7 +385,7 @@ export function Page({ kind }: { kind: PageKind }) {
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">Questions</h2>
               <dl className="mt-6 max-w-3xl">
                 {[
-                  ['Do I need an account?', 'No. Paste the HTML, choose a lifetime, keep the delete key.'],
+                  ['Do I need an account?', 'No. Publish through the agent skill, the MCP server or the API, choose a lifetime, and keep the delete key.'],
                   ['How long does a link last, and can I delete it early?', 'One hour to 100 years; it expires on its own, or delete it with the delete key returned at upload.'],
                   ['Is the link private?', 'No. Anyone with the link can read it. Plans are not listed, but a shared link can be indexed, so keep out secrets and personal data.'],
                   ['What can I publish?', 'One self-contained HTML file up to 4 MiB. Scripts, links, forms, frames, external files and fonts are stripped; CSS, inline SVG, tables and data: images work. That makes plans unsuitable for reports that need clickable sources.'],

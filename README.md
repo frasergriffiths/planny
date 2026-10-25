@@ -32,11 +32,9 @@ The skill ships four plan templates: [project](skills/planny/template.html), [la
 
 Plans can include a styled code block with static syntax highlighting and a Copy button added by the viewer, plus an inline [Heroicons set](skills/planny/reference/icons.md). The [component reference](skills/planny/reference/components.md) documents both.
 
-## Or try it in the browser
+## Demo endpoint
 
-On the deployed site, the home page has a paste box. Paste one self-contained HTML page, click **Get a link**, and planny returns a link plus a delete key. No account, no terminal. The local server serves the plain server-rendered page instead.
-
-The box posts to `POST /demo/plans`, which runs the same sanitiser and the same 4 MiB cap as every other upload. Three things differ: a demo link expires after 24 hours, demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500), and each address gets a smaller share of it (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`, default 2, and `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5) so one visitor cannot drain the shared demo allowance. A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
+`POST /demo/plans` is an upload endpoint for demo links; the home page does not link to it. It runs the same sanitiser and the same 4 MiB cap as every other upload. Three things differ: a demo link expires after 24 hours, demo uploads carry their own monthly counter (`PLANNY_DEMO_MONTHLY_UPLOADS`, default 500), and each address gets a smaller share of it (`PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY`, default 2, and `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH`, default 5) so one visitor cannot drain the shared demo allowance. A public demo therefore cannot spend the site-wide `PLANNY_MONTHLY_UPLOADS` budget, and exhausting the demo allowance leaves the API untouched.
 
 ## MCP server
 
@@ -58,7 +56,7 @@ bun install
 bun run build
 ```
 
-See [mcp/README.md](mcp/README.md) for Claude Desktop, Cursor, VS Code and Codex configs, the capability and error tables, and the `bun run verify` end-to-end check.
+See [mcp/README.md](mcp/README.md) for Claude Code, Claude Desktop, Cursor, VS Code, Codex and OpenCode configs, the capability and error tables, and the `bun run verify` end-to-end check.
 
 ## How it works
 
@@ -99,7 +97,7 @@ Reads and bytes are separate guards; whichever runs out first pauses new views. 
 | `GET /` | Home page. |
 | `GET /sample` | The generated sample plan, with the plan CSP and the footer. |
 | `POST /plans?name=&duration=` | Upload raw `text/html`. Returns `url`, `expiresAt`, `deleteKey` and `removed`. |
-| `POST /demo/plans` | The home page box. Same body and sanitiser, fixed 24-hour life, separate monthly counter: 500/month site-wide, and 2/day and 5/month per address. |
+| `POST /demo/plans` | Demo upload endpoint; the home page does not link to it. Same body and sanitiser, fixed 24-hour life, separate monthly counter: 500/month site-wide, and 2/day and 5/month per address. |
 | `GET /p/:uuid` | Show the plan. Query strings are a 404 and are not counted as reads. |
 | `HEAD /p/:uuid` | The same headers, no body. |
 | `DELETE /p/:uuid` | Delete with `Authorization: Bearer <deleteKey>`. |
@@ -157,7 +155,7 @@ Core production settings:
 | `PLANNY_ADDRESS_KEY` | Recommended stable keyed hash of client addresses for rates and pauses. If unset, the Blob token is used; rotating either resets every derived address and rate limit. |
 | `PLANNY_PUBLIC_ORIGIN` | Canonical origin used in returned links. Defaults to `https://use-planny.vercel.app`; set it for a self-hosted instance. |
 | `PLANNY_ATTRIBUTION` | `on` (default) adds the "Made with Planny" footer to each plan and the publish line to 404/410 pages. Set `off` to remove both. Aliases: `off` also accepts `0`, `false`, `no`, `disable`, `disabled`, `none`; `on` accepts `1`, `true`, `yes`, `enabled`. Anything else keeps the default, `on`. |
-| `PLANNY_DEMO_MONTHLY_UPLOADS` | Uploads allowed from the home page demo box each month. Default 500, on its own counter so it never spends `PLANNY_MONTHLY_UPLOADS`. |
+| `PLANNY_DEMO_MONTHLY_UPLOADS` | Uploads allowed from `POST /demo/plans` each month. Default 500, on its own counter so it never spends `PLANNY_MONTHLY_UPLOADS`. |
 | `PLANNY_DEMO_UPLOADS_PER_ADDRESS_DAY` | Demo uploads allowed from one address each day. Default 2, so one visitor cannot drain the shared demo allowance. |
 | `PLANNY_DEMO_UPLOADS_PER_ADDRESS_MONTH` | Demo uploads allowed from one address each month. Default 5. Demo uploads have their own counters, so this never affects `POST /plans`. |
 
