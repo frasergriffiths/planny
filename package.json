@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",
-    "@vercel/functions": "^3.10.1",
+    "@vercel/functions": "^3.10.3",
     "fengari": "^0.1.5",
     "hono": "^4.13.13",
     "parse5": "^8.0.1",
@@ -50,12 +50,12 @@
     "@types/react-dom": "^19.3.0",
     "@vercel/analytics": "^2.0.1",
     "@vitejs/plugin-react": "^6.1.2",
-    "bun-types": "^1.4.3",
+    "bun-types": "^1.4.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4",
+    "vite": "^8.3.5",
     "vite-plugin-singlefile": "^2.3.4"
   },
   "workspaces": [
